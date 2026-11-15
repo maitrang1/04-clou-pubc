@@ -4,6 +4,9 @@ What changed, newest first.
 
 ---
 
+## 2026-11-15
+**Changed:** the shipped settings name the public repo `04-clou-pubc` (setting `repo.name`), the copy folder `~/04-clou-pubc` and the private folder `~/.04-clou-secr`. Older names still work if you set them yourself.
+
 ## 2026-11-13
 **Added:** `publish` (copy, scan, commit and upload in one command), `push` (one-way copy), a release build on version tags, a private ssh config so one upload can reach GitHub, GitLab and Forgejo, and whole-file secret scanning.
 **Changed:** the repo is public by a setting. Your login and email moved to a private file. All apps share one private folder, `~/.04-clou-secr/`. A clean copy still tries the upload, so a second place that was offline catches up.

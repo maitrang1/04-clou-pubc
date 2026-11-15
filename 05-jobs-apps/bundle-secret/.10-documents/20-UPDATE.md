@@ -4,6 +4,9 @@ What changed, newest first.
 
 ---
 
+## 2026-11-15
+**Changed:** the default vault folder is `~/04-clou-vaul` and the saved passphrase file is `~/.04-clou-secr/04-clou-vaul.pass`. Rename your own folders or change `bundle.root` and `bundle.pass_file` in the settings.
+
 ## 2026-11-14
 **Added:** first version. `pack`, `unpack`, `check`, `status`. Locks your secret files into one file with a passphrase (Argon2id + AES-256-GCM), refuses unsafe paths, saves a replaced local file to a trash folder, leaves the file alone when nothing changed.
 **Sessions not shared:** saved logins (`*session*`, `pick.skip`) stay per device; a login on two machines can make Facebook or Zalo flag the account.
