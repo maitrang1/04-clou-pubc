@@ -22,6 +22,7 @@
   "fetch": { "on_differ": "keep" },
   "ship": { "message": "update bundle" },
   "state": { "file": "{home}/.04-clou-secr/bundle-secret-state.json" },
+  "sync": { "merge_globs": [], "big_files": 50, "base_dir": "{home}/.04-clou-secr/bundle-secret-base" },
   "argon": { "time": 3, "memo_kbyt": 65536, "para": 1 },
   "unpack": {
     "file_mode": "600",

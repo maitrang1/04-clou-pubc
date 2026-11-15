@@ -49,7 +49,7 @@ fn sameDir(x: []const u8, y: []const u8) bool {
 }
 
 // the bundle's path inside the scanned repo (so it is never picked itself), or "" when it lives elsewhere ----
-fn ownRel(a: std.mem.Allocator, repo: []const u8, file: []const u8) []const u8 {
+pub fn ownRel(a: std.mem.Allocator, repo: []const u8, file: []const u8) []const u8 {
     const r = std.mem.trimEnd(u8, repo, "/\\");
     if (!std.mem.startsWith(u8, file, r) or file.len <= r.len + 1 or (file[r.len] != '/' and file[r.len] != '\\')) return "";
     const rel = a.dupe(u8, file[r.len + 1 ..]) catch return "";
@@ -129,6 +129,25 @@ pub fn pack(e: Env, pass: ?[]const u8, go: bool, rekey: bool, reseed: bool) Flow
     res.wrote = true;
     res.sealed_len = sealed.len;
     return res;
+}
+
+// seal these items and write the bundle file (.part then rename); the caller has proved the passphrase opens the old bundle ----
+pub fn writeItems(e: Env, pass: []const u8, items: []const arc.Item) FlowErro!u64 {
+    try vaultReady(e);
+    const plain = try arc.encode(e.a, items);
+    defer std.crypto.secureZero(u8, @constCast(plain));
+    const sealed = try box.seal(e.a, e.io, pass, plain, costOf(e.conf));
+    const path = try bundlePath(e);
+    const cwd = std.Io.Dir.cwd();
+    if (std.fs.path.dirname(path)) |d| cwd.createDirPath(e.io, d) catch return error.WriteFail;
+    const part = try std.mem.concat(e.a, u8, &.{ path, CF.part });
+    {
+        const f = cwd.createFile(e.io, part, .{}) catch return error.WriteFail;
+        defer f.close(e.io);
+        f.writePositionalAll(e.io, sealed, 0) catch return error.WriteFail;
+    }
+    cwd.rename(part, cwd, path, e.io) catch return error.WriteFail;
+    return sealed.len;
 }
 
 pub const OpenRes = struct { items: []arc.Item, rows: []apply.Row };

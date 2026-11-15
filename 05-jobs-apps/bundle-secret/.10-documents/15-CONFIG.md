@@ -50,3 +50,25 @@ Plain facts. All settings live in `00-config.json` next to the program (pass `--
 | Old local copies | `unpack.trash/<yyMMdd_HHmmss>/<path>` (outside both repos, never committed) |
 | Sync state | `state.file` (one line, the bundle's sha256; written by `pack --go`, `unpack --go`, `fetch --go`, `ship --go`) |
 | Passphrase | first found: the env variable (`bundle.pass_envz`), then `bundle.pass_file` (owner-only), then typed hidden. Never in git |
+
+---
+
+## Second settings file (`00-config-ditems.json`)
+Same settings as above, tuned for dot-items. Different values:
+| Setting | Value | Why |
+|---|---|---|
+| `bundle.path` | `bundle-ditems.enc` | its own locked file in the same vault repo |
+| `pick.dirs` / `pick.files` | none / `.*` and `*/.*` | every dot-folder and dot-file, at any depth |
+| `pick.skip` | public docs, `.github`, `.gitignore`, key and password files, per-device settings, `*session*`, `*history*` | these stay out of the bundle |
+| `pick.file_maxz_kbyt` | `512` | the biggest note is about 230 KB |
+| `fetch.on_differ` | `replace` | a changed file is updated; the old copy goes to the trash |
+| `state.file` / `unpack.trash` | own files (`bundle-ditems-state.json`, `bundle-ditems-trash`) | never mixed with the secrets bundle |
+
+---
+
+## Sync settings (`sync`)
+| Setting | What it does | Default | Allowed |
+|---|---|---|---|
+| `sync.merge_globs` | files that may be merged into one version when both sides changed them (empty = never merge, the secrets default) | none; the dot-items file lists code and text types | any list of patterns |
+| `sync.big_files` | most files one run may change on one side without `--big` | `50` | 1 to 1000000 |
+| `sync.base_dir` | where this device remembers what it and the vault last agreed on | `{home}/.04-clou-secr/bundle-secret-base` | starts with `{home}`, or absolute |

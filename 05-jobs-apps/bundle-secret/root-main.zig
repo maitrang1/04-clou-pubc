@@ -17,6 +17,8 @@ const passf = @import("pass-file.zig");
 const sh = @import("ship-flow.zig");
 const git_run = @import("git-run.zig");
 const sstate = @import("sync-state.zig");
+const sf = @import("sync-flow.zig");
+const splan = @import("sync-plan.zig");
 const out = @import("out-text.zig");
 
 const CF = .{ .conf_file = "00-config.json", .exit_ok = 0, .exit_fail = 1, .exit_use = 2, .exit_diff = 3 };
@@ -33,6 +35,9 @@ const USAGE =
     \\  fetch    pull the vault repo and write new secrets here; a local file that differs is KEPT (dry-run unless --go)
     \\  ship     pack, commit only the bundle, push; refuses when another device shipped a newer bundle (dry-run unless --go)
     \\  keep-pass save the passphrase to an owner-only file (bundle.pass_file) so you need not type it; checked against the bundle first
+    \\  sync     two-way and truly safe: new or changed files go to the other side, a missing file comes back, nothing is ever deleted; a file changed on both sides is auto-merged (code, text; sync.merge_globs) or both copies are kept (nobody wins, exit 3) (dry-run unless --go)
+    \\  pull     the vault wins: this device takes the vault's version of every differing file, the old copy goes to the trash; files only here are left alone (dry-run unless --go)
+    \\  push     this device wins: the vault takes this device's version of every differing file; files only in the vault are kept (dry-run unless --go)
     \\  status   show the bundle file: size, Argon2 cost, sha256 (no passphrase)
     \\  version  print the app version
     \\  help     print this text
@@ -46,13 +51,16 @@ const USAGE =
     \\  --replace         fetch only: replace a differing local file (the old copy goes to the trash)
     \\  --reseed          token files (pick.seed_only) are normally copied once and then left alone: with this flag pack/ship put THIS device's copy in the bundle, and fetch/unpack take the bundle's copy over this device's (old copy to the trash)
     \\  --rekey           pack and ship only: replace a bundle that another passphrase made (on purpose)
+    \\  --big             sync, pull, push: allow more than sync.big_files changes on one side
+    \\  --no-merge        sync: never auto-merge, keep both copies of every conflict
+    \\  --only <path>     sync, pull, push: only this file (or a pattern with *); push --only after a conflict makes this device win for that file, pull --only makes the vault win
     \\
     \\Passphrase, first found: the variable named in bundle.pass_envz, then the file bundle.pass_file (owner-only, made by keep-pass), then typed hidden.
     \\Exit codes: 0 ok · 1 failed · 2 usage or config · 3 files differ (check) or the action was refused (fetch kept a local file; ship is stale)
     \\
 ;
 
-const Args = struct { cmd: []const u8, repo: ?[]const u8 = null, conf_path: []const u8 = CF.conf_file, home: ?[]const u8 = null, go: bool = false, rekey: bool = false, replace: bool = false, reseed: bool = false, bundle_root: ?[]const u8 = null };
+const Args = struct { cmd: []const u8, repo: ?[]const u8 = null, conf_path: []const u8 = CF.conf_file, home: ?[]const u8 = null, go: bool = false, rekey: bool = false, replace: bool = false, reseed: bool = false, bundle_root: ?[]const u8 = null, big: bool = false, no_merge: bool = false, only: ?[]const u8 = null };
 
 fn parseArgs(argv: []const []const u8) ?Args {
     if (argv.len == 0) return null;
@@ -76,10 +84,18 @@ fn parseArgs(argv: []const []const u8) ?Args {
             r.reseed = true;
             continue;
         }
+        if (std.mem.eql(u8, k, "--big")) {
+            r.big = true;
+            continue;
+        }
+        if (std.mem.eql(u8, k, "--no-merge")) {
+            r.no_merge = true;
+            continue;
+        }
         if (i + 1 >= argv.len) return null;
         const v = argv[i + 1];
         i += 1;
-        if (std.mem.eql(u8, k, "--repo")) r.repo = v else if (std.mem.eql(u8, k, "--config")) r.conf_path = v else if (std.mem.eql(u8, k, "--home")) r.home = v else if (std.mem.eql(u8, k, "--bundle-root")) r.bundle_root = v else return null;
+        if (std.mem.eql(u8, k, "--repo")) r.repo = v else if (std.mem.eql(u8, k, "--config")) r.conf_path = v else if (std.mem.eql(u8, k, "--home")) r.home = v else if (std.mem.eql(u8, k, "--bundle-root")) r.bundle_root = v else if (std.mem.eql(u8, k, "--only")) r.only = v else return null;
     }
     return r;
 }
@@ -173,6 +189,7 @@ fn syncFail(io: std.Io, e: anyerror) noreturn {
         error.GitFail => out.fail(io, "git failed", sh.why, "check the network and your git login or deploy key for the vault repo, then run again"),
         error.Missing => out.fail(io, "git is not installed", "the program name in git.bin was not found", "install git, or set git.bin in 00-config.json"),
         error.Timeout => out.fail(io, "git took too long", "git.timeout_secs ran out", "check the network, or raise git.timeout_secs"),
+        error.TooManyChanges => out.fail(io, "too many changes at once", sh.why, "read the list with a dry-run; if it is right add --big"),
         else => flowFail(io, e),
     }
     die(CF.exit_fail);
@@ -195,7 +212,7 @@ pub fn main(init: std.process.Init) void {
         out.say(io, "bundle-secret {s}\n", .{build_options.version});
         die(CF.exit_ok);
     }
-    const KNOWN = [_][]const u8{ "pack", "unpack", "check", "status", "keep-pass", "fetch", "ship" };
+    const KNOWN = [_][]const u8{ "pack", "unpack", "check", "status", "keep-pass", "fetch", "ship", "sync", "pull", "push" };
     var known = false;
     for (KNOWN) |k| if (std.mem.eql(u8, parsed.cmd, k)) {
         known = true;
@@ -225,6 +242,22 @@ pub fn main(init: std.process.Init) void {
     const now_secs: i64 = @divFloor(std.Io.Clock.real.now(io).toMilliseconds(), 1000);
     const e: flow.Env = .{ .io = io, .a = a, .conf = c, .repo = repo, .bundle_dir = bundle_dir, .pass_file = pass_file, .trash = trash, .now_secs = now_secs, .say = say };
 
+    const is_sync = std.mem.eql(u8, parsed.cmd, "sync") or std.mem.eql(u8, parsed.cmd, "pull") or std.mem.eql(u8, parsed.cmd, "push");
+    if (is_sync) {
+        const git: git_run.Git = .{ .io = io, .a = a, .env = env, .root = bundle_dir, .bin = c.git.bin, .tmos_secs = c.git.timeout_secs, .outp_maxz = (@as(usize, c.pick.total_maxz_mbyt) + 2) * 1024 * 1024 };
+        const sy: sh.Sync = .{ .e = e, .git = git, .state_file = state_file };
+        const mode: splan.Mode = if (std.mem.eql(u8, parsed.cmd, "pull")) .pull else if (std.mem.eql(u8, parsed.cmd, "push")) .push else .sync;
+        const pw = passGet(io, a, env, c, pass_file, true, false, mode != .pull);
+        const base_dir = conf.homeFill(a, c.sync.base_dir, home) catch die(CF.exit_fail);
+        const r = sf.run(sy, pw, .{ .mode = mode, .go = parsed.go, .big = parsed.big, .no_merge = parsed.no_merge, .only = parsed.only, .base_dir = base_dir }) catch |er| syncFail(io, er);
+        out.say(io, "{s}: {d} same · {d} to this device · {d} to the vault · {d} merged · {d} kept as two copies · {d} still unresolved · {d} skipped (vault newer) · {d} skipped (device newer)\n", .{ parsed.cmd, r.same, r.to_near, r.to_far, r.merged, r.paired, r.still, r.behind, r.ahead });
+        if (!parsed.go) out.say(io, "dry-run: nothing written. Pass --go to apply.\n", .{}) else if (r.to_far + r.merged + r.paired > 0) out.say(io, "{s}\n", .{if (r.shipped) "the vault is updated and pushed" else "the vault file is up to date"});
+        if (r.paired + r.still > 0) {
+            out.say(io, "conflicts: nobody wins, each side keeps its file and also gets the other copy as name.conflict-<near|far>-<time>. Decide per file: push --only <file> (this device wins) or pull --only <file> (the vault wins).\n", .{});
+            die(CF.exit_diff);
+        }
+        die(CF.exit_ok);
+    }
     if (std.mem.eql(u8, parsed.cmd, "fetch") or std.mem.eql(u8, parsed.cmd, "ship")) {
         const git: git_run.Git = .{ .io = io, .a = a, .env = env, .root = bundle_dir, .bin = c.git.bin, .tmos_secs = c.git.timeout_secs, .outp_maxz = (@as(usize, c.pick.total_maxz_mbyt) + 2) * 1024 * 1024 };
         const sy: sh.Sync = .{ .e = e, .git = git, .state_file = state_file };
@@ -298,6 +331,10 @@ test {
     _ = @import("sync-state.zig");
     _ = @import("ship-flow.zig");
     _ = @import("out-text.zig");
+    _ = @import("sync-plan.zig");
+    _ = @import("sync-base.zig");
+    _ = @import("sync-merge.zig");
+    _ = @import("sync-flow.zig");
 }
 // ========================___THIS_IS_THE_END___========================
 // ===============___HOLD_YOUR_BREATH_AND_COUNT_TO_TEN___===============

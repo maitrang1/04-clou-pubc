@@ -126,7 +126,7 @@
     "file_maxz_mbyt": 100
   },
   "push": {
-    "skip_dirs": [".git", ".github", "zig-out", ".zig-cache", "node_modules", ".10-docs", ".05-docs-core", ".15-docs-flow", ".20-flow-note", "zzzz-delete-force-items", ".claude", ".secrets", ".99-secret-root", "test-data"],
+    "skip_dirs": [".git", ".github", "zig-out", ".zig-cache", "node_modules", ".10-docs", ".05-docs-core", ".15-docs-flow", ".20-flow-note", "zzzz-delete-force-items", ".claude", ".vscode", ".deve-user", "deve-user", ".secrets", ".99-secret-root", "test-data"],
     "allo": ["*.zig", "*.zon", "*00-config.json", "*df-*.json", "*10-steps.json", "*.yml", "*.mjs", "*/package.json", "*/package-lock.json", "*.10-documents/*", "*read-only.json", "*te-*.json", "*te-*.csv", "*df-*.js", "LICENSE", "README.md"],
     "deny": ["*.vault", "*.key", "*.pem", "*.env", "*.env.*", "*id_ed25519*", "*id_rsa*"],
     "keep": [".gitignore", ".gitattributes"],

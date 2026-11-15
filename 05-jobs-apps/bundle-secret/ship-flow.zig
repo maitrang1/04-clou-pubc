@@ -34,7 +34,7 @@ fn line(s: Sync, comptime fmt: []const u8, args: anytype) void {
 fn quiet(_: std.Io, _: []const u8) void {}
 
 // run git; any non-zero exit is a GitFail with git's first line in `why` ----
-fn gok(s: Sync, args: []const []const u8) SyncErro!git_run.Res {
+pub fn gok(s: Sync, args: []const []const u8) SyncErro!git_run.Res {
     const r = try s.git.run(args);
     if (!r.okay()) {
         note(r.why());
@@ -43,14 +43,14 @@ fn gok(s: Sync, args: []const []const u8) SyncErro!git_run.Res {
     return r;
 }
 
-fn vaultGit(s: Sync) SyncErro!void {
+pub fn vaultGit(s: Sync) SyncErro!void {
     const g = std.fs.path.join(s.e.a, &.{ s.e.bundle_dir, ".git" }) catch return error.OutOfMemory;
     std.Io.Dir.cwd().access(s.e.io, g, .{}) catch return error.NoVaultGit;
 }
 
-const Pos = struct { ahead: u32, behind: u32 };
+pub const Pos = struct { ahead: u32, behind: u32 };
 
-fn position(s: Sync) SyncErro!Pos {
+pub fn position(s: Sync) SyncErro!Pos {
     const up = try s.git.run(&.{ "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}" });
     if (!up.okay()) return error.NoUpstream;
     const c = try gok(s, &.{ "rev-list", "--left-right", "--count", "HEAD...@{u}" });
@@ -61,7 +61,7 @@ fn position(s: Sync) SyncErro!Pos {
 }
 
 // the bundle as the vault's remote branch has it (when behind) or as the local file has it; null = no bundle yet ----
-fn remoteBlob(s: Sync, pos: Pos) SyncErro!?[]const u8 {
+pub fn remoteBlob(s: Sync, pos: Pos) SyncErro!?[]const u8 {
     if (pos.behind > 0) {
         const spec = std.fmt.allocPrint(s.e.a, "@{{u}}:{s}", .{s.e.conf.bundle.path}) catch return error.OutOfMemory;
         const has = try s.git.run(&.{ "cat-file", "-e", spec });
@@ -72,7 +72,7 @@ fn remoteBlob(s: Sync, pos: Pos) SyncErro!?[]const u8 {
 }
 
 // only the bundle file may differ from the last commit (a ship rebuilds it anyway); true when it does ----
-fn onlyBundle(s: Sync) SyncErro!bool {
+pub fn onlyBundle(s: Sync) SyncErro!bool {
     const r = try gok(s, &.{ "status", "--porcelain" });
     var it = std.mem.tokenizeScalar(u8, r.out, '\n');
     var any = false;
@@ -112,7 +112,7 @@ pub fn fetch(s: Sync, pass: []const u8, go: bool, replace: bool, reseed: bool) S
 }
 
 // put the vault repo back where it was after a failed commit or push; the bundle is rebuilt by the next ship ----
-fn undo(s: Sync, committed: bool) void {
+pub fn undo(s: Sync, committed: bool) void {
     if (committed) _ = s.git.run(&.{ "reset", "-q", "--soft", "HEAD~1" }) catch {};
     _ = s.git.run(&.{ "restore", "--staged", "--", s.e.conf.bundle.path }) catch {};
     _ = s.git.run(&.{ "restore", "--", s.e.conf.bundle.path }) catch {};

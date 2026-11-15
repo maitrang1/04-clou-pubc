@@ -32,7 +32,9 @@ pub const GitCf = struct { bin: []const u8 = "git", timeout_secs: u32 = 120 };
 pub const FetchCf = struct { on_differ: []const u8 = "keep" };
 pub const ShipCf = struct { message: []const u8 = "update bundle" };
 pub const StateCf = struct { file: []const u8 = "{home}/.04-clou-secr/bundle-secret-state.json" };
-pub const Conf = struct { vers: u32 = CF.vers, pick: Pick = .{}, bundle: Bundle = .{}, argon: Argon = .{}, unpack: Unpack = .{}, git: GitCf = .{}, fetch: FetchCf = .{}, ship: ShipCf = .{}, state: StateCf = .{} };
+// merge_globs: files that may be auto-merged when both sides changed them (empty = never merge, the secrets default); big_files: most files a sync may change on one side without --big; base_dir: what this device and the vault last agreed on ----
+pub const SyncCf = struct { merge_globs: []const []const u8 = &.{}, big_files: u32 = 50, base_dir: []const u8 = "{home}/.04-clou-secr/bundle-secret-base" };
+pub const Conf = struct { vers: u32 = CF.vers, pick: Pick = .{}, bundle: Bundle = .{}, argon: Argon = .{}, unpack: Unpack = .{}, git: GitCf = .{}, fetch: FetchCf = .{}, ship: ShipCf = .{}, state: StateCf = .{}, sync: SyncCf = .{} };
 
 var why_buf: [512]u8 = undefined;
 pub var why: []const u8 = "";
@@ -124,6 +126,9 @@ pub fn check(c: *const Conf) ConfErro!void {
     if (!std.mem.eql(u8, c.fetch.on_differ, "keep") and !std.mem.eql(u8, c.fetch.on_differ, "replace")) return bad("fetch.on_differ must be keep or replace", .{});
     if (c.ship.message.len == 0 or c.ship.message.len > CF.name_maxz or std.mem.indexOfAny(u8, c.ship.message, "\r\n") != null) return bad("ship.message must be one line of 1..{d} characters", .{CF.name_maxz});
     if (c.state.file.len == 0 or !homeOrAbs(c.state.file)) return bad("state.file must start with {{home}} or be an absolute path", .{});
+    try nameList("sync.merge_globs", c.sync.merge_globs, true);
+    if (c.sync.big_files < 1 or c.sync.big_files > 1000000) return bad("sync.big_files must be 1..1000000", .{});
+    if (c.sync.base_dir.len == 0 or !homeOrAbs(c.sync.base_dir)) return bad("sync.base_dir must start with {{home}} or be an absolute path", .{});
 }
 
 pub fn confLoad(io: std.Io, a: std.mem.Allocator, path: []const u8) ConfErro!Conf {
@@ -161,6 +166,9 @@ test "shipped config parses and equals the defaults" {
     try std.testing.expectEqualStrings(d.fetch.on_differ, c.fetch.on_differ);
     try std.testing.expectEqualStrings(d.ship.message, c.ship.message);
     try std.testing.expectEqualStrings(d.state.file, c.state.file);
+    try std.testing.expectEqual(d.sync.merge_globs.len, c.sync.merge_globs.len);
+    try std.testing.expectEqual(d.sync.big_files, c.sync.big_files);
+    try std.testing.expectEqualStrings(d.sync.base_dir, c.sync.base_dir);
 }
 
 test "unknown key is refused with line and column; bad values are refused" {
@@ -217,6 +225,10 @@ test "unknown key is refused with line and column; bad values are refused" {
         \\{"state":{"file":""}}
         ,
         \\{"state":{"file":"relative.json"}}
+        ,
+        \\{"sync":{"big_files":0}}
+        ,
+        \\{"sync":{"base_dir":"relative/dir"}}
     };
     for (cases) |text| {
         const c = try parse(a, text, "t.json");
@@ -242,6 +254,24 @@ test "modes: owner-only octal only; home placeholder fills" {
     const p = try homeFill(a, "{home}/x", "/h/me");
     defer a.free(p);
     try std.testing.expectEqualStrings("/h/me/x", p);
+}
+
+test "the dot-items config loads: own bundle file and state, replace on differ, dot files picked, keep-list and secrets skipped" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+    const a = arena.allocator();
+    const c = try confLoad(std.testing.io, a, "00-config-ditems.json");
+    try std.testing.expectEqualStrings("bundle-ditems.enc", c.bundle.path);
+    try std.testing.expectEqualStrings("replace", c.fetch.on_differ);
+    try std.testing.expect(c.sync.merge_globs.len > 5);
+    try std.testing.expect(std.mem.indexOf(u8, c.sync.base_dir, "ditems") != null);
+    try std.testing.expectEqual(@as(usize, 0), c.pick.dirs.len);
+    try std.testing.expect(!std.mem.eql(u8, c.state.file, (Conf{}).state.file));
+    try std.testing.expect(!std.mem.eql(u8, c.unpack.trash, (Conf{}).unpack.trash));
+    const gm = @import("glob-match.zig");
+    try std.testing.expect(gm.hitAny(c.pick.files, ".10-docs/a.md") and gm.hitAny(c.pick.files, "x/y/.agents/z.md"));
+    for ([_][]const u8{ ".10-documents/p.md", "x/.10-documents/p.md", ".github/ci.yml", ".gitignore", "a/.gitignore", "a/.my.pass", ".env", "x/.env.local", ".claude/settings.local.json", "a/.hooks-local.conf", ".history-notes" }) |p| try std.testing.expect(gm.hitAny(c.pick.skip, p));
+    for ([_][]const u8{ ".10-docs/a.md", ".claude/settings.json", ".deve-user/claude/CLAUDE.md" }) |p| try std.testing.expect(!gm.hitAny(c.pick.skip, p));
 }
 // ========================___THIS_IS_THE_END___========================
 // ===============___HOLD_YOUR_BREATH_AND_COUNT_TO_TEN___===============
