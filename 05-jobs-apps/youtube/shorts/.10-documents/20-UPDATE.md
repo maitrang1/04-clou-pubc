@@ -11,4 +11,5 @@ What changed, newest first.
 **Added:** `scan`, `status`, `doctor` to see what is going on without sending anything.
 **Added:** `approve` and `hold` so a person can look at videos marked for review before they go.
 **Added:** `login` for the one-time Google sign-in, `token` to check it, `kill` to stop every write at once, `backup` for the ledger.
+**Added:** An interrupted upload resumes by itself on the next run; a run that cannot finish in time stops cleanly and picks up where it stopped.
 **Known limit:** The first real upload with your own Google account has not been run by the maker of this tool; `10-HOW-TO.md` marks those steps.

@@ -1,0 +1,26 @@
+{
+  "data_dir": "",
+  "secrets_dir": "",
+  "tz_offset_hours": 7,
+  "db_file": "ledger.db",
+  "kill_file": "KILL",
+  "source": { "dir": "", "max_age_days": 14 },
+  "device": { "publisher": false },
+  "limits": { "daily_cap": 3, "daily_cap_max": 20, "gap_min_s": 600, "gap_max_s": 1800, "disk_min_mb": 500, "run_budget_s": 1200 },
+  "video": { "min_s": 1, "max_s": 180, "min_w": 540, "min_h": 960, "max_mb": 50, "want_faststart": true },
+  "post": { "public": false, "ai_notice_required": true, "silent": true, "protect": false, "caption_above": false, "caption_max": 1024, "hashtags_max": 15 },
+  "net": { "timeout_s": 60, "upload_timeout_s": 600, "chunk_kb": 256, "backoff_ms": 2000, "retries": 3, "body_cap_kb": 1024, "user_agent": "telegram-shorts/0.1", "allow_hosts": ["api.telegram.org"] },
+  "breaker": { "fails": 3, "cool_h": 6 },
+  "approval": { "require_for_review": true },
+  "telegram": {
+    "api_base": "https://api.telegram.org",
+    "token_env": "TELE_BOT_TOKEN",
+    "token_file": "tele-bot-token.txt",
+    "chat_file": "tele-chat.txt",
+    "test_chat_file": "tele-chat-test.txt",
+    "link_base": "https://t.me",
+    "thread_id": 0,
+    "feed_limit": 100
+  },
+  "retry_pre_send": 2
+}

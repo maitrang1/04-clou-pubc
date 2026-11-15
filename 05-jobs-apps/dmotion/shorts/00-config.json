@@ -1,0 +1,16 @@
+{
+  "data_dir": "~/.dmotion-shorts",
+  "db_file": "ledger.db",
+  "secrets_dir": "~/.04-clou-secr",
+  "tz_offset_hours": 7,
+  "source": { "dir": "", "max_age_days": 14 },
+  "limits": { "tier": "standard", "daily_cap": 3, "daily_minutes": 120, "gap_min_s": 600, "gap_max_s": 1800, "disk_min_mb": 500, "run_budget_s": 1800, "quota_block_h": 24 },
+  "video": { "min_s": 3, "max_s": 60, "min_w": 540, "min_h": 960, "rec_w": 1080, "rec_h": 1920, "fps_ok": [24, 25, 30, 50, 60], "max_mb": 512, "vcodec": "avc1", "acodec": "mp4a", "probe_tool": "" },
+  "post": { "public": false, "is_for_kids": false, "ai_notice_required": true, "enable_comments": false, "title_max": 255, "desc_max": 3000, "hashtags_max": 10, "hashtags_in_desc": true, "send_tags": false, "html_breaks": true, "title_unique_days": 30, "language": "", "country": "", "category": "auto", "category_mode": "try", "url_base": "https://www.dailymotion.com/video" },
+  "net": { "timeout_s": 60, "upload_timeout_s": 1800, "chunk_kb": 256, "backoff_ms": 2000, "status_poll_s": 5, "status_poll_max_s": 300, "retries": 3, "rate_wait_max_s": 60, "body_cap_kb": 512, "user_agent": "dmotion-shorts/0.1", "upload_name": "short.mp4", "allow_hosts": ["oauth2.dailymotion.com", "api.dailymotion.com", "*.dailymotion.com"] },
+  "breaker": { "fails": 3, "cool_h": 6 },
+  "account": { "profile_id": "", "profile_id_env": "DMOT_SHOR_PROFILE_ID" },
+  "approval": { "require_for_review": true },
+  "dmot": { "token_url": "https://oauth2.dailymotion.com/v2/token", "api_base": "https://api.dailymotion.com/v2", "scope": "video.manage", "client_id_env": "DMOT_SHOR_CLIENT_ID", "client_id_file": "dmot-shor-client-id", "client_secret_env": "DMOT_SHOR_CLIENT_SECRET", "client_secret_file": "dmot-shor-client-secret" },
+  "retry_pre_send": 2
+}

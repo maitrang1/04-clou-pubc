@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "note": "Dailymotion v2 error code -> what the app does. Data, not code: an API change edits this file. Source: developers.dailymotion.com reference/api-errors + operation pages (read 2026-11-15). Classes: expired (new token once) · blocked (stop the run, a person fixes) · breaker (stop at once, a person looks) · rate (wait Retry-After once, else stop the day) · failed (this pair only) · retry (transient).",
+  "codes": [
+    { "code": "INVALID_AUTHORIZATION", "class": "expired", "why": "token not accepted" },
+    { "code": "AUTHORIZATION_EXPIRED", "class": "expired", "why": "token expired" },
+    { "code": "MISSING_PERMISSIONS", "class": "breaker", "why": "the API key lacks a permission or the profile" },
+    { "code": "UPSTREAM_ACCESS_DENIED", "class": "breaker", "why": "access denied upstream" },
+    { "code": "RESOURCE_NOT_FOUND", "class": "failed", "why": "not found" },
+    { "code": "MISSING_REQUIRED_VALUE", "class": "failed", "why": "a required value is missing" },
+    { "code": "MISSING_PARENT_ID", "class": "failed", "why": "profile id missing in the path" },
+    { "code": "RATE_LIMIT_EXCEEDED", "class": "rate", "why": "request rate limit" },
+    { "code": "invalid_client", "class": "blocked", "why": "API key or secret refused: create a new private key in Studio" },
+    { "code": "invalid_grant", "class": "blocked", "why": "grant refused" },
+    { "code": "invalid_scope", "class": "blocked", "why": "scope not allowed for this API key" },
+    { "code": "unauthorized_client", "class": "blocked", "why": "API key not allowed to use this grant" }
+  ],
+  "http": [
+    { "status": 401, "class": "expired" },
+    { "status": 403, "class": "breaker" },
+    { "status": 429, "class": "rate" },
+    { "status": 500, "class": "retry" },
+    { "status": 502, "class": "retry" },
+    { "status": 503, "class": "retry" },
+    { "status": 504, "class": "retry" }
+  ],
+  "access_errors": [
+    { "code": "DM002", "class": "breaker", "why": "content deleted by its owner" },
+    { "code": "DM005", "class": "breaker", "why": "content deleted after a report: a person must look" },
+    { "code": "DM011", "class": "failed", "why": "encoding error" }
+  ]
+}

@@ -1,0 +1,67 @@
+// status: counts by state, rolling-24h sends vs cap, breaker, token expiry, held list. Reads the ledger only; no call to Pinterest.
+const std = @import("std");
+const Ctx = @import("co-ctx.zig").Ctx;
+const exit = @import("co-exit.zig");
+const out = @import("co-out.zig");
+const open = @import("co-open.zig");
+const send = @import("rw-send.zig");
+const caps = @import("rw-caps.zig");
+const pair = @import("rw-pair.zig");
+const kill = @import("co-kill.zig");
+
+const CF = .{ .day_ms = 24 * 3600 * 1000 };
+
+fn localTime(buf: []u8, ms: i64, tz: i32) []const u8 {
+    const secs: i64 = @divTrunc(ms, 1000) + @as(i64, tz) * 3600;
+    if (secs < 0) return "?";
+    const es = std.time.epoch.EpochSeconds{ .secs = @intCast(secs) };
+    const day = es.getEpochDay().calculateYearDay();
+    const md = day.calculateMonthDay();
+    const ds = es.getDaySeconds();
+    return std.fmt.bufPrint(buf, "{d}-{d:0>2}-{d:0>2} {d:0>2}:{d:0>2}", .{ day.year, md.month.numeric(), md.day_index + 1, ds.getHoursIntoDay(), ds.getMinutesIntoHour() }) catch "?";
+}
+
+pub fn run(cx: *Ctx, av: []const []const u8) u8 {
+    _ = av;
+    var arena = std.heap.ArenaAllocator.init(cx.gpa);
+    defer arena.deinit();
+    const a = arena.allocator();
+    const killed = kill.killOn(cx);
+    var db = open.existing(cx) orelse {
+        out.say(cx, "no ledger yet: nothing was ever sent here. kill file: {s}", .{if (killed) "ON" else "off"});
+        out.json(cx, a, .{ .sent = 0, .kill = killed });
+        return exit.OK;
+    };
+    defer db.close();
+    const now = cx.nowMs();
+    const sending = send.count(&db, .sending) catch 0;
+    const posted = send.count(&db, .posted) catch 0;
+    const failed = send.count(&db, .failed) catch 0;
+    const unsure = send.count(&db, .unsure) catch 0;
+    const last24 = send.countSince(&db, now - CF.day_ms) catch -1;
+    const blk = (caps.blocked(cx, &db, a) catch null);
+    const exp = (send.metaInt(&db, "tok_exp") catch 0);
+    const chk = (send.metaInt(&db, "tok_chk") catch 0);
+    var held: std.ArrayList([]const u8) = .empty;
+    if (pair.scan(cx, a, &db)) |es| {
+        for (es) |e| if (e.kind == .held) held.append(a, e.name) catch {};
+    } else |_| {}
+    out.say(cx, "posted {d} · failed {d} · unsure {d} · sending {d}", .{ posted, failed, unsure, sending });
+    out.say(cx, "last 24 h: {d} of {d} (cap)", .{ last24, cx.cfg.limits.daily_cap });
+    out.say(cx, "kill file: {s} · run: {s}", .{ if (killed) "ON" else "off", if (blk) |b| b.why else "free to send" });
+    if (chk == 0) out.say(cx, "sign-in: not checked yet (run: token)", .{}) else if (exp == 0) out.say(cx, "sign-in: expiry unknown (env token, or no refresh date)", .{}) else {
+        const days = @divTrunc(std.math.mul(i64, exp, 1000) catch std.math.maxInt(i64) - now, CF.day_ms);
+        out.say(cx, "sign-in: refresh token has {d} days left{s}", .{ days, if (days < cx.cfg.token_warn_days) "  <-- run a live publish or token --refresh --live" else "" });
+    }
+    const used = caps.reqUsed(cx, &db) catch -1;
+    out.say(cx, "API calls today: {d} of {d} (budget)", .{ used, cx.cfg.limits.req_budget_day });
+    const lastf = send.lastFinish(&db) catch 0;
+    if (lastf > 0) {
+        var tb: [32]u8 = undefined;
+        out.say(cx, "last send: {s} (UTC offset {d} h)", .{ localTime(&tb, lastf, cx.cfg.tz_offset_hours), cx.cfg.tz_offset_hours });
+    }
+    if (unsure > 0) out.say(cx, "{d} unsure: run resolve --video <name>", .{unsure});
+    for (held.items) |h| out.say(cx, "held: {s} (approve --video {s} --live)", .{ h, h });
+    out.json(cx, a, .{ .posted = posted, .failed = failed, .unsure = unsure, .sending = sending, .last_24h = last24, .daily_cap = cx.cfg.limits.daily_cap, .kill = killed, .blocked = if (blk) |b| b.why else "", .token_expires = exp, .held = held.items });
+    return if (unsure > 0) exit.UNSURE else exit.OK;
+}

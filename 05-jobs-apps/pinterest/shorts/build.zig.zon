@@ -1,0 +1,7 @@
+.{
+    .name = .pinterest_shorts,
+    .fingerprint = 0x0,
+    .version = "0.1.0",
+    .minimum_zig_version = "0.16.0",
+    .paths = .{""},
+}

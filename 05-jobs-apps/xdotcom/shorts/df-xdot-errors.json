@@ -1,0 +1,14 @@
+[
+  { "on": "type", "has": "credits-depleted", "class": "credits", "why": "X says the API credits are depleted (HTTP 402): buy credits in the Developer Console, then reset the breaker" },
+  { "on": "type", "has": "usage-capped", "class": "credits", "why": "the spending limit or usage cap is reached: raise it in the Developer Console" },
+  { "on": "type", "has": "rate-limit-exceeded", "class": "stop_rate", "why": "X rate limit reached: wait for its window" },
+  { "on": "type", "has": "client-forbidden", "class": "blocked", "why": "the app is not enrolled or lacks access: check the Developer Console" },
+  { "on": "type", "has": "not-authorized-for-resource", "class": "blocked", "why": "the token may not do this: check the scopes and run auth again" },
+  { "on": "type", "has": "not-authorized-for-field", "class": "blocked", "why": "the token may not read this field" },
+  { "on": "detail", "has": "duplicate content", "class": "duplicate", "why": "X says the text is a duplicate; the post may already be live, so it is unsure, never retried" },
+  { "on": "detail", "has": "longer than", "class": "fail", "why": "X refuses the video length for this account (Premium status decides the limit)" },
+  { "on": "detail", "has": "not permitted to perform this action", "class": "blocked", "why": "X refused the action (spam filter or a platform limit): a person must look" },
+  { "on": "detail", "has": "credits", "class": "credits", "why": "X mentions credits: check the Developer Console balance" },
+  { "on": "detail", "has": "payment", "class": "credits", "why": "X wants a payment: check the Developer Console" },
+  { "on": "code", "has": "88", "class": "stop_rate", "why": "X rate limit reached (code 88): wait for its window" }
+]

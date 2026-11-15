@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "note": "Graph error code -> what the app does. Data, not code: a Meta change edits this file. Sources: video_reels edge page, rate-limiting page (2026-11-15).",
+  "codes": [
+    { "code": 190, "class": "blocked", "why": "access token invalid or expired" },
+    { "code": 200, "class": "blocked", "why": "permission error" },
+    { "code": 10, "class": "blocked", "why": "permission denied" },
+    { "code": 100, "class": "failed", "why": "invalid parameter" },
+    { "code": 6000, "class": "failed", "why": "upload problem, try another file" },
+    { "code": 368, "class": "breaker", "why": "action blocked as abusive or disallowed" },
+    { "code": 613, "class": "stop_day", "why": "rate limit" },
+    { "code": 4, "class": "stop_day", "why": "app request limit" },
+    { "code": 17, "class": "stop_day", "why": "user request limit" },
+    { "code": 32, "class": "stop_day", "why": "Page request limit" },
+    { "code": 80001, "class": "stop_day", "why": "too many calls to this Page" },
+    { "code": 104, "class": "blocked", "why": "incorrect signature" },
+    { "code": 1363040, "class": "failed", "why": "aspect ratio outside 16:9..9:16" },
+    { "code": 1363127, "class": "failed", "why": "resolution not accepted" },
+    { "code": 1363128, "class": "failed", "why": "duration not accepted" },
+    { "code": 1363129, "class": "failed", "why": "frame rate not accepted" },
+    { "code": 1, "class": "retry", "why": "unknown error, Meta suggests retry" },
+    { "code": 2, "class": "retry", "why": "temporary service problem" }
+  ],
+  "upload_errors": [
+    { "name": "OffsetInvalidError", "class": "resume", "why": "offset header does not match bytes received: ask status, resend from bytes_transfered" },
+    { "name": "PartialRequestError", "class": "resume", "why": "bytes received differ from file_size: ask status, resend the rest" },
+    { "name": "ProcessingFailedError", "class": "retry_once", "why": "processing failed: one new try, else a new session" }
+  ],
+  "http": [
+    { "status": 401, "class": "blocked" },
+    { "status": 403, "class": "blocked" },
+    { "status": 429, "class": "stop_day" },
+    { "status": 500, "class": "retry" },
+    { "status": 502, "class": "retry" },
+    { "status": 503, "class": "retry" },
+    { "status": 504, "class": "retry" }
+  ]
+}

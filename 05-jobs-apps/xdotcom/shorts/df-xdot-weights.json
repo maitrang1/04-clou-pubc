@@ -1,0 +1,12 @@
+{
+  "source": "twitter-text config/v3.json (X's open-source library, not an official docs page; re-check at M4)",
+  "scale": 100,
+  "default": 200,
+  "url_len": 23,
+  "ranges": [
+    [0, 4351, 100],
+    [8192, 8205, 100],
+    [8208, 8223, 100],
+    [8242, 8247, 100]
+  ]
+}

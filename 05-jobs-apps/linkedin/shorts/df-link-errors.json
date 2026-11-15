@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "note": "LinkedIn error -> what the app does. Data, not code: a LinkedIn change edits this file. Keys on HTTP status first, then the string code. Sources: posts-api, videos-api, error-responses, versioning pages (2026-11-15). Unknown codes are never guessed: a 4xx without a rule is `failed`, a 5xx is `retry`.",
+  "codes": [
+    { "code": "VERSION_MISSING", "class": "blocked", "why": "Linkedin-Version header missing: fix the app" },
+    { "code": "NONEXISTENT_VERSION", "class": "blocked", "why": "api.version is no longer active: read the change log, then bump api.version" },
+    { "code": "INVALID_URN_ID", "class": "blocked", "why": "member or video id rejected: check the person id file" },
+    { "code": "INVALID_URN_TYPE", "class": "blocked", "why": "URN type rejected: check the person id file" },
+    { "code": "EMPTY_ACCESS_TOKEN", "class": "blocked", "why": "no access token sent or token empty" },
+    { "code": "ACCESS_DENIED", "class": "blocked", "why": "permission missing: products/scopes of the app" },
+    { "code": "NO_PERMISSION_ON_ENTITY", "class": "blocked", "why": "no permission on this member or video" },
+    { "code": "NO_PERMISSION_ON_FIELD", "class": "blocked", "why": "no permission on a field" },
+    { "code": "NO_PERMISSION_TO_UPDATE", "class": "blocked", "why": "no permission to write" },
+    { "code": "TOO_MANY_REQUESTS", "class": "stop_day", "why": "rate limit: windows reset 00:00 UTC" },
+    { "code": "EXPIRED_UPLOAD_URL", "class": "new_init", "why": "upload URL expired: start a new upload" },
+    { "code": "FIELD_LENGTH_TOO_LONG", "class": "failed", "why": "text too long: lower post.text_max" },
+    { "code": "INVALID_VALUE_FOR_FIELD", "class": "failed", "why": "a field value was refused" },
+    { "code": "MISSING_FIELD", "class": "failed", "why": "a required field is missing: fix the app" },
+    { "code": "INVALID_VALUE_BLANK_FIELD", "class": "failed", "why": "a field was blank" },
+    { "code": "MEDIA_ASSET_PROCESSING_FAILED", "class": "failed", "why": "video processing failed" },
+    { "code": "MEDIA_ASSET_WAITING_UPLOAD", "class": "retry", "why": "video not uploaded yet" },
+    { "code": "CONFLICT", "class": "retry", "why": "write conflict: retry" },
+    { "code": "TIMEOUT", "class": "retry", "why": "server timeout" },
+    { "code": "SERVICE_UNAVAILABLE", "class": "retry", "why": "service unavailable" },
+    { "code": "UNDER_MAINTENANCE", "class": "retry", "why": "under maintenance" },
+    { "code": "INTERNAL_SERVER_ERROR", "class": "retry", "why": "server error" },
+    { "code": "INTERNAL_ERROR", "class": "retry", "why": "server error" }
+  ],
+  "http": [
+    { "status": 401, "class": "blocked", "why": "token missing, expired or revoked: re-login" },
+    { "status": 403, "class": "blocked", "why": "permission denied" },
+    { "status": 426, "class": "blocked", "why": "api version not active" },
+    { "status": 429, "class": "stop_day", "why": "rate limit" },
+    { "status": 408, "class": "retry", "why": "timeout" },
+    { "status": 409, "class": "retry", "why": "conflict" }
+  ]
+}

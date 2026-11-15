@@ -1,0 +1,17 @@
+{
+  "data_dir": "~/.instagram-shorts",
+  "db_file": "ledger.db",
+  "secrets_dir": "~/.04-clou-secr",
+  "tz_offset_hours": 7,
+  "source": { "dir": "", "max_age_days": 14 },
+  "limits": { "daily_cap": 3, "meta_cap": 25, "container_cap": 40, "gap_min_s": 600, "gap_max_s": 1800, "disk_min_mb": 500, "run_budget_s": 1800, "usage_stop_pct": 80, "quota_block_h": 24 },
+  "video": { "min_s": 3, "max_s": 90, "min_w": 540, "min_h": 960, "rec_w": 1080, "rec_h": 1920, "max_w": 1920, "aspect_w": 9, "aspect_h": 16, "aspect_tol_pct": 2, "fps_min": 23, "fps_max": 60, "max_mb": 300, "vcodec": "avc1", "acodec": "mp4a", "audio_channels_max": 2, "audio_rate_max": 48000, "probe_tool": "" },
+  "post": { "public": false, "ai_notice_required": true, "caption_max": 2200, "tags_max": 10, "share_to_feed": true, "thumb_offset_ms": 0 },
+  "net": { "timeout_s": 60, "upload_timeout_s": 1800, "chunk_kb": 256, "backoff_ms": 2000, "status_poll_s": 60, "status_poll_max_s": 300, "resume_max": 2, "notready_wait_s": 30, "body_cap_kb": 512, "user_agent": "instagram-shorts/0.1", "allow_hosts": ["graph.facebook.com", "rupload.facebook.com"] },
+  "breaker": { "fails": 3, "cool_h": 6 },
+  "account": { "ig_user_id_env": "INST_SHOR_USER_ID", "ig_user_id_file": "inst-shor-user-id" },
+  "approval": { "require_for_review": true },
+  "graph": { "base": "https://graph.facebook.com", "version": "v27.0", "login": "facebook", "token_env": "INST_SHOR_TOKEN", "token_file": "inst-shor-token" },
+  "retry_pre_send": 2,
+  "retry_publish": 2
+}

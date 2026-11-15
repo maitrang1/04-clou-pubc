@@ -1,0 +1,14 @@
+[
+  { "code": 429, "has": "", "class": "flood", "why": "Telegram asked us to slow down (flood control)" },
+  { "code": 401, "has": "", "class": "dead_token", "why": "Telegram refused the bot token (wrong, revoked or reset in BotFather)" },
+  { "code": 403, "has": "", "class": "no_right", "why": "the bot is not allowed to post there (not an admin, removed, or no post right)" },
+  { "code": 409, "has": "", "class": "conflict", "why": "another reader or a webhook holds the update feed" },
+  { "code": 413, "has": "", "class": "too_big", "why": "Telegram says the file is too big" },
+  { "code": 400, "has": "chat not found", "class": "no_chat", "why": "Telegram does not know that chat (wrong id, or the bot is not in it)" },
+  { "code": 400, "has": "upgraded", "class": "migrated", "why": "the chat was upgraded and has a new id" },
+  { "code": 400, "has": "caption", "class": "caption", "why": "Telegram refused the caption (too long or not allowed)" },
+  { "code": 400, "has": "too big", "class": "too_big", "why": "Telegram says the file is too big" },
+  { "code": 400, "has": "too large", "class": "too_big", "why": "Telegram says the file is too big" },
+  { "code": 400, "has": "chat", "class": "no_chat", "why": "Telegram refused the chat" },
+  { "code": 0, "has": "", "class": "fail", "why": "Telegram refused the request" }
+]

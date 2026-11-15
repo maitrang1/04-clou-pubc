@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "note": "Dailymotion upload limits per account tier. Data, not code. Sources: help center 'Upload policies & technical specifications' + developers.dailymotion.com/reference/rate-limiting (read 2026-11-15). minutes 0 = unlimited. Exceeding a limit can suspend uploads for 24 h.",
+  "tiers": [
+    { "name": "standard", "videos_24h": 15, "minutes_24h": 600, "max_mb": 4096, "max_s": 7200 },
+    { "name": "premium", "videos_24h": 96, "minutes_24h": 0, "max_mb": 65536, "max_s": 0 },
+    { "name": "edge", "videos_24h": 96, "minutes_24h": 0, "max_mb": 65536, "max_s": 0 }
+  ]
+}

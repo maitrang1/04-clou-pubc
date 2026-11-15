@@ -30,7 +30,7 @@ Every command that writes something (`publish`, `approve`, `hold`, `resolve`, `l
 |---|---|
 | Videos to send | the folder in `source.dir` (read only, never changed) |
 | Data (ledger, log, backups, lock, kill file) | `data_dir`, or the variable `YOUT_HOME`, or `~/.youtube-shorts` |
-| Secrets (client id, client secret, sign-in token) | `secrets_dir`, or `~/.04-clou-secr`. Files are made with mode 600 |
+| Secrets (client id, client secret, sign-in token) | `secrets_dir`, or `~/.04-clou-secr`. Files are made with mode 600, folders with mode 700 |
 | Ledger | `ledger.db` in the data folder (one row per video) |
 | Log | `log/run.log` in the data folder. Tokens are never written to it |
 
@@ -59,7 +59,7 @@ A relative path is read from the folder that holds `00-config.json`.
 | `limits.daily_cap_max` | Highest cap you may set (YouTube allows 100 uploads a day per project) | `100` | 1 to 100000 |
 | `limits.gap_min_s` / `gap_max_s` | A random wait between two sends, in seconds | `600` / `1800` | min up to max |
 | `limits.disk_min_mb` | Stop when the data folder has less free space | `500` | 0 or more |
-| `limits.run_budget_s` | A run that lasts longer than this stops itself | `1500` | 1 or more |
+| `limits.run_budget_s` | A run that lasts longer than this stops itself (an unfinished upload resumes next run). Must be longer than `net.upload_timeout_s` | `2400` | more than `upload_timeout_s` |
 | `video.min_s` / `max_s` | Allowed length in seconds. A Short is up to 180 | `3` / `60` | 1 to 180 |
 | `video.min_w` / `min_h` | Smallest picture size in pixels | `540` / `960` | 1 or more |
 | `video.max_mb` | Largest file | `512` | 1 or more |

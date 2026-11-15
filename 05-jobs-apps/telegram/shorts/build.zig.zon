@@ -1,0 +1,7 @@
+.{
+    .name = .telegram_shorts,
+    .fingerprint = 0xf3ebb9bf59c1248e,
+    .version = "0.1.0",
+    .minimum_zig_version = "0.16.0",
+    .paths = .{""},
+}

@@ -1,0 +1,19 @@
+{
+  "data_dir": "~/.linkedin-shorts",
+  "db_file": "ledger.db",
+  "secrets_dir": "~/.04-clou-secr",
+  "tz_offset_hours": 7,
+  "device": { "publisher": false },
+  "terms": { "ack_auto_post": false },
+  "source": { "dir": "", "max_age_days": 14 },
+  "limits": { "daily_cap": 2, "gap_min_s": 600, "gap_max_s": 1800, "disk_min_mb": 500, "run_budget_s": 1800, "quota_block_h": 24 },
+  "video": { "min_s": 3, "max_s": 90, "min_kb": 75, "max_mb": 500, "fps_warn_at": 30, "warn_min_w": 360, "warn_min_h": 640, "warn_max_w": 1080, "warn_max_h": 1920, "vcodec": "avc1", "probe_tool": "" },
+  "post": { "mode": "stage", "visibility": "PUBLIC", "ai_notice_required": true, "text_max": 3000, "text_margin": 100, "title_max": 100, "hashtags_max": 5, "url_in_text": false, "url_template": "https://www.linkedin.com/feed/update/{urn}", "reshare_disabled": false },
+  "net": { "timeout_s": 60, "upload_timeout_s": 600, "part_retries": 3, "backoff_ms": 2000, "status_poll_s": 15, "status_poll_max_s": 600, "body_cap_kb": 512, "user_agent": "linkedin-shorts/0.1", "allow_hosts": ["api.linkedin.com", "www.linkedin.com"] },
+  "breaker": { "fails": 3, "cool_h": 6 },
+  "safety": { "dup_probe": false, "new_db_hours": 24 },
+  "account": { "token_env": "LINK_SHOR_TOKEN", "token_file": "link-shor-token", "token_meta_file": "link-shor-token-meta", "person_id_env": "LINK_SHOR_PERSON_ID", "person_id_file": "link-shor-person-id", "client_id_env": "LINK_SHOR_CLIENT_ID", "client_id_file": "link-shor-client-id", "client_secret_env": "LINK_SHOR_CLIENT_SECRET", "client_secret_file": "link-shor-client-secret", "refresh_token_env": "LINK_SHOR_REFRESH_TOKEN", "refresh_token_file": "link-shor-refresh-token" },
+  "api": { "base": "https://api.linkedin.com", "oauth_base": "https://www.linkedin.com", "version": "202610", "version_warn_months": 9 },
+  "retry_pre_send": 2,
+  "token_warn_days": 10
+}

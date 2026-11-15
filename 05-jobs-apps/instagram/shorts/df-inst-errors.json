@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "note": "Instagram/Graph error (code, subcode) -> what the app does. Data, not code: a Meta change edits this file. Sources: error-codes page + rate-limiting page, read 2026-11-15. maybe=true: on media_publish this answer does NOT prove the post is absent (=> unsure). Unknown (code, subcode) => failed, or unsure on media_publish. Add rows only from a page or the owner's real test.",
+  "codes": [
+    { "code": 9007, "sub": 2207027, "class": "notready", "why": "media not ready: wait for FINISHED, then publish" },
+    { "code": 352, "sub": 2207026, "class": "failed", "why": "unsupported video format: re-encode is the producer's job" },
+    { "code": -2, "sub": 2207020, "class": "expired", "why": "media expired: a person re-queues with a new container" },
+    { "code": 24, "sub": 2207008, "class": "wait", "why": "creation id missing or expired: retry once after 30 s" },
+    { "code": 24, "sub": 2207006, "class": "failed", "why": "media not found (permission or expired token)" },
+    { "code": -2, "sub": 2207003, "class": "retry", "why": "media download timed out" },
+    { "code": -1, "sub": 2207001, "class": "retry", "maybe": true, "why": "Instagram server error" },
+    { "code": -1, "sub": 2207032, "class": "retry", "maybe": true, "why": "create media failed, re-create" },
+    { "code": -1, "sub": 2207053, "class": "failed", "maybe": true, "why": "unknown upload error (video): new container" },
+    { "code": 9004, "sub": 2207052, "class": "failed", "why": "media URI could not be fetched (not expected: no video_url)" },
+    { "code": 1, "sub": 2207057, "class": "failed", "why": "thumbnail offset out of range: fix post.thumb_offset_ms" },
+    { "code": 4, "sub": 2207051, "class": "breaker", "why": "spam restriction on publishing: a person must look" },
+    { "code": 25, "sub": 2207050, "class": "breaker", "why": "Instagram account restricted: a person must look" },
+    { "code": 9, "sub": 2207042, "class": "stop_day", "why": "daily publishing limit reached" },
+    { "code": 36004, "sub": 2207010, "class": "failed", "why": "caption too long (2200 chars, 30 hashtags, 20 @)" },
+    { "code": 100, "sub": 2207040, "class": "failed", "why": "too many @ tags (max 20)" },
+    { "code": 190, "class": "blocked", "why": "access token invalid or expired (general Graph; not in Instagram's table)" },
+    { "code": 200, "class": "blocked", "why": "permission error" },
+    { "code": 10, "class": "blocked", "why": "permission denied" },
+    { "code": 100, "class": "failed", "why": "invalid parameter" },
+    { "code": 613, "class": "stop_day", "why": "custom rate limit (subcode 1996 = odd request behaviour)" },
+    { "code": 4, "class": "stop_day", "why": "app request limit" },
+    { "code": 17, "class": "stop_day", "why": "user request limit" },
+    { "code": 32, "class": "stop_day", "why": "Page request limit" },
+    { "code": 80001, "class": "stop_day", "why": "too many calls to this Page" },
+    { "code": 80002, "class": "stop_day", "why": "too many calls to this Instagram account" },
+    { "code": 1, "class": "retry", "maybe": true, "why": "unknown error" },
+    { "code": 2, "class": "retry", "maybe": true, "why": "temporary service problem" }
+  ],
+  "upload_errors": [
+    { "name": "ProcessingFailedError", "class": "retry_once", "why": "processing failed: one new try from offset 0, else a new container" }
+  ],
+  "http": [
+    { "status": 401, "class": "blocked" },
+    { "status": 403, "class": "blocked" },
+    { "status": 429, "class": "stop_day" },
+    { "status": 500, "class": "retry", "maybe": true },
+    { "status": 502, "class": "retry", "maybe": true },
+    { "status": 503, "class": "retry", "maybe": true },
+    { "status": 504, "class": "retry", "maybe": true }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "data_dir": "",
+  "secrets_dir": "",
+  "tz_offset_hours": 7,
+  "db_file": "ledger.db",
+  "kill_file": "KILL",
+  "source": { "dir": "", "max_age_days": 14 },
+  "limits": { "daily_cap": 3, "daily_cap_max": 10, "gap_min_s": 600, "gap_max_s": 1800, "disk_min_mb": 500, "run_budget_s": 2400 },
+  "video": { "min_s": 3, "max_s": 60, "min_w": 540, "min_h": 960, "max_mb": 512, "want_faststart": true },
+  "post": {
+    "public": false,
+    "visibility": "nobody",
+    "embed": "private",
+    "comments": "nobody",
+    "ai_notice_required": true,
+    "ai_tag": "ai-generated",
+    "ai_label": { "mode": "off", "via": "create", "body": "" },
+    "use_tags": true,
+    "title_max": 128,
+    "desc_max_bytes": 4000,
+    "hashtags_max": 15,
+    "tags_max": 10
+  },
+  "net": { "timeout_s": 60, "upload_timeout_s": 1800, "read_kb": 256, "chunk_mb": 0, "backoff_ms": 2000, "retries": 5, "status_poll_s": 10, "status_poll_max_s": 180, "body_cap_kb": 1024, "rate_floor": 2, "user_agent": "vimeo-shorts/0.1", "allow_hosts": ["api.vimeo.com", "*.vimeo.com"] },
+  "breaker": { "fails": 3, "cool_h": 6 },
+  "approval": { "require_for_review": true },
+  "vimeo": {
+    "api_base": "https://api.vimeo.com",
+    "api_version": "3.4",
+    "upload_hosts": ["*.tus.vimeo.com"],
+    "scope_need": ["public", "private", "edit", "upload"],
+    "token_env": "VIME_TOKEN",
+    "token_file": "vime-token.txt"
+  },
+  "retry_pre_send": 2,
+  "token_warn_days": 14
+}

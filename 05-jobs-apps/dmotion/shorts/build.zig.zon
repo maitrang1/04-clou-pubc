@@ -1,0 +1,7 @@
+.{
+    .name = .dmotion_shorts,
+    .fingerprint = 0x7a3c91e5d2b84f60,
+    .version = "0.1.0",
+    .minimum_zig_version = "0.16.0",
+    .paths = .{""},
+}

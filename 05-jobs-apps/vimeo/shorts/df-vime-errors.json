@@ -1,0 +1,14 @@
+[
+  { "reason": "4101", "class": "stop_quota", "why": "the account reached its yearly or lifetime upload total" },
+  { "reason": "4102", "class": "stop_quota", "why": "the account used its weekly upload space" },
+  { "reason": "4104", "class": "stop_quota", "why": "the account reached its daily upload quota" },
+  { "reason": "8002", "class": "unauth", "why": "Vimeo does not recognize the access token" },
+  { "reason": "8003", "class": "unauth", "why": "the request had no valid credentials" },
+  { "reason": "9000", "class": "rate", "why": "Vimeo's per-minute request limit was exceeded" },
+  { "reason": "2002", "class": "fail", "why": "the create call had no upload.size" },
+  { "reason": "2204", "class": "fail", "why": "Vimeo refused a parameter" },
+  { "reason": "2205", "class": "fail", "why": "Vimeo could not read the request body" },
+  { "reason": "2230", "class": "fail", "why": "Vimeo refused the upload approach" },
+  { "reason": "2510", "class": "fail", "why": "Vimeo refused a url" },
+  { "reason": "3116", "class": "fail", "why": "the old upload type field was used" }
+]

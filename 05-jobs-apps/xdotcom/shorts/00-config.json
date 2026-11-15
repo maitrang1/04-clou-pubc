@@ -1,0 +1,39 @@
+{
+  "data_dir": "",
+  "secrets_dir": "",
+  "tz_offset_hours": 7,
+  "db_file": "ledger.db",
+  "kill_file": "KILL",
+  "device": { "publisher": false },
+  "source": { "dir": "", "max_age_days": 14 },
+  "limits": { "daily_cap": 3, "daily_cap_max": 50, "rate_margin": 5, "gap_min_s": 600, "gap_max_s": 1800, "disk_min_mb": 500, "run_budget_s": 2400, "budget_usd": 5.0 },
+  "cost": { "post_usd": 0.015, "post_url_usd": 0.2, "media_usd": 0.0 },
+  "video": { "min_ms": 500, "max_s": 90, "max_mb": 512, "fps_max": 60, "dims_policy": "warn", "box_long": 1280, "box_short": 1024, "side_min": 32, "ratio_max": 3 },
+  "post": { "public": false, "ai_notice_required": true, "text_max": 280, "text_margin": 6, "tags_max": 3, "url_in_text": false, "url_guard": true },
+  "net": { "timeout_s": 60, "upload_timeout_s": 300, "chunk_mb": 4, "backoff_ms": 2000, "poll_min_s": 1, "poll_max_s": 10, "processing_max_s": 600, "retry_chunk": 3, "media_ttl_h": 20, "body_cap_kb": 1024, "user_agent": "xdot-shorts/0.1", "allow_hosts": ["api.x.com"] },
+  "breaker": { "fails": 3, "cool_h": 6 },
+  "safety": { "dup_probe": true, "dup_probe_max": 10, "confirm_read": false },
+  "resolve": { "min_wait_s": 120 },
+  "account": {
+    "client_id_env": "XDOT_CLIENT_ID",
+    "client_secret_env": "XDOT_CLIENT_SECRET",
+    "client_id_file": "xdot-client-id.txt",
+    "client_secret_file": "xdot-client-secret.txt",
+    "login_file": "xdot-login.dat",
+    "user_id_file": "xdot-user-id.txt"
+  },
+  "auth": {
+    "client_type": "confidential",
+    "authorize_url": "https://x.com/i/oauth2/authorize",
+    "token_url": "https://api.x.com/2/oauth2/token",
+    "scopes": ["tweet.read", "tweet.write", "users.read", "media.write", "offline.access"],
+    "redirect_uri": "",
+    "port": 8765,
+    "login_wait_s": 300
+  },
+  "api": { "base": "https://api.x.com", "web_base": "https://x.com", "fields_param": "post.fields" },
+  "approval": { "require_for_review": true },
+  "retry_pre_send": 2,
+  "token_refresh_s": 600,
+  "token_warn_days": 30
+}

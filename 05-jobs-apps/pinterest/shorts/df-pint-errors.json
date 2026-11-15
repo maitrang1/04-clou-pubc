@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "note": "Pinterest error answer -> what the app does. Data, not code: an API change edits this file. Errors are {code, message} with an HTTP status (OpenAPI spec 5.28.0, read 2026-11-15); most codes are undocumented, so HTTP status decides and unknown codes are logged, never acted on.",
+  "codes": [
+    { "code": 29, "class": "blocked", "why": "reported for a Trial app on the production host: access tier too low (unconfirmed, single report)" },
+    { "code": 2, "class": "blocked", "why": "authentication failed (example code on 401)" }
+  ],
+  "upload_errors": [],
+  "http": [
+    { "status": 401, "class": "blocked" },
+    { "status": 403, "class": "breaker" },
+    { "status": 429, "class": "stop_day" },
+    { "status": 500, "class": "retry" },
+    { "status": 502, "class": "retry" },
+    { "status": 503, "class": "retry" },
+    { "status": 504, "class": "retry" }
+  ]
+}

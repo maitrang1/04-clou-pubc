@@ -1,0 +1,7 @@
+.{
+    .name = .instagram_shorts,
+    .fingerprint = 0x34dbde4045a80b82,
+    .version = "0.1.0",
+    .minimum_zig_version = "0.16.0",
+    .paths = .{""},
+}

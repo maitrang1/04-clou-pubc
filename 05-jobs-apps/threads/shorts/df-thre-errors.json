@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "note": "Threads error -> what the app does. Data, not code: a Meta change edits this file. Meta publishes NO error-code table (2026-11-16); rows marked 'report' come from developers' first-hand reports and must be confirmed in the owner's real test. 'on': false rows are ignored until switched on.",
+  "codes": [
+    { "code": 190, "class": "blocked", "why": "access token invalid or expired", "src": "report" },
+    { "code": 452, "class": "blocked", "why": "session key invalid: wrong Threads app id/secret pair or a re-exchanged token", "src": "report" },
+    { "code": 10, "class": "blocked", "why": "application does not have permission for this action", "src": "report" },
+    { "code": 200, "class": "blocked", "why": "permission error: threads_content_publish missing or lost", "src": "report" },
+    { "code": 100, "sub": 33, "class": "blocked", "why": "object does not exist: wrong Threads user id (use the id from /me)", "src": "report" },
+    { "code": 100, "class": "failed", "why": "invalid parameter", "src": "report" },
+    { "code": 24, "sub": 4279009, "class": "retry_publish", "why": "media not found right after create (propagation race): re-read the container, resend once", "src": "report", "on": false },
+    { "code": 1, "sub": 2207052, "class": "retry", "why": "media download failed: retry with a fresh file name", "src": "report" },
+    { "code": 1, "class": "retry", "why": "unknown error, a retry is suggested", "src": "report" },
+    { "code": 2, "class": "retry", "why": "temporary service problem", "src": "report" },
+    { "code": 4, "class": "stop_day", "why": "app request limit", "src": "generic Graph code" },
+    { "code": 17, "class": "stop_day", "why": "user request limit", "src": "generic Graph code" },
+    { "code": 32, "class": "stop_day", "why": "request limit", "src": "generic Graph code" },
+    { "code": 613, "class": "stop_day", "why": "rate limit", "src": "generic Graph code" },
+    { "code": 0, "sub": 4279013, "class": "breaker", "why": "account restricted: a person must look", "src": "report" }
+  ],
+  "names": [
+    { "name": "THREADS_API__LINK_LIMIT_EXCEEDED", "class": "failed", "why": "more than 5 links in the text", "src": "official" }
+  ],
+  "container_errors": [
+    { "name": "FAILED_DOWNLOADING_VIDEO", "class": "retry", "why": "Threads could not download the video_url: the host must serve the file directly over https" },
+    { "name": "FAILED_PROCESSING_VIDEO", "class": "failed", "why": "Threads could not process the video" },
+    { "name": "FAILED_PROCESSING_AUDIO", "class": "failed", "why": "Threads could not process the audio" },
+    { "name": "INVALID_ASPEC_RATIO", "class": "failed", "why": "aspect ratio outside 0.01:1..10:1" },
+    { "name": "INVALID_BIT_RATE", "class": "failed", "why": "bit rate above 100 Mbps" },
+    { "name": "INVALID_DURATION", "class": "failed", "why": "duration is 0 or above 300 s" },
+    { "name": "INVALID_FRAME_RATE", "class": "failed", "why": "frame rate outside 23-60" },
+    { "name": "INVALID_AUDIO_CHANNELS", "class": "failed", "why": "audio must be mono or stereo" },
+    { "name": "INVALID_AUDIO_CHANNEL_LAYOUT", "class": "failed", "why": "audio channel layout not accepted" },
+    { "name": "UNKNOWN", "class": "failed", "why": "Threads gave no reason" }
+  ],
+  "http": [
+    { "status": 401, "class": "blocked" },
+    { "status": 403, "class": "blocked" },
+    { "status": 429, "class": "stop_day" },
+    { "status": 500, "class": "retry" },
+    { "status": 502, "class": "retry" },
+    { "status": 503, "class": "retry" },
+    { "status": 504, "class": "retry" }
+  ]
+}
