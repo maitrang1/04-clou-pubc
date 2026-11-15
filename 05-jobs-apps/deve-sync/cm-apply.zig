@@ -1,6 +1,6 @@
 // =====================================================================
-// Des: Does sync, pull and push between this device (near) and the repo folder (far) - never deletes; a changed side goes to the other, a missing file comes back, a conflict is auto-merged (code, text) or both copies are kept
-// Flo: decide per entry (3-way with the agreed base) > refuse a big change > secret guard on everything going to the repo > far writes (old copy saved) > near writes (old copy saved) > update base
+// Des: Does sync, pull and push between this device (near) and the repo folder (far) - never deletes; a changed side goes to the other, a missing file comes back, a conflict is auto-merged (code, text) or the newest edit wins and the other copy goes to the trash folder
+// Flo: decide per entry (3-way with the agreed base) > conflict: merge or newest wins > refuse a big change > secret guard > losing copies to the trash folder > far writes (old copy saved) > near writes (old copy saved) > update base
 // Cre: 2026-11-15                          - | Mod: 2026-11-15
 // Who: zzOWN.com - Own Fast. Work Faster.  - | Ema: zzown.com@gmail.com
 // Inp: Ctx, Plan list from cm-plan, mode (sync, pull, push), go, big, no_merge flags
@@ -22,10 +22,11 @@ const cm = @import("cm-merge.zig");
 const CF = .{ .backup_mode = 0o600 };
 
 pub const ApplyErro = error{ SecretFound, UnsafePath, WriteFail, BadJson, BadPath, BadDevJson, BadRepoJson, TooBig, ReadFail, LinkInTheWay, TooManyChanges, OutOfMemory } || cb.BaseErro;
-pub const Counts = struct { near: u32 = 0, far: u32 = 0, merged: u32 = 0, paired: u32 = 0, still: u32 = 0, behind: u32 = 0, ahead: u32 = 0, installed: u32 = 0, failed: u32 = 0, same: u32 = 0 };
+pub const Counts = struct { near: u32 = 0, far: u32 = 0, merged: u32 = 0, newest: u32 = 0, behind: u32 = 0, ahead: u32 = 0, installed: u32 = 0, failed: u32 = 0, same: u32 = 0, raced: u32 = 0 };
 pub const Res = struct { counts: Counts, report: []const u8 };
 
-const Row = struct { p: usize, e: usize, td: tri.Todo, merged: ?[]const u8 = null, keep_both: bool = false, still: bool = false };
+// loser: the copy a conflict overwrites (kept in the trash folder) ----
+const Row = struct { p: usize, e: usize, td: tri.Todo, merged: ?[]const u8 = null, loser: ?[]const u8 = null, raced: bool = false };
 
 fn wr(ctx: *const pl.Ctx, path: []const u8, data: []const u8, mode: ?u32) ApplyErro!void {
     fio.writeAtomic(ctx.io, ctx.a, path, data, mode) catch |e| {
@@ -34,10 +35,44 @@ fn wr(ctx: *const pl.Ctx, path: []const u8, data: []const u8, mode: ?u32) ApplyE
     };
 }
 
-// name.ext -> name.conflict-<side>-<stamp>.ext ----
-pub fn pairName(a: std.mem.Allocator, rel: []const u8, side: []const u8, stamp: []const u8) ![]u8 {
-    const ext = std.fs.path.extension(rel);
-    return std.fmt.allocPrint(a, "{s}.conflict-{s}-{s}{s}", .{ rel[0 .. rel.len - ext.len], side, stamp, ext });
+// the device file is still what the plan saw (null = it did not exist): someone may have saved it while the sync ran ----
+fn nearSame(ctx: *const pl.Ctx, path: []const u8, expect: ?[]const u8) ApplyErro!bool {
+    const cur = try pl.rd(ctx, path);
+    return if (cur) |x| (expect != null and std.mem.eql(u8, x, expect.?)) else expect == null;
+}
+
+// the newest edit wins; a tie (within sync.tie_secs) or an unknown time goes to the repo, the shared side ----
+fn nearWins(cf: conf.SyncCf, e: pl.Entry) bool {
+    if (e.dev_mt <= 0 or e.repo_mt <= 0) return false;
+    return e.dev_mt - e.repo_mt > @as(i64, cf.tie_secs);
+}
+
+fn exists(io: std.Io, path: []const u8) bool {
+    _ = std.Io.Dir.cwd().statFile(io, path, .{ .follow_symlinks = false }) catch return false;
+    return true;
+}
+
+// the losing copy: <repo>/<trash_dir>/<same relative path>; a name already there keeps both (_yyMMdd_HHmmss, then -2, -3 ...) ----
+fn trashCopy(ctx: *const pl.Ctx, rel: []const u8, data: []const u8, stamp: []const u8) ApplyErro!void {
+    const a = ctx.a;
+    const want = try std.fs.path.join(a, &.{ ctx.repo, ctx.cf.sync.trash_dir, rel });
+    const ext = std.fs.path.extension(want);
+    const stem = want[0 .. want.len - ext.len];
+    var path = want;
+    var k: u32 = 0;
+    while (exists(ctx.io, path)) {
+        k += 1;
+        if (k > 999) return error.WriteFail;
+        path = if (k == 1) try std.fmt.allocPrint(a, "{s}_{s}{s}", .{ stem, stamp, ext }) else try std.fmt.allocPrint(a, "{s}_{s}-{d}{s}", .{ stem, stamp, k, ext });
+    }
+    try wr(ctx, path, data, CF.backup_mode);
+}
+
+// where the overwritten copy lives, relative to the repo: the repo file itself, or <json file>.<key>.txt for a settings key ----
+fn loserRel(ctx: *const pl.Ctx, it: conf.Item, rel: []const u8) ![]const u8 {
+    const full = if (it.kind == .merge) try std.fmt.allocPrint(ctx.a, "{s}.{s}.txt", .{ try ctx.repoPath(it), rel }) else try repoFile(ctx, it, rel);
+    if (std.mem.startsWith(u8, full, ctx.repo) and full.len > ctx.repo.len + 1) return full[ctx.repo.len + 1 ..];
+    return std.fs.path.basename(full);
 }
 
 // base key: <item id>/<file>, the same on every device ----
@@ -61,15 +96,13 @@ fn repoFile(ctx: *const pl.Ctx, it: conf.Item, rel: []const u8) ![]const u8 {
     return ctx.repoPath(it);
 }
 
-fn sayRow(out: *std.ArrayList(u8), a: std.mem.Allocator, p: pl.Plan, e: pl.Entry, r: Row) void {
+fn sayRow(out: *std.ArrayList(u8), a: std.mem.Allocator, p: pl.Plan, e: pl.Entry, r: Row, trash: []const u8) void {
     const id = p.item.id;
-    if (r.still) return out.print(a, "conflict (still unresolved, both copies kept) {s}/{s}\n", .{ id, e.rel }) catch {};
-    if (r.keep_both) return out.print(a, "conflict (both changed, nobody wins, nothing written) {s}/{s}\n", .{ id, e.rel }) catch {};
     switch (r.td) {
         .none => {},
-        .write_near => out.print(a, "write here {s}/{s}{s}\n", .{ id, e.rel, if (e.dev == null) " (restore: missing here)" else "" }) catch {},
-        .write_far => out.print(a, "write repo {s}/{s}{s}\n", .{ id, e.rel, if (e.repo == null) " (restore: missing in the repo)" else "" }) catch {},
-        .merge_or_pair => if (r.merged != null) out.print(a, "merge (both changed, auto-merged into one version) {s}/{s}\n", .{ id, e.rel }) catch {} else out.print(a, "conflict (both changed, nobody wins, both copies kept) {s}/{s}\n", .{ id, e.rel }) catch {},
+        .write_near => if (r.loser != null) out.print(a, "conflict: the repo is newer and wins, this device's copy goes to {s}/ {s}/{s}\n", .{ trash, id, e.rel }) catch {} else out.print(a, "write here {s}/{s}{s}\n", .{ id, e.rel, if (e.dev == null) " (restore: missing here)" else "" }) catch {},
+        .write_far => if (r.loser != null) out.print(a, "conflict: this device is newer and wins, the repo's copy goes to {s}/ {s}/{s}\n", .{ trash, id, e.rel }) catch {} else out.print(a, "write repo {s}/{s}{s}\n", .{ id, e.rel, if (e.repo == null) " (restore: missing in the repo)" else "" }) catch {},
+        .resolve => out.print(a, "merge (both changed, auto-merged into one version) {s}/{s}\n", .{ id, e.rel }) catch {},
         .skip_behind => out.print(a, "skip (the repo is newer, run sync or pull) {s}/{s}\n", .{ id, e.rel }) catch {},
         .skip_ahead => out.print(a, "skip (this device is newer, run sync or push) {s}/{s}\n", .{ id, e.rel }) catch {},
     }
@@ -89,39 +122,29 @@ pub fn run(ctx: *const pl.Ctx, plans: []const pl.Plan, mode: tri.Mode, go: bool,
         for (p.entries, 0..) |e, ei| {
             var row: Row = .{ .p = pi, .e = ei, .td = tri.todo(mode, e.act) };
             if (e.act == .same) c.same += 1;
-            if (row.td == .merge_or_pair) {
-                const key = try keyOf(a, p.item.id, e.rel);
-                const nh = cb.hexOf(e.dev.?);
-                const fh = cb.hexOf(e.repo.?);
-                if (ctx.base) |bs| if (cb.knownConflict(bs, key, &nh, &fh)) {
-                    row.still = true;
-                    row.td = .none;
-                    c.still += 1;
-                };
-                if (!row.still) {
-                    if (kind == .file or kind == .dir) {
-                        if (!no_merge and cm.mergeable(ctx.cf.sync.merge_globs, e.rel) and e.base != null) row.merged = cm.tryMerge(mrun, e.rel, e.dev.?, e.base.?, e.repo.?);
-                    } else {
-                        // keys and extension lists have no second copy to keep: leave both as they are and report ----
-                        row.td = .none;
-                        row.keep_both = true;
-                        c.paired += 1;
-                    }
+            if (row.td == .resolve) {
+                if ((kind == .file or kind == .dir) and !no_merge and cm.mergeable(ctx.cf.sync.merge_globs, e.rel) and e.base != null) row.merged = cm.tryMerge(mrun, e.rel, e.dev.?, e.base.?, e.repo.?);
+                if (row.merged == null) {
+                    // no clean merge: the newest edit wins, the other copy is kept in the trash folder ----
+                    const near_wins = nearWins(ctx.cf.sync, e);
+                    row.td = if (near_wins) .write_far else .write_near;
+                    row.loser = if (near_wins) e.repo else e.dev;
+                    c.newest += 1;
                 }
             }
             switch (row.td) {
                 .write_near => near_w += 1,
                 .write_far => far_w += 1,
-                .merge_or_pair => {
+                .resolve => {
                     near_w += 1;
                     far_w += 1;
-                    if (row.merged != null) c.merged += 1 else c.paired += 1;
+                    c.merged += 1;
                 },
                 .skip_behind => c.behind += 1,
                 .skip_ahead => c.ahead += 1,
                 else => {},
             }
-            sayRow(&report, a, p, e, row);
+            sayRow(&report, a, p, e, row, ctx.cf.sync.trash_dir);
             try rows.append(a, row);
         }
     }
@@ -135,7 +158,7 @@ pub fn run(ctx: *const pl.Ctx, plans: []const pl.Plan, mode: tri.Mode, go: bool,
         const it = plans[r.p].item;
         const data: ?[]const u8 = switch (r.td) {
             .write_far => e.dev,
-            .merge_or_pair => r.merged orelse e.dev,
+            .resolve => r.merged,
             else => null,
         };
         if (data == null or e.set) continue;
@@ -150,8 +173,15 @@ pub fn run(ctx: *const pl.Ctx, plans: []const pl.Plan, mode: tri.Mode, go: bool,
     if (!go) return .{ .counts = c, .report = report.items };
 
     const stamp = fio.stampOf(a, ctx.now_secs) catch return error.OutOfMemory;
-    const bdir = try ctx.backupDir();
-    const batch = std.fs.path.join(a, &.{ bdir, stamp }) catch return error.OutOfMemory;
+    const batch = std.fs.path.join(a, &.{ try ctx.backupDir(), stamp }) catch return error.OutOfMemory;
+
+    // the copies a conflict overwrites go to the trash folder first: if that fails nothing is overwritten ----
+    for (rows.items) |r| {
+        const lb = r.loser orelse continue;
+        const p = plans[r.p];
+        if (p.item.kind == .exts) continue;
+        try trashCopy(ctx, try loserRel(ctx, p.item, p.entries[r.e].rel), lb, stamp);
+    }
 
     // far (the repo folder) first, then near (this device) ----
     for (plans, 0..) |p, pi| {
@@ -163,17 +193,13 @@ pub fn run(ctx: *const pl.Ctx, plans: []const pl.Plan, mode: tri.Mode, go: bool,
                 switch (r.td) {
                     .write_far => {
                         if (e.repo) |old| try wr(ctx, try std.fs.path.join(a, &.{ batch, "far", it.id, e.rel }), old, CF.backup_mode);
-                        try wr(ctx, try repoFile(ctx, it, e.rel), e.dev.?, null);
+                        const rf = try repoFile(ctx, it, e.rel);
+                        try wr(ctx, rf, e.dev.?, null);
+                        fio.setMtime(ctx.io, rf, e.dev_mt);
                     },
-                    .merge_or_pair => if (r.merged) |m| {
+                    .resolve => if (r.merged) |m| {
                         if (e.repo) |old| try wr(ctx, try std.fs.path.join(a, &.{ batch, "far", it.id, e.rel }), old, CF.backup_mode);
                         try wr(ctx, try repoFile(ctx, it, e.rel), m, null);
-                    } else {
-                        // nobody wins: this device's copy sits beside the repo file; the repo's copy is kept beside the device's backups ----
-                        const rp = try repoFile(ctx, it, e.rel);
-                        const pr = try std.fs.path.join(a, &.{ std.fs.path.dirname(rp) orelse ".", try pairName(a, std.fs.path.basename(rp), "near", stamp) });
-                        try wr(ctx, pr, e.dev.?, null);
-                        try wr(ctx, try std.fs.path.join(a, &.{ bdir, "conflicts", stamp, it.id, e.rel }), e.repo.?, CF.backup_mode);
                     },
                     else => {},
                 }
@@ -211,17 +237,30 @@ pub fn run(ctx: *const pl.Ctx, plans: []const pl.Plan, mode: tri.Mode, go: bool,
     for (plans, 0..) |p, pi| {
         const it = p.item;
         switch (it.kind) {
-            .file, .dir => for (rows.items) |r| {
+            .file, .dir => for (rows.items) |*r| {
                 if (r.p != pi) continue;
                 const e = p.entries[r.e];
                 switch (r.td) {
                     .write_near => {
+                        const dp = try devFile(ctx, it, e.rel);
+                        if (!try nearSame(ctx, dp, e.dev)) {
+                            r.raced = true;
+                            c.raced += 1;
+                            continue;
+                        }
                         if (e.dev) |old| try wr(ctx, try std.fs.path.join(a, &.{ batch, it.id, e.rel }), old, CF.backup_mode);
-                        try wr(ctx, try devFile(ctx, it, e.rel), e.repo.?, null);
+                        try wr(ctx, dp, e.repo.?, null);
+                        fio.setMtime(ctx.io, dp, e.repo_mt);
                     },
-                    .merge_or_pair => if (r.merged) |m| {
+                    .resolve => if (r.merged) |m| {
+                        const dp = try devFile(ctx, it, e.rel);
+                        if (!try nearSame(ctx, dp, e.dev)) {
+                            r.raced = true;
+                            c.raced += 1;
+                            continue;
+                        }
                         if (e.dev) |old| try wr(ctx, try std.fs.path.join(a, &.{ batch, it.id, e.rel }), old, CF.backup_mode);
-                        try wr(ctx, try devFile(ctx, it, e.rel), m, null);
+                        try wr(ctx, dp, m, null);
                     },
                     else => {},
                 }
@@ -254,26 +293,13 @@ pub fn run(ctx: *const pl.Ctx, plans: []const pl.Plan, mode: tri.Mode, go: bool,
         for (rows.items) |r| {
             const p = plans[r.p];
             const e = p.entries[r.e];
-            if (p.item.kind == .exts or e.set) continue;
+            if (p.item.kind == .exts or e.set or r.raced) continue;
             const key = try keyOf(a, p.item.id, e.rel);
             switch (r.td) {
-                .none => if (e.act == .same and e.dev != null and !r.still and !r.keep_both) try cb.set(bs, ctx.io, a, key, e.dev.?),
-                .write_near => {
-                    try cb.set(bs, ctx.io, a, key, e.repo.?);
-                    try cb.clearConflict(bs, a, key);
-                },
-                .write_far => {
-                    try cb.set(bs, ctx.io, a, key, e.dev.?);
-                    try cb.clearConflict(bs, a, key);
-                },
-                .merge_or_pair => if (r.merged) |m| {
-                    try cb.set(bs, ctx.io, a, key, m);
-                    try cb.clearConflict(bs, a, key);
-                } else {
-                    const nh = cb.hexOf(e.dev.?);
-                    const fh = cb.hexOf(e.repo.?);
-                    try cb.setConflict(bs, a, key, &nh, &fh);
-                },
+                .none => if (e.act == .same and e.dev != null) try cb.set(bs, ctx.io, a, key, e.dev.?),
+                .write_near => try cb.set(bs, ctx.io, a, key, e.repo.?),
+                .write_far => try cb.set(bs, ctx.io, a, key, e.dev.?),
+                .resolve => if (r.merged) |m| try cb.set(bs, ctx.io, a, key, m),
                 else => {},
             }
         }
@@ -295,7 +321,7 @@ fn withBase(t: *T, c: *pl.Ctx) !*cb.Base {
 
 const ITEMS = [_]conf.Item{
     .{ .id = "md", .kind = .file, .root = .claude, .from = "claude/CLAUDE.md", .to = "CLAUDE.md" },
-    .{ .id = "ag", .kind = .dir, .root = .claude, .from = "claude/agents", .to = "agents", .skip = &.{"*.conflict-*"} },
+    .{ .id = "ag", .kind = .dir, .root = .claude, .from = "claude/agents", .to = "agents" },
     .{ .id = "st", .kind = .merge, .root = .claude, .from = "claude/s.json", .to = "settings.json", .keys = &.{ "effort", "tui" } },
     .{ .id = "mem", .kind = .merge, .root = .repo, .to = ".claude/settings.local.json", .set = &.{.{ .key = "autoMemoryDirectory", .value = "{repo}/.claude/memory" }} },
 };
@@ -364,7 +390,7 @@ test "push: sends near-changed and new files into the repo, keeps repo-only file
     try std.testing.expect(std.mem.indexOf(u8, shared, "permissions") == null);
 }
 
-test "sync: both ways; non-overlapping edits of one file merge into one version; overlapping edits keep both and nobody wins; a removed file comes back" {
+test "sync: both ways; non-overlapping edits merge into one version; overlapping edits: the newest wins and the loser goes to the trash folder; a removed file comes back" {
     const t = try T.init();
     defer t.deinit();
     var c = try t.ctx(&ITEMS);
@@ -377,6 +403,7 @@ test "sync: both ways; non-overlapping edits of one file merge into one version;
     _ = probe;
     try t.put("repo/.deve-user/claude/agents/m.md", "l1\nl2\nl3\nl4\nl5\n");
     try t.put("repo/.deve-user/claude/agents/o.md", "n1\nn2\nn3\nn4\nn5\n");
+    try t.put("repo/.deve-user/claude/agents/q.md", "q1\nq2\nq3\n");
     var plans = try plansOf(&c);
     _ = try run(&c, plans, .sync, true, false, false);
     try std.testing.expectEqualStrings("l1\nl2\nl3\nl4\nl5\n", t.get("home/.claude/agents/m.md").?);
@@ -384,30 +411,55 @@ test "sync: both ways; non-overlapping edits of one file merge into one version;
     try t.put("repo/.deve-user/claude/agents/m.md", "l1\nl2\nl3\nl4\nL5-far\n");
     try t.put("home/.claude/agents/o.md", "n1\nn2\nN3-near\nn4\nn5\n");
     try t.put("repo/.deve-user/claude/agents/o.md", "n1\nn2\nN3-far\nn4\nn5\n");
+    try t.put("home/.claude/agents/q.md", "q1\nQ2-near\nq3\n");
+    try t.put("repo/.deve-user/claude/agents/q.md", "q1\nQ2-far\nq3\n");
+    // o: this device edited it later; q: the repo copy is later
+    try t.age("repo/.deve-user/claude/agents/o.md", 1_700_000_000);
+    try t.age("home/.claude/agents/o.md", 1_700_001_000);
+    try t.age("home/.claude/agents/q.md", 1_700_000_000);
+    try t.age("repo/.deve-user/claude/agents/q.md", 1_700_001_000);
     plans = try plansOf(&c);
     const r = try run(&c, plans, .sync, true, false, false);
     try std.testing.expectEqual(@as(u32, 1), r.counts.merged);
-    try std.testing.expectEqual(@as(u32, 1), r.counts.paired);
+    try std.testing.expectEqual(@as(u32, 2), r.counts.newest);
     try std.testing.expectEqualStrings("L1-near\nl2\nl3\nl4\nL5-far\n", t.get("home/.claude/agents/m.md").?);
     try std.testing.expectEqualStrings("L1-near\nl2\nl3\nl4\nL5-far\n", t.get("repo/.deve-user/claude/agents/m.md").?);
+    // one version everywhere; the losing copy is in the trash folder under the same path
     try std.testing.expectEqualStrings("n1\nn2\nN3-near\nn4\nn5\n", t.get("home/.claude/agents/o.md").?);
-    try std.testing.expectEqualStrings("n1\nn2\nN3-far\nn4\nn5\n", t.get("repo/.deve-user/claude/agents/o.md").?);
-    const stamp = try fio.stampOf(t.arena.allocator(), 1_800_000_000);
-    const pr = try std.fmt.allocPrint(t.arena.allocator(), "repo/.deve-user/claude/agents/o.conflict-near-{s}.md", .{stamp});
-    try std.testing.expectEqualStrings("n1\nn2\nN3-near\nn4\nn5\n", t.get(pr).?);
-    const far_copy = try std.fmt.allocPrint(t.arena.allocator(), "home/.04-clou-secr/deve-backup/conflicts/{s}/ag/o.md", .{stamp});
-    try std.testing.expectEqualStrings("n1\nn2\nN3-far\nn4\nn5\n", t.get(far_copy).?);
+    try std.testing.expectEqualStrings("n1\nn2\nN3-near\nn4\nn5\n", t.get("repo/.deve-user/claude/agents/o.md").?);
+    try std.testing.expectEqualStrings("n1\nn2\nN3-far\nn4\nn5\n", t.get("repo/zzzz-delete-force-items/.deve-user/claude/agents/o.md").?);
+    try std.testing.expectEqualStrings("q1\nQ2-far\nq3\n", t.get("home/.claude/agents/q.md").?);
+    try std.testing.expectEqualStrings("q1\nQ2-far\nq3\n", t.get("repo/.deve-user/claude/agents/q.md").?);
+    try std.testing.expectEqualStrings("q1\nQ2-near\nq3\n", t.get("repo/zzzz-delete-force-items/.deve-user/claude/agents/q.md").?);
+    // the winner keeps the time of its edit on the other side too
+    try std.testing.expectEqual(@as(i64, 1_700_001_000), fio.mtimeOf(std.testing.io, try std.fs.path.join(t.arena.allocator(), &.{ t.root, "repo/.deve-user/claude/agents/o.md" })));
+    // a rerun finds nothing left to decide
     plans = try plansOf(&c);
     const r2 = try run(&c, plans, .sync, true, false, false);
-    try std.testing.expectEqual(@as(u32, 1), r2.counts.still);
-    try std.testing.expectEqual(@as(u32, 0), r2.counts.merged + r2.counts.paired);
-    plans = try plansOf(&c);
-    _ = try run(&c, plans, .push, true, false, false);
-    try std.testing.expectEqualStrings("n1\nn2\nN3-near\nn4\nn5\n", t.get("repo/.deve-user/claude/agents/o.md").?);
+    try std.testing.expectEqual(@as(u32, 0), r2.counts.merged + r2.counts.newest);
     try t.tmp.dir.rename("home/.claude/agents/m.md", t.tmp.dir, "home/moved-m.md", std.testing.io);
     plans = try plansOf(&c);
     _ = try run(&c, plans, .sync, true, false, false);
     try std.testing.expectEqualStrings("L1-near\nl2\nl3\nl4\nL5-far\n", t.get("home/.claude/agents/m.md").?);
+}
+
+test "a device file saved while the sync ran is left alone, not overwritten" {
+    const t = try T.init();
+    defer t.deinit();
+    var c = try t.ctx(&ITEMS);
+    _ = try withBase(t, &c);
+    try t.put("repo/.deve-user/claude/CLAUDE.md", "FAR");
+    try t.put("home/.claude/CLAUDE.md", "PLAN-SAW");
+    const plans = try plansOf(&c);
+    // the user saves the file after the plan was made
+    try t.put("home/.claude/CLAUDE.md", "TYPED-JUST-NOW");
+    const r = try run(&c, plans, .pull, true, false, false);
+    try std.testing.expectEqual(@as(u32, 1), r.counts.raced);
+    try std.testing.expectEqualStrings("TYPED-JUST-NOW", t.get("home/.claude/CLAUDE.md").?);
+    // next run sees a real conflict-free state: the device changed, the repo changed: no base, so it is a conflict and pull lets the repo win with a backup
+    const again = try run(&c, try plansOf(&c), .pull, true, false, false);
+    try std.testing.expectEqual(@as(u32, 0), again.counts.raced);
+    try std.testing.expectEqualStrings("FAR", t.get("home/.claude/CLAUDE.md").?);
 }
 
 test "push refuses a secret by name or by text and writes nothing at all; a big change needs --big" {

@@ -12,7 +12,7 @@ const std = @import("std");
 
 pub const Act = enum { same, to_near, to_far, conflict };
 pub const Mode = enum { sync, pull, push };
-pub const Todo = enum { none, write_near, write_far, merge_or_pair, skip_behind, skip_ahead };
+pub const Todo = enum { none, write_near, write_far, resolve, skip_behind, skip_ahead };
 
 fn eq(x: ?[]const u8, y: ?[]const u8) bool {
     return if (x != null and y != null) std.mem.eql(u8, x.?, y.?) else x == null and y == null;
@@ -31,7 +31,7 @@ pub fn decide(near: ?[]const u8, far: ?[]const u8, base: ?[]const u8) Act {
     return if (far_moved) .to_near else .to_far;
 }
 
-// what this command does: pull = far wins, push = near wins, sync = both ways and a conflict has no winner ----
+// what this command does: pull = far wins, push = near wins, sync = both ways and a conflict is resolved (merge, else the newest edit wins) ----
 pub fn todo(mode: Mode, act: Act) Todo {
     return switch (act) {
         .same => .none,
@@ -46,7 +46,7 @@ pub fn todo(mode: Mode, act: Act) Todo {
         .conflict => switch (mode) {
             .pull => .write_near,
             .push => .write_far,
-            .sync => .merge_or_pair,
+            .sync => .resolve,
         },
     };
 }
@@ -69,12 +69,12 @@ test "decide: every cell of the table; a missing side is never a delete" {
     try std.testing.expectEqual(Act.conflict, decide(n, f, null));
 }
 
-test "todo: pull far wins, push near wins, sync merges or pairs a conflict; nothing deletes" {
+test "todo: pull far wins, push near wins, sync resolves a conflict; nothing deletes" {
     const T = Todo;
     try std.testing.expectEqual(T.none, todo(.sync, .same));
     try std.testing.expectEqual(T.write_near, todo(.sync, .to_near));
     try std.testing.expectEqual(T.write_far, todo(.sync, .to_far));
-    try std.testing.expectEqual(T.merge_or_pair, todo(.sync, .conflict));
+    try std.testing.expectEqual(T.resolve, todo(.sync, .conflict));
     try std.testing.expectEqual(T.write_near, todo(.pull, .to_near));
     try std.testing.expectEqual(T.skip_ahead, todo(.pull, .to_far));
     try std.testing.expectEqual(T.write_near, todo(.pull, .conflict));

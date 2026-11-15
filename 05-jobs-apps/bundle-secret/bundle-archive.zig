@@ -1,6 +1,6 @@
 // =====================================================================
 // Des: Packs the picked files into one block of bytes and unpacks it again, refusing any path that could leave the repo
-// Flo: magic + count > per file: path length, path, size, bytes > decode checks every bound and every path before anything is written
+// Flo: magic + count > per file: path length, path, edit time, size, bytes (the older CHBA1 has no edit time: read as unknown) > decode checks every bound and every path before anything is written
 // Cre: 2026-11-14                          - | Mod: 2026-11-14
 // Who: zzOWN.com - Own Fast. Work Faster.  - | Ema: zzown.com@gmail.com
 // Inp: items (relative path with '/', bytes) | the plain bytes of a bundle
@@ -12,7 +12,8 @@ const std = @import("std");
 const pick = @import("bundle-pick.zig");
 
 pub const Item = pick.Item;
-pub const MAGIC = "CHBA1";
+pub const MAGIC = "CHBA2";
+const MAGIC_V1 = "CHBA1";
 const CF = .{ .path_maxz = 1024, .count_maxz = 100000 };
 
 pub const ArcErro = error{ BadArchive, UnsafePath, OutOfMemory };
@@ -41,6 +42,9 @@ pub fn encode(a: std.mem.Allocator, items: []const Item) ArcErro![]u8 {
         std.mem.writeInt(u16, &n2, @intCast(it.rel.len), .little);
         try out.appendSlice(a, &n2);
         try out.appendSlice(a, it.rel);
+        var t8: [8]u8 = undefined;
+        std.mem.writeInt(i64, &t8, it.mtime, .little);
+        try out.appendSlice(a, &t8);
         var n8: [8]u8 = undefined;
         std.mem.writeInt(u64, &n8, it.data.len, .little);
         try out.appendSlice(a, &n8);
@@ -51,7 +55,8 @@ pub fn encode(a: std.mem.Allocator, items: []const Item) ArcErro![]u8 {
 
 // the returned items point into `plain`: keep it alive ----
 pub fn decode(a: std.mem.Allocator, plain: []const u8) ArcErro![]Item {
-    if (plain.len < MAGIC.len + 4 or !std.mem.startsWith(u8, plain, MAGIC)) return error.BadArchive;
+    const v2 = std.mem.startsWith(u8, plain, MAGIC);
+    if (plain.len < MAGIC.len + 4 or !(v2 or std.mem.startsWith(u8, plain, MAGIC_V1))) return error.BadArchive;
     const count = std.mem.readInt(u32, plain[MAGIC.len..][0..4], .little);
     if (count > CF.count_maxz) return error.BadArchive;
     var at: usize = MAGIC.len + 4;
@@ -64,15 +69,21 @@ pub fn decode(a: std.mem.Allocator, plain: []const u8) ArcErro![]Item {
         if (at + 2 > plain.len) return error.BadArchive;
         const plen = std.mem.readInt(u16, plain[at..][0..2], .little);
         at += 2;
-        if (at + plen + 8 > plain.len) return error.BadArchive;
+        const tlen: usize = if (v2) 8 else 0;
+        if (at + plen + tlen + 8 > plain.len) return error.BadArchive;
         const rel = plain[at .. at + plen];
         at += plen;
+        var mt: i64 = 0;
+        if (v2) {
+            mt = std.mem.readInt(i64, plain[at..][0..8], .little);
+            at += 8;
+        }
         const size = std.mem.readInt(u64, plain[at..][0..8], .little);
         at += 8;
         if (size > plain.len - at) return error.BadArchive;
         if (!safePath(rel)) return error.UnsafePath;
         if ((seen.getOrPut(a, rel) catch return error.OutOfMemory).found_existing) return error.BadArchive;
-        try items.append(a, .{ .rel = rel, .data = plain[at .. at + @as(usize, @intCast(size))] });
+        try items.append(a, .{ .rel = rel, .data = plain[at .. at + @as(usize, @intCast(size))], .mtime = mt });
         at += @as(usize, @intCast(size));
     }
     if (at != plain.len) return error.BadArchive;
@@ -110,8 +121,25 @@ test "unsafe paths are refused both ways" {
     try raw.appendSlice(a, MAGIC);
     try raw.appendSlice(a, &.{ 1, 0, 0, 0, 5, 0 });
     try raw.appendSlice(a, "../x\x00");
-    try raw.appendSlice(a, &.{ 0, 0, 0, 0, 0, 0, 0, 0 });
+    try raw.appendSlice(a, &.{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
     try std.testing.expectError(error.UnsafePath, decode(a, raw.items));
+}
+
+test "the edit time survives a round trip; an older CHBA1 archive reads as time unknown" {
+    const a = std.testing.allocator;
+    const enc = try encode(a, &.{.{ .rel = "a", .data = "hi", .mtime = 1_700_000_123 }});
+    defer a.free(enc);
+    const back = try decode(a, enc);
+    defer a.free(back);
+    try std.testing.expectEqual(@as(i64, 1_700_000_123), back[0].mtime);
+    var old: std.ArrayList(u8) = .empty;
+    defer old.deinit(a);
+    try old.appendSlice(a, "CHBA1");
+    try old.appendSlice(a, &.{ 1, 0, 0, 0, 1, 0, 'a', 2, 0, 0, 0, 0, 0, 0, 0, 'h', 'i' });
+    const was = try decode(a, old.items);
+    defer a.free(was);
+    try std.testing.expectEqualStrings("hi", was[0].data);
+    try std.testing.expectEqual(@as(i64, 0), was[0].mtime);
 }
 
 test "damaged archives are refused: short, wrong magic, size past the end, trailing bytes, duplicates" {

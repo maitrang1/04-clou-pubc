@@ -16,12 +16,9 @@ const CF = .{ .manifest = "manifest.txt", .files = "files", .file_maxz = 4 * 102
 
 pub const BaseErro = error{ BadFormat, Unsafe, WriteFail, OutOfMemory };
 
-pub const Pair = struct { near: []const u8, far: []const u8 };
-
 pub const Base = struct {
     dir: []const u8,
     files: std.StringHashMapUnmanaged([]const u8) = .empty,
-    conflicts: std.StringHashMapUnmanaged(Pair) = .empty,
     dirty: bool = false,
 };
 
@@ -37,7 +34,7 @@ fn hexOk(h: []const u8) bool {
     return true;
 }
 
-// lines: `F<TAB>sha<TAB>rel` and `C<TAB>nearsha<TAB>farsha<TAB>rel` ----
+// lines: `F<TAB>sha<TAB>rel`; an old `C` line (the retired conflict list) is read and dropped ----
 pub fn load(io: std.Io, a: std.mem.Allocator, dir: []const u8) BaseErro!Base {
     var b: Base = .{ .dir = dir };
     const path = std.fs.path.join(a, &.{ dir, CF.manifest }) catch return error.OutOfMemory;
@@ -53,11 +50,7 @@ pub fn load(io: std.Io, a: std.mem.Allocator, dir: []const u8) BaseErro!Base {
             if (!hexOk(sha) or !conf.relSafe(rel)) return error.BadFormat;
             b.files.put(a, a.dupe(u8, rel) catch return error.OutOfMemory, a.dupe(u8, sha) catch return error.OutOfMemory) catch return error.OutOfMemory;
         } else if (std.mem.eql(u8, tag, "C")) {
-            const ns = f.next() orelse return error.BadFormat;
-            const fs = f.next() orelse return error.BadFormat;
-            const rel = f.rest();
-            if (!hexOk(ns) or !hexOk(fs) or !conf.relSafe(rel)) return error.BadFormat;
-            b.conflicts.put(a, a.dupe(u8, rel) catch return error.OutOfMemory, .{ .near = a.dupe(u8, ns) catch return error.OutOfMemory, .far = a.dupe(u8, fs) catch return error.OutOfMemory }) catch return error.OutOfMemory;
+            continue;
         } else return error.BadFormat;
     }
     return b;
@@ -77,36 +70,16 @@ pub fn content(b: *const Base, io: std.Io, a: std.mem.Allocator, rel: []const u8
     return if (std.mem.eql(u8, &got, want)) data else null;
 }
 
-pub fn shaOf(b: *const Base, rel: []const u8) ?[]const u8 {
-    return b.files.get(rel);
-}
-
 // remember this content as agreed: write the copy, then the hash in memory ----
 pub fn set(b: *Base, io: std.Io, a: std.mem.Allocator, rel: []const u8, data: []const u8) BaseErro!void {
     if (!conf.relSafe(rel)) return error.Unsafe;
     const sha = hexOf(data);
-    if (b.files.get(rel)) |old| if (std.mem.eql(u8, old, &sha)) return;
+    // already agreed and the copy is intact: nothing to do; a damaged or missing copy is written again (self-heal) ----
+    if (b.files.get(rel)) |old| if (std.mem.eql(u8, old, &sha) and content(b, io, a, rel) != null) return;
     const path = copyPath(a, b, rel) catch return error.OutOfMemory;
     fio.writeAtomic(io, a, path, data, CF.mode) catch return error.WriteFail;
     b.files.put(a, a.dupe(u8, rel) catch return error.OutOfMemory, a.dupe(u8, &sha) catch return error.OutOfMemory) catch return error.OutOfMemory;
     b.dirty = true;
-}
-
-pub fn setConflict(b: *Base, a: std.mem.Allocator, rel: []const u8, near_sha: []const u8, far_sha: []const u8) BaseErro!void {
-    b.conflicts.put(a, a.dupe(u8, rel) catch return error.OutOfMemory, .{ .near = a.dupe(u8, near_sha) catch return error.OutOfMemory, .far = a.dupe(u8, far_sha) catch return error.OutOfMemory }) catch return error.OutOfMemory;
-    b.dirty = true;
-}
-
-// a resolved conflict is forgotten by marking it with all-zero hashes (the list only grows, nothing is removed) ----
-pub fn clearConflict(b: *Base, a: std.mem.Allocator, rel: []const u8) BaseErro!void {
-    if (!b.conflicts.contains(rel)) return;
-    const zero = "0" ** CF.hex_len;
-    return setConflict(b, a, rel, zero, zero);
-}
-
-pub fn knownConflict(b: *const Base, rel: []const u8, near_sha: []const u8, far_sha: []const u8) bool {
-    const p = b.conflicts.get(rel) orelse return false;
-    return std.mem.eql(u8, p.near, near_sha) and std.mem.eql(u8, p.far, far_sha);
 }
 
 fn lessStr(_: void, x: []const u8, y: []const u8) bool {
@@ -121,14 +94,6 @@ pub fn save(b: *Base, io: std.Io, a: std.mem.Allocator) BaseErro!void {
     std.mem.sort([]const u8, keys.items, {}, lessStr);
     var text: std.ArrayList(u8) = .empty;
     for (keys.items) |k| text.print(a, "F\t{s}\t{s}\n", .{ b.files.get(k).?, k }) catch return error.OutOfMemory;
-    var ck: std.ArrayList([]const u8) = .empty;
-    var ci = b.conflicts.keyIterator();
-    while (ci.next()) |k| ck.append(a, k.*) catch return error.OutOfMemory;
-    std.mem.sort([]const u8, ck.items, {}, lessStr);
-    for (ck.items) |k| {
-        const p = b.conflicts.get(k).?;
-        text.print(a, "C\t{s}\t{s}\t{s}\n", .{ p.near, p.far, k }) catch return error.OutOfMemory;
-    }
     const path = std.fs.path.join(a, &.{ b.dir, CF.manifest }) catch return error.OutOfMemory;
     fio.writeAtomic(io, a, path, text.items, CF.mode) catch return error.WriteFail;
     b.dirty = false;
@@ -148,20 +113,20 @@ test "base: nothing agreed at first; set, save, load round trip; a damaged copy 
     try std.testing.expect(content(&b, io, a, "x/y.txt") == null);
     try set(&b, io, a, "x/y.txt", "ONE");
     try set(&b, io, a, ".d/z.md", "TWO");
-    try setConflict(&b, a, "x/y.txt", &hexOf("N"), &hexOf("F"));
     try save(&b, io, a);
     var c = try load(io, a, dir);
     try std.testing.expectEqualStrings("ONE", content(&c, io, a, "x/y.txt").?);
     try std.testing.expectEqualStrings("TWO", content(&c, io, a, ".d/z.md").?);
-    try std.testing.expect(knownConflict(&c, "x/y.txt", &hexOf("N"), &hexOf("F")));
-    try std.testing.expect(!knownConflict(&c, "x/y.txt", &hexOf("N2"), &hexOf("F")));
-    try clearConflict(&c, a, "x/y.txt");
-    try std.testing.expect(!knownConflict(&c, "x/y.txt", &hexOf("N"), &hexOf("F")));
     try std.Io.Dir.cwd().writeFile(io, .{ .sub_path = try std.fs.path.join(a, &.{ dir, "files", "x/y.txt" }), .data = "TAMPERED" });
     try std.testing.expect(content(&c, io, a, "x/y.txt") == null);
+    try set(&c, io, a, "x/y.txt", "ONE");
+    try std.testing.expectEqualStrings("ONE", content(&c, io, a, "x/y.txt").?);
     try std.testing.expectError(error.Unsafe, set(&c, io, a, "../evil", "x"));
     try std.Io.Dir.cwd().writeFile(io, .{ .sub_path = try std.fs.path.join(a, &.{ dir, "manifest.txt" }), .data = "F\tnothex\tx\n" });
     try std.testing.expectError(error.BadFormat, load(io, a, dir));
+    // an old conflict line from an earlier version is ignored
+    try std.Io.Dir.cwd().writeFile(io, .{ .sub_path = try std.fs.path.join(a, &.{ dir, "manifest.txt" }), .data = "C\t00\t00\tx\n" });
+    _ = try load(io, a, dir);
 }
 // ========================___THIS_IS_THE_END___========================
 // ===============___HOLD_YOUR_BREATH_AND_COUNT_TO_TEN___===============

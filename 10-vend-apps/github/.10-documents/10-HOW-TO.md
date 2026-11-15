@@ -16,7 +16,7 @@ Follow `05-README.md` Quick Start. If a step needs you (for example two-factor s
 1. Edit your code in `/home/mai_trang/04-clou-base`. Never edit the copy folder: it is overwritten.
 2. Look at what would happen (changes nothing):
 ```
-/home/mai_trang/04-clou-base/10-vend-apps/github/zig-out/bin/github publish --from /home/mai_trang/04-clou-base --root /home/mai_trang/04-clou-pubc
+/home/mai_trang/04-clou-base/10-vend-apps/github/zig-out/bin/github publish --from /home/mai_trang/04-clou-base --root /home/mai_trang/04-clou-publ
 ```
 ```
 mirror: copied 7 · same 385 · denied 0 · too big 0 · moved to trash 0
@@ -24,7 +24,7 @@ dry-run: nothing scanned, committed or pushed. Pass --live to publish.
 ```
 3. Publish for real:
 ```
-/home/mai_trang/04-clou-base/10-vend-apps/github/zig-out/bin/github publish --from /home/mai_trang/04-clou-base --root /home/mai_trang/04-clou-pubc --live
+/home/mai_trang/04-clou-base/10-vend-apps/github/zig-out/bin/github publish --from /home/mai_trang/04-clou-base --root /home/mai_trang/04-clou-publ --live
 ```
 ```
 mirror: copied 7 · same 385 · denied 0 · too big 0 · moved to trash 0
@@ -38,9 +38,9 @@ If nothing changed it says `nothing to publish`. It always tries the upload, so 
 
 ## Copy only (no upload)
 ```
-/home/mai_trang/04-clou-base/10-vend-apps/github/zig-out/bin/github push --from /home/mai_trang/04-clou-base --root /home/mai_trang/04-clou-pubc --live
+/home/mai_trang/04-clou-base/10-vend-apps/github/zig-out/bin/github push --from /home/mai_trang/04-clou-base --root /home/mai_trang/04-clou-publ --live
 ```
-Files you removed from your work folder are moved to `~/00_modules/zzzz-delete-force-items/04-clou-pubc/`, never deleted.
+Files you removed from your work folder are moved to `~/00_modules/zzzz-delete-force-items/04-clou-publ/`, never deleted.
 
 ---
 
@@ -57,7 +57,7 @@ Pick exactly one of those three. `build` without `--target` makes a normal exe f
 ## Make a downloadable release (one app)
 Every app has its own cloud workflow, and its own tag. A tag named `<name>-v<version>` builds only that app for Linux and Windows and publishes its files on your repo's Releases page (about 3-5 minutes). The name is the app's short name:
 ```
-cd /home/mai_trang/04-clou-pubc && git tag github-v0.1.0 && git push origin github-v0.1.0
+cd /home/mai_trang/04-clou-publ && git tag github-v0.1.0 && git push origin github-v0.1.0
 ```
 A normal push only runs the tests of the apps whose folders changed.
 
@@ -65,7 +65,7 @@ A normal push only runs the tests of the apps whose folders changed.
 
 ## See where setup stands
 ```
-/home/mai_trang/04-clou-base/10-vend-apps/github/zig-out/bin/github plan --root /home/mai_trang/04-clou-pubc
+/home/mai_trang/04-clou-base/10-vend-apps/github/zig-out/bin/github plan --root /home/mai_trang/04-clou-publ
 ```
 ```
 00 [done] Preflight: OS and git
@@ -79,7 +79,7 @@ A normal push only runs the tests of the apps whose folders changed.
 ## Undo what the app made
 Kills the login and secrets the app made. Your repo stays.
 ```
-/home/mai_trang/04-clou-base/10-vend-apps/github/zig-out/bin/github revoke --live --root /home/mai_trang/04-clou-pubc
+/home/mai_trang/04-clou-base/10-vend-apps/github/zig-out/bin/github revoke --live --root /home/mai_trang/04-clou-publ
 ```
 
 ---

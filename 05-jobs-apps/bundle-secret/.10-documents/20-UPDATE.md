@@ -5,7 +5,7 @@ What changed, newest first.
 ---
 
 ## 2026-11-15
-**Added:** `sync`, `pull` and `push`. `sync` is two-way and never deletes anything: a change goes to the other side, a missing file comes back; a file changed on both sides is merged into one version (code, text) or both copies are kept and nobody wins. `pull` makes the vault win, `push` makes this device win. A change of more than 50 files needs `--big`.
+**Added:** `sync`, `pull` and `push`. `sync` is two-way and never deletes anything: a change goes to the other side, a missing file comes back; a file changed on both sides is merged into one version (code, text) or the newest edit wins and the older copy goes to the `zzzz-delete-force-items` folder. `pull` makes the vault win, `push` makes this device win. A change of more than 50 files needs `--big`.
 **Added:** a second locked file for your dot-folders and dot-files (`bundle-ditems.enc`, settings in `00-config-ditems.json`), next to the secrets bundle in the same vault repo with the same passphrase. A changed file is replaced on fetch and the old copy goes to the trash.
 
 **Changed:** the default vault folder is `~/04-clou-vaul` and the saved passphrase file is `~/.04-clou-secr/04-clou-vaul.pass`. Rename your own folders or change `bundle.root` and `bundle.pass_file` in the settings.

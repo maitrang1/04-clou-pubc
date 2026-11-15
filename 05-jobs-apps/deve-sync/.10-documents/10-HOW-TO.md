@@ -35,14 +35,14 @@ You should see a line like: `pulled: wrote 36 · replaced 0 · installed 2 exten
 ## Share a change you made on this device
 1. Change a setting, an agent or a rule on this device as usual.
 2. Look: `EXE push --repo REPO`
-3. Send it: `EXE push --repo REPO --go`
-4. Send the dot-items bundle from this device (`bundle-secret ship ... --config <bundle-secret>/00-config-ditems.json --go`). On the other devices run `fetch` with the same settings file, then `EXE pull --repo REPO --go`.
+3. Send it: `EXE push --repo REPO --go` (or just `EXE sync --repo REPO --go`)
+4. The dot-items bundle carries it to your other devices on its own schedule (or run `bundle-secret sync ... --config <bundle-secret>/00-config-ditems.json --go`). On the other devices `EXE sync --repo REPO --go` then applies it.
 Only keys named in the config are shared from your Claude settings. Paths and permissions stay on the device.
 
 ---
 
 ## Keep devices in step (sync)
-`EXE sync --repo REPO --go` is the safe everyday command (it also runs by itself on a schedule). A change on one side goes to the other, a missing file comes back, nothing is ever deleted. If you changed the same file on two devices, code and text are merged into one version when the edits do not overlap; otherwise nobody wins: each side keeps its own file and the other copy is kept next to it, and the command ends with exit code 3. To decide, run `EXE push --repo REPO --only claude-agents --go` (this device wins) or the same with `pull` (the repo wins). More than 50 changed files at once are refused; check the list and add `--big`. On a new device with no history, run one `pull` first.
+`EXE sync --repo REPO --go` is the safe everyday command (it also runs by itself on a schedule). A change on one side goes to the other, a missing file comes back, nothing is ever deleted. If you changed the same file on two devices, code and text are merged into one version when the edits do not overlap; otherwise the newest edit wins on both sides and the older copy is moved to the `zzzz-delete-force-items` folder in the repo (nothing is lost, nothing to resolve by hand). If you prefer the other version, take it from that folder, or run `EXE push --repo REPO --only claude-agents --go` (this device wins) or the same with `pull` (the repo wins). More than 50 changed files at once are refused; check the list and add `--big`. On a new device with no history, run one `pull` first.
 
 ---
 

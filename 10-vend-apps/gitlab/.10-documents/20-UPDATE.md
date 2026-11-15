@@ -5,7 +5,7 @@ What changed, newest first.
 ---
 
 ## 2026-11-15
-**Changed:** the GitHub repo the mirror job lives in is now named `04-clou-pubc` in the settings (`gith.repo`). Set it to your own repo name if you use another.
+**Changed:** the GitHub repo the mirror job lives in is now named `04-clou-publ` in the settings (`gith.repo`). Set it to your own repo name if you use another.
 
 ## 2026-11-14
 **Fixed:** `rotate` now saves its state after a real renewal (before, the next run would renew again), and it prints `rotate: not due` or `rotate: rotated`.

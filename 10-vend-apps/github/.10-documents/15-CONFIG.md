@@ -24,7 +24,7 @@ Every key has a default. An unknown key stops the app and names the line and col
 | `data.acct` / `stat` / `vaul` / `audi` / `keys` / `host` | file names in that folder | `github-account.json` · `github-state.json` · `github-main.vault` · `github-audit.jsonl` · `github-keys` · `github-known_hosts` | plain names |
 | `auth.mode` | how it logs in | `gh` | `gh`, `device` |
 | `auth.scop` | permissions asked | `repo workflow read:user user:email write:public_key` | text |
-| `repo.name` / `visi` | repo name and visibility | `04-clou-pubc` · `public` | `visi`: `public`, `private` |
+| `repo.name` / `visi` | repo name and visibility | `04-clou-publ` · `public` | `visi`: `public`, `private` |
 | `repo.bran` / `remo` | branch and remote | `main` · `origin` | names |
 | `repo.comm_text` / `publ_text` | commit messages | `first commit` · `sync from the work tree` | text |
 | `repo.nest_okay` | allow a repo inside another repo | `false` | true, false |
@@ -42,7 +42,7 @@ Every key has a default. An unknown key stops the app and names the line and col
 | `task.edit_skip` | files `--app-edit` ignores when it checks whether an app changed (docs) | `*.10-documents/*` | patterns |
 | `data.seen` | private file with each app's last green hash (never synced) | `github-task.seen` | file name |
 | `push.keep` | files in the copy the mirror never moves | `.gitignore`, `.gitattributes` | patterns |
-| `push.trash` | where removed files go | `{home}/00_modules/zzzz-delete-force-items/04-clou-pubc` | path |
+| `push.trash` | where removed files go | `{home}/00_modules/zzzz-delete-force-items/04-clou-publ` | path |
 | `rule.*` | branch rule: block deletion, block force push | on | true, false |
 | `ciiz.*` | cloud flows, one file per app in `dir_path`: runner (`runs_on`, 15-minute limit on slim runners), timeout, Zig version, release job (`rele_runs_on`, `rele_tmos_mins`, `rele_targets`); `drop` lists old workflow files to move to the trash | see file | see file |
 | `ghcr.onzz` | check for a container image | `false` | true, false |

@@ -28,7 +28,7 @@ const USAGE =
     \\Commands:
     \\  status   compare this device with the repo, item by item (read-only)
     \\  check    like status, plus one fingerprint line for check-parity.sh (read-only; exit 3 when not in sync)
-    \\  sync     two-way and truly safe: a change on one side goes to the other, a missing file comes back, nothing is ever deleted; a file changed on both sides is auto-merged (code, text; sync.merge_globs) or both copies are kept and nobody wins (exit 3). Dry-run unless --go
+    \\  sync     two-way and truly safe: a change on one side goes to the other, a missing file comes back, nothing is ever deleted; a file changed on both sides is auto-merged (code, text; sync.merge_globs), else the newest edit wins and the other copy goes to the trash folder (sync.trash_dir). Dry-run unless --go
     \\  pull     the repo wins: this device takes the repo's version of every file the repo changed (and of a conflict); the old copy is saved first. Dry-run unless --go
     \\  push     this device wins: the repo takes this device's version of every file this device changed (and of a conflict); a secret-looking file stops it. Dry-run unless --go
     \\  version  print the app version
@@ -40,7 +40,7 @@ const USAGE =
     \\  --home <path>     home folder for {home} (default: HOME / USERPROFILE)
     \\  --only <id>       work on one item of the config only
     \\  --big             allow more than sync.big_files changes on one side
-    \\  --no-merge        never auto-merge, keep both copies of every conflict
+    \\  --no-merge        never auto-merge: the newest edit wins every conflict
     \\  --go              allow writes; omit for a dry-run
     \\
     \\Never deletes: pull saves the old device file to backup_dir, push only adds or replaces inside the repo. Files that exist on one side only are left alone.
@@ -215,19 +215,17 @@ pub fn main(init: std.process.Init) void {
     const r = ap.run(&ctx, plans, mode, parsed.go, parsed.big, parsed.no_merge) catch |e| fail(io, e);
     const c = r.counts;
     out.say(io, "{s}", .{r.report});
-    out.say(io, "{s}: {d} same · {d} to this device · {d} to the repo · {d} merged · {d} kept as two copies · {d} still unresolved · {d} skipped (repo newer) · {d} skipped (device newer)\n", .{ parsed.cmd, c.same, c.near, c.far, c.merged, c.paired, c.still, c.behind, c.ahead });
+    out.say(io, "{s}: {d} same · {d} to this device · {d} to the repo · {d} merged · {d} settled by newest edit · {d} skipped (repo newer) · {d} skipped (device newer)\n", .{ parsed.cmd, c.same, c.near, c.far, c.merged, c.newest, c.behind, c.ahead });
     if (!parsed.go) out.say(io, "dry-run: nothing written. Pass --go to apply.\n", .{}) else {
         if (c.installed > 0) out.say(io, "installed {d} extension(s)\n", .{c.installed});
+        if (c.raced > 0) out.say(io, "{d} file(s) were saved on this device while the sync ran and were left alone; the next run looks at them again.\n", .{c.raced});
         if (c.failed > 0) {
             out.fail(io, "some extensions did not install", "the editor command failed for them", "run the install by hand, or check the extension ids in vscode/extensions.txt");
             die(CF.exit_fail);
         }
         if (c.near > 0) out.say(io, "restart Claude Code and VS Code to load the new settings; old copies are in backup_dir\n", .{});
     }
-    if (c.paired + c.still > 0) {
-        out.say(io, "conflicts: nobody wins. Decide per file: push --only <item> (this device wins) or pull --only <item> (the repo wins).\n", .{});
-        die(CF.exit_diff);
-    }
+    if (parsed.go and c.newest > 0) out.say(io, "{d} conflict(s) settled by the newest edit; the losing copies are in {s}/ in the repo.\n", .{ c.newest, ctx.cf.sync.trash_dir });
     die(CF.exit_ok);
 }
 

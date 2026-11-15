@@ -32,8 +32,8 @@ pub const Item = struct {
 };
 pub const ScanCf = struct { names: []const []const u8, text: []const []const u8 };
 pub const VscodeCf = struct { bin: []const u8, tmos_secs: u32 };
-// big_files: most files one sync may change on one side without --big; base_dir: what this device and the repo last agreed on; merge_globs: files that may be auto-merged when both sides changed them; git_bin: the git used for the three-way merge ----
-pub const SyncCf = struct { big_files: u32, base_dir: []const u8, merge_globs: []const []const u8, git_bin: []const u8 };
+// tie_secs: two edits this close count as the same moment (the repo wins); trash_dir: the folder in the repo where the losing copy of a conflict goes; big_files: most files one sync may change on one side without --big; base_dir: what this device and the repo last agreed on; merge_globs: files that may be auto-merged when both sides changed them; git_bin: the git used for the three-way merge ----
+pub const SyncCf = struct { tie_secs: u32, trash_dir: []const u8, big_files: u32, base_dir: []const u8, merge_globs: []const []const u8, git_bin: []const u8 };
 pub const Conf = struct {
     vers: u32,
     src: []const u8,
@@ -127,6 +127,8 @@ pub fn check(c: *const Conf) ConfErro!void {
     if (c.vscode.bin.len == 0 or std.mem.indexOfAny(u8, c.vscode.bin, " \t\r\n") != null) return bad("vscode.bin must be one program name or path, without spaces", .{});
     if (c.vscode.tmos_secs < CF.tmos_floor or c.vscode.tmos_secs > CF.tmos_ceil) return bad("vscode.tmos_secs must be {d}..{d}", .{ CF.tmos_floor, CF.tmos_ceil });
     if (c.sync.big_files < 1 or c.sync.big_files > 1000000) return bad("sync.big_files must be 1..1000000", .{});
+    if (c.sync.tie_secs > 86400) return bad("sync.tie_secs must be 0..86400", .{});
+    if (!plainName(c.sync.trash_dir)) return bad("sync.trash_dir must be one folder name: letters, digits, - or _", .{});
     if (!rootOk(c.sync.base_dir)) return bad("sync.base_dir must start with {{home}} or {{appdata}}, or be an absolute path", .{});
     try listOk("sync.merge_globs", c.sync.merge_globs, true);
     if (c.sync.git_bin.len == 0 or std.mem.indexOfAny(u8, c.sync.git_bin, " \t\r\n") != null) return bad("sync.git_bin must be one program name or path, without spaces", .{});

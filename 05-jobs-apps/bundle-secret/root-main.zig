@@ -35,7 +35,7 @@ const USAGE =
     \\  fetch    pull the vault repo and write new secrets here; a local file that differs is KEPT (dry-run unless --go)
     \\  ship     pack, commit only the bundle, push; refuses when another device shipped a newer bundle (dry-run unless --go)
     \\  keep-pass save the passphrase to an owner-only file (bundle.pass_file) so you need not type it; checked against the bundle first
-    \\  sync     two-way and truly safe: new or changed files go to the other side, a missing file comes back, nothing is ever deleted; a file changed on both sides is auto-merged (code, text; sync.merge_globs) or both copies are kept (nobody wins, exit 3) (dry-run unless --go)
+    \\  sync     two-way and truly safe: new or changed files go to the other side, a missing file comes back, nothing is ever deleted; a file changed on both sides is auto-merged (code, text; sync.merge_globs) else the newest edit wins and the other copy goes to the trash folder (sync.trash_dir) (dry-run unless --go)
     \\  pull     the vault wins: this device takes the vault's version of every differing file, the old copy goes to the trash; files only here are left alone (dry-run unless --go)
     \\  push     this device wins: the vault takes this device's version of every differing file; files only in the vault are kept (dry-run unless --go)
     \\  status   show the bundle file: size, Argon2 cost, sha256 (no passphrase)
@@ -52,8 +52,8 @@ const USAGE =
     \\  --reseed          token files (pick.seed_only) are normally copied once and then left alone: with this flag pack/ship put THIS device's copy in the bundle, and fetch/unpack take the bundle's copy over this device's (old copy to the trash)
     \\  --rekey           pack and ship only: replace a bundle that another passphrase made (on purpose)
     \\  --big             sync, pull, push: allow more than sync.big_files changes on one side
-    \\  --no-merge        sync: never auto-merge, keep both copies of every conflict
-    \\  --only <path>     sync, pull, push: only this file (or a pattern with *); push --only after a conflict makes this device win for that file, pull --only makes the vault win
+    \\  --no-merge        sync: never auto-merge: the newest edit wins every conflict
+    \\  --only <path>     sync, pull, push: only this file (or a pattern with *); push --only makes this device win for that file, pull --only makes the vault win
     \\
     \\Passphrase, first found: the variable named in bundle.pass_envz, then the file bundle.pass_file (owner-only, made by keep-pass), then typed hidden.
     \\Exit codes: 0 ok · 1 failed · 2 usage or config · 3 files differ (check) or the action was refused (fetch kept a local file; ship is stale)
@@ -189,6 +189,7 @@ fn syncFail(io: std.Io, e: anyerror) noreturn {
         error.GitFail => out.fail(io, "git failed", sh.why, "check the network and your git login or deploy key for the vault repo, then run again"),
         error.Missing => out.fail(io, "git is not installed", "the program name in git.bin was not found", "install git, or set git.bin in 00-config.json"),
         error.Timeout => out.fail(io, "git took too long", "git.timeout_secs ran out", "check the network, or raise git.timeout_secs"),
+        error.BadFormat, error.Unsafe => out.fail(io, "the base store is damaged", "sync.base_dir holds a file that is not in the expected format", "move that folder away by hand: the next run treats every difference as a conflict (the newest edit wins) until a pull or push sets it again"),
         error.TooManyChanges => out.fail(io, "too many changes at once", sh.why, "read the list with a dry-run; if it is right add --big"),
         else => flowFail(io, e),
     }
@@ -250,12 +251,10 @@ pub fn main(init: std.process.Init) void {
         const pw = passGet(io, a, env, c, pass_file, true, false, mode != .pull);
         const base_dir = conf.homeFill(a, c.sync.base_dir, home) catch die(CF.exit_fail);
         const r = sf.run(sy, pw, .{ .mode = mode, .go = parsed.go, .big = parsed.big, .no_merge = parsed.no_merge, .only = parsed.only, .base_dir = base_dir }) catch |er| syncFail(io, er);
-        out.say(io, "{s}: {d} same · {d} to this device · {d} to the vault · {d} merged · {d} kept as two copies · {d} still unresolved · {d} skipped (vault newer) · {d} skipped (device newer)\n", .{ parsed.cmd, r.same, r.to_near, r.to_far, r.merged, r.paired, r.still, r.behind, r.ahead });
-        if (!parsed.go) out.say(io, "dry-run: nothing written. Pass --go to apply.\n", .{}) else if (r.to_far + r.merged + r.paired > 0) out.say(io, "{s}\n", .{if (r.shipped) "the vault is updated and pushed" else "the vault file is up to date"});
-        if (r.paired + r.still > 0) {
-            out.say(io, "conflicts: nobody wins, each side keeps its file and also gets the other copy as name.conflict-<near|far>-<time>. Decide per file: push --only <file> (this device wins) or pull --only <file> (the vault wins).\n", .{});
-            die(CF.exit_diff);
-        }
+        out.say(io, "{s}: {d} same · {d} to this device · {d} to the vault · {d} merged · {d} settled by newest edit · {d} skipped (vault newer) · {d} skipped (device newer)\n", .{ parsed.cmd, r.same, r.to_near, r.to_far, r.merged, r.newest, r.behind, r.ahead });
+        if (!parsed.go) out.say(io, "dry-run: nothing written. Pass --go to apply.\n", .{}) else if (r.to_far + r.merged > 0) out.say(io, "{s}\n", .{if (r.shipped) "the vault is updated and pushed" else "the vault file is up to date"});
+        if (r.raced > 0) out.say(io, "{d} file(s) changed on this device while the sync ran and were left alone; the next run looks at them again.\n", .{r.raced});
+        if (parsed.go and r.newest > 0) out.say(io, "{d} conflict(s) settled by the newest edit; the losing copies are in {s}/ in the repo.\n", .{ r.newest, c.sync.trash_dir });
         die(CF.exit_ok);
     }
     if (std.mem.eql(u8, parsed.cmd, "fetch") or std.mem.eql(u8, parsed.cmd, "ship")) {

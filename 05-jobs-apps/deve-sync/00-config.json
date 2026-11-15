@@ -14,6 +14,8 @@
   },
   "vscode": { "bin": "code", "tmos_secs": 120 },
   "sync": {
+    "tie_secs": 120,
+    "trash_dir": "zzzz-delete-force-items",
     "big_files": 50,
     "base_dir": "{home}/.04-clou-secr/deve-base",
     "merge_globs": ["*.zig", "*.zon", "*.js", "*.mjs", "*.ts", "*.py", "*.sh", "*.ps1", "*.c", "*.h", "*.cpp", "*.hpp", "*.css", "*.html", "*.json", "*.yml", "*.yaml", "*.md", "*.txt"],
@@ -26,14 +28,14 @@
       "keys": ["fallbackModel", "alwaysThinkingEnabled", "effortLevel", "modelSettings", "tui", "editorMode", "verbose", "switchModelsOnFlag", "remoteControlAtStartup", "agentPushNotifEnabled"]
     },
     { "id": "claude-keybindings", "kind": "file", "root": "claude", "from": "claude/keybindings.json", "to": "keybindings.json" },
-    { "id": "claude-agents", "kind": "dir", "root": "claude", "from": "claude/agents", "to": "agents", "skip": [".99-save/*", "*.7z", "*.conflict-*"] },
-    { "id": "claude-skills", "kind": "dir", "root": "claude", "from": "claude/skills", "to": "skills", "skip": ["synced/*", "*.conflict-*"] },
-    { "id": "claude-rules", "kind": "dir", "root": "claude", "from": "claude/rules", "to": "rules", "skip": ["*.conflict-*"] },
-    { "id": "claude-commands", "kind": "dir", "root": "claude", "from": "claude/commands", "to": "commands", "skip": ["*.conflict-*"] },
+    { "id": "claude-agents", "kind": "dir", "root": "claude", "from": "claude/agents", "to": "agents", "skip": [".99-save/*", "*.7z"] },
+    { "id": "claude-skills", "kind": "dir", "root": "claude", "from": "claude/skills", "to": "skills", "skip": ["synced/*"] },
+    { "id": "claude-rules", "kind": "dir", "root": "claude", "from": "claude/rules", "to": "rules", "skip": [] },
+    { "id": "claude-commands", "kind": "dir", "root": "claude", "from": "claude/commands", "to": "commands", "skip": [] },
     { "id": "claude-memory-path", "kind": "merge", "root": "repo", "to": ".claude/settings.local.json", "set": [{ "key": "autoMemoryDirectory", "value": "{repo}/.claude/memory" }] },
     { "id": "vscode-settings", "kind": "file", "root": "vscode", "from": "vscode/settings.json", "to": "settings.json" },
     { "id": "vscode-keybindings", "kind": "file", "root": "vscode", "from": "vscode/keybindings.json", "to": "keybindings.json" },
-    { "id": "vscode-snippets", "kind": "dir", "root": "vscode", "from": "vscode/snippets", "to": "snippets", "skip": ["*.conflict-*"] },
+    { "id": "vscode-snippets", "kind": "dir", "root": "vscode", "from": "vscode/snippets", "to": "snippets", "skip": [] },
     { "id": "vscode-extensions", "kind": "exts", "root": "vscode", "from": "vscode/extensions.txt" }
   ]
 }

@@ -113,17 +113,17 @@ Without `--rekey` the program refuses to replace a bundle your passphrase cannot
 1. **sync** (also runs by itself on a schedule): a change on one side goes to the other, a missing file comes back, nothing is ever deleted. `EXE sync --repo REPO --config CFG2 --go`. Without `--go` it only shows the plan.
 2. **pull**: the vault wins. Files you changed only on this device are kept; a file changed on both takes the vault's version and your old copy goes to the trash.
 3. **push**: this device wins. Files that exist only in the vault are kept.
-4. If a file was changed on both sides, code and text are merged into one version when the changes do not overlap. Otherwise nobody wins: both sides keep their own file and also get the other copy next to it (`name.conflict-...`), and the command ends with exit code 3. To decide, run `EXE push --only FILE --repo REPO --config CFG2 --go` (this device wins) or the same with `pull` (the vault wins).
+4. If a file was changed on both sides, code and text are merged into one version when the changes do not overlap. Otherwise the newest edit wins on both sides and the older copy is moved to the `zzzz-delete-force-items` folder in the repo (nothing is lost, nothing to resolve by hand; two edits less than 2 minutes apart: the vault wins). To force one side instead, run `EXE push --only FILE --repo REPO --config CFG2 --go` (this device wins) or the same with `pull` (the vault wins).
 5. A change of more than 50 files at once is refused; check the list, then add `--big`.
-On a new device with no history yet, run one `pull` first.
+On a new device with no history yet, run one `pull` first. If you move or rename a file on purpose, add its old path to `sync.retired` in the settings file, or the old file comes back (nothing is ever deleted).
 
 ---
 
 ## Second bundle: your dot-folders and dot-files
 Dot-folders (names that start with a dot, such as `.10-docs`) can ride the same vault as a second locked file, `bundle-ditems.enc`, so they never sit in plain text in your code repo. It uses its own settings file, `00-config-ditems.json`, and the same passphrase.
 1. Look (changes nothing): `EXE pack --repo REPO --config CFG2`. `REPO` = your code repo (not the secrets folder). `CFG2` = `~/04-clou-base/05-jobs-apps/bundle-secret/00-config-ditems.json`.
-2. Share a change from the one device where you edit: `EXE ship --repo REPO --config CFG2 --go`.
-3. Catch up another device: `EXE fetch --repo REPO --config CFG2 --go`. A file that changed is replaced; your old copy goes to `~/.04-clou-secr/bundle-ditems-trash` first.
+2. Keep a device in step: `EXE sync --repo REPO --config CFG2 --go` (it also runs by itself on a schedule). On a new device run `EXE pull --repo REPO --config CFG2 --go` first. A replaced file's old copy goes to `~/.04-clou-secr/bundle-ditems-trash` first.
+3. To decide yourself: `push` (this device wins) or `pull` (the vault wins), see the section above.
 4. Check: `EXE check --repo REPO --config CFG2`. You should see `0 new here · 0 differ`.
 Left out on purpose: public docs (`.10-documents`), `.github`, `.gitignore`, key and password files, per-device settings, caches and history.
 The vault repo must allow the second file once: run the guard setup on the vault with `bundle-ditems\.enc` added to its allowed names.

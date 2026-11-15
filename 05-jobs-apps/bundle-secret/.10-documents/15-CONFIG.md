@@ -70,5 +70,8 @@ Same settings as above, tuned for dot-items. Different values:
 | Setting | What it does | Default | Allowed |
 |---|---|---|---|
 | `sync.merge_globs` | files that may be merged into one version when both sides changed them (empty = never merge, the secrets default) | none; the dot-items file lists code and text types | any list of patterns |
+| `sync.retired` | paths you moved or renamed on purpose: ignored on both sides, never brought back, never deleted | none | any list of paths or patterns |
+| `sync.tie_secs` | two edits this close (seconds) count as the same moment: the vault copy wins | `120` | 0 to 86400 |
+| `sync.trash_dir` | folder in the repo that receives the losing copy of a conflict (same relative path) | `zzzz-delete-force-items` | one folder name |
 | `sync.big_files` | most files one run may change on one side without `--big` | `50` | 1 to 1000000 |
 | `sync.base_dir` | where this device remembers what it and the vault last agreed on | `{home}/.04-clou-secr/bundle-secret-base` | starts with `{home}`, or absolute |

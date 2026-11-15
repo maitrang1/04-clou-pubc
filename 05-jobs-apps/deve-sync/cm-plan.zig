@@ -25,7 +25,7 @@ pub fn note(comptime fmt: []const u8, args: anytype) void {
 }
 
 pub const State = enum { same, differs, only_repo, only_dev };
-pub const Entry = struct { rel: []const u8, state: State, repo: ?[]const u8, dev: ?[]const u8, set: bool = false, base: ?[]const u8 = null, act: tri.Act = .same };
+pub const Entry = struct { rel: []const u8, state: State, repo: ?[]const u8, dev: ?[]const u8, set: bool = false, base: ?[]const u8 = null, act: tri.Act = .same, repo_mt: i64 = 0, dev_mt: i64 = 0 };
 pub const Plan = struct { item: conf.Item, entries: []Entry, skipped: u32 = 0, unavailable: []const u8 = "" };
 
 pub const Ctx = struct {
@@ -107,12 +107,22 @@ fn entry(ctx: *const Ctx, id: []const u8, rel: []const u8, repo: ?[]const u8, de
     return .{ .rel = rel, .state = stateOf(repo, dev), .repo = repo, .dev = dev, .set = set, .base = b, .act = act };
 }
 
+// the edit times of both copies (0 = unknown); a key entry uses the time of its whole file ----
+fn withMt(e: Entry, repo_mt: i64, dev_mt: i64) Entry {
+    var x = e;
+    x.repo_mt = repo_mt;
+    x.dev_mt = dev_mt;
+    return x;
+}
+
 fn planFile(ctx: *const Ctx, it: conf.Item) !Plan {
-    const r = try rd(ctx, try ctx.repoPath(it));
-    const d = try rd(ctx, try ctx.devPath(it));
+    const rp = try ctx.repoPath(it);
+    const dp = try ctx.devPath(it);
+    const r = try rd(ctx, rp);
+    const d = try rd(ctx, dp);
     if (r == null and d == null) return .{ .item = it, .entries = &.{} };
     const list = try ctx.a.alloc(Entry, 1);
-    list[0] = entry(ctx, it.id, std.fs.path.basename(it.to), r, d, false);
+    list[0] = withMt(entry(ctx, it.id, std.fs.path.basename(it.to), r, d, false), fio.mtimeOf(ctx.io, rp), fio.mtimeOf(ctx.io, dp));
     return .{ .item = it, .entries = list };
 }
 
@@ -142,10 +152,12 @@ fn planDir(ctx: *const Ctx, it: conf.Item) !Plan {
             skipped += 1;
             continue;
         }
-        const r = try rd(ctx, try std.fs.path.join(a, &.{ rp, rel }));
-        const d = try rd(ctx, try std.fs.path.join(a, &.{ dp, rel }));
+        const rf = try std.fs.path.join(a, &.{ rp, rel });
+        const df = try std.fs.path.join(a, &.{ dp, rel });
+        const r = try rd(ctx, rf);
+        const d = try rd(ctx, df);
         if (r == null and d == null) continue;
-        try list.append(a, entry(ctx, it.id, rel, r, d, false));
+        try list.append(a, withMt(entry(ctx, it.id, rel, r, d, false), fio.mtimeOf(ctx.io, rf), fio.mtimeOf(ctx.io, df)));
     }
     return .{ .item = it, .entries = list.items, .skipped = skipped };
 }
@@ -166,14 +178,18 @@ fn valText(ctx: *const Ctx, obj: std.json.Value, key: []const u8) !?[]const u8 {
 
 fn planMerge(ctx: *const Ctx, it: conf.Item) !Plan {
     const a = ctx.a;
-    const shared = if (it.from.len > 0) try loadObj(ctx, try ctx.repoPath(it), true) else js.emptyObj();
-    const dev = try loadObj(ctx, try ctx.devPath(it), false);
+    const rp = try ctx.repoPath(it);
+    const dp = try ctx.devPath(it);
+    const shared = if (it.from.len > 0) try loadObj(ctx, rp, true) else js.emptyObj();
+    const dev = try loadObj(ctx, dp, false);
+    const rmt = if (it.from.len > 0) fio.mtimeOf(ctx.io, rp) else 0;
+    const dmt = fio.mtimeOf(ctx.io, dp);
     var list: std.ArrayList(Entry) = .empty;
     for (it.keys) |k| {
         const r = try valText(ctx, shared, k);
         const d = try valText(ctx, dev, k);
         if (r == null and d == null) continue;
-        try list.append(a, entry(ctx, it.id, k, r, d, false));
+        try list.append(a, withMt(entry(ctx, it.id, k, r, d, false), rmt, dmt));
     }
     for (it.set) |s| {
         const want = try ctx.fillPath(s.value);
@@ -301,6 +317,11 @@ pub const TestEnv = struct {
     pub fn put(t: *TestEnv, rel: []const u8, data: []const u8) !void {
         if (std.fs.path.dirname(rel)) |d| try t.tmp.dir.createDirPath(std.testing.io, d);
         try t.tmp.dir.writeFile(std.testing.io, .{ .sub_path = rel, .data = data });
+    }
+
+    // set a file's edit time (seconds since 1970) so a test can say which edit is newer ----
+    pub fn age(t: *TestEnv, rel: []const u8, secs: i64) !void {
+        try t.tmp.dir.setTimestamps(std.testing.io, rel, .{ .modify_timestamp = .{ .new = std.Io.Timestamp.fromNanoseconds(@as(i96, secs) * std.time.ns_per_s) } });
     }
 
     pub fn get(t: *TestEnv, rel: []const u8) ?[]const u8 {

@@ -43,7 +43,7 @@ const Args = struct {
 };
 
 const USAGE =
-    \\github - set up a GitHub repo with CI, secrets and keys for 04-clou-pubc.
+    \\github - set up a GitHub repo with CI, secrets and keys for 04-clou-publ.
     \\
     \\Usage: github <command> [flags]
     \\

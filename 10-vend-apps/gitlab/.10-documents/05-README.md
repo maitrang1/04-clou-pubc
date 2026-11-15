@@ -14,7 +14,7 @@ It finds your GitHub login, helps you sign up on GitLab (you press the buttons),
 - Your GitHub repo set up first (see the GitHub app). `gh` logged in.
 - `git` and `ssh-keygen` installed.
 - To log in to GitLab: either `glab` (GitLab's program) installed, or your own GitLab OAuth app id (see `10-HOW-TO.md`).
-- The public copy folder from the GitHub app, for example `/home/mai_trang/04-clou-pubc`.
+- The public copy folder from the GitHub app, for example `/home/mai_trang/04-clou-publ`.
 
 ---
 
@@ -45,4 +45,4 @@ Your passphrase locks one encrypted file in `~/.04-clou-secr/`. The GitLab token
 ---
 
 ## License
-PolyForm Noncommercial 1.0.0. Free for personal and noncommercial use (hobby, study, research, charity). Using it in a business or for profit needs a paid commercial license: open an issue at https://github.com/maitrang1/04-clou-pubc/issues. Full text: `25-LICENSE`.
+PolyForm Noncommercial 1.0.0. Free for personal and noncommercial use (hobby, study, research, charity). Using it in a business or for profit needs a paid commercial license: open an issue at https://github.com/maitrang1/04-clou-publ/issues. Full text: `25-LICENSE`.

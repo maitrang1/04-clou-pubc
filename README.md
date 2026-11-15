@@ -13,6 +13,6 @@ Each tool has its own `.10-documents/` folder: README, HOW-TO, CONFIG, UPDATE.
 ## License
 **PolyForm Noncommercial 1.0.0.**
 - Free for personal and noncommercial use: hobby, study, research, charity.
-- Using it in a business or for profit needs a paid commercial license. Open an issue at https://github.com/maitrang1/04-clou-pubc/issues.
+- Using it in a business or for profit needs a paid commercial license. Open an issue at https://github.com/maitrang1/04-clou-publ/issues.
 
 Full text: `LICENSE`.

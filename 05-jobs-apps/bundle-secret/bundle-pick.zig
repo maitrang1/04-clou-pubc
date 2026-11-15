@@ -14,7 +14,8 @@ const gm = @import("glob-match.zig");
 
 const CF = .{ .kilo = 1024, .mega = 1024 * 1024 };
 
-pub const Item = struct { rel: []const u8, data: []const u8 };
+// mtime: when the file was last edited, whole seconds (0 = unknown) ----
+pub const Item = struct { rel: []const u8, data: []const u8, mtime: i64 = 0 };
 pub const Skips = struct { big: u32 = 0, profile: u32 = 0, glob: u32 = 0, other: u32 = 0 };
 pub const Picked = struct { items: []Item, skips: Skips, bytes: u64 };
 pub const PickErro = error{ TooMuch, NoRepo, OutOfMemory };
@@ -90,7 +91,7 @@ pub fn collect(io: std.Io, a: std.mem.Allocator, repo: []const u8, pick: conf.Pi
                     bytes -= st.size;
                     continue;
                 };
-                try items.append(a, .{ .rel = rel, .data = data });
+                try items.append(a, .{ .rel = rel, .data = data, .mtime = st.mtime.toSeconds() });
             },
             else => {},
         }

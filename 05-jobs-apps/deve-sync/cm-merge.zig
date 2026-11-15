@@ -4,7 +4,7 @@
 // Cre: 2026-11-15                          - | Mod: 2026-11-15
 // Who: zzOWN.com - Own Fast. Work Faster.  - | Ema: zzown.com@gmail.com
 // Inp: Git runner (folder = scratch folder), relative path, near, base, far bytes, merge globs
-// Out: merged bytes or null (null = keep both copies, nobody wins)
+// Out: merged bytes or null (null = no clean merge: the newest edit wins)
 // Run: not run directly - imported by cm-apply.zig
 // Exe: n/a
 // =====================================================================

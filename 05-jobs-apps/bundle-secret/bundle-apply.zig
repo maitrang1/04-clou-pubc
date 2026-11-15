@@ -62,6 +62,13 @@ pub fn writeOwner(io: std.Io, path: []const u8, data: []const u8, mode: u32, a: 
     cwd.rename(part, cwd, path, io) catch return error.WriteFail;
 }
 
+// the file keeps the time of the edit it came from; best effort, a failure only makes it look newer ----
+pub fn setMtime(io: std.Io, path: []const u8, secs: i64) void {
+    if (secs <= 0) return;
+    const ts = std.Io.Timestamp.fromNanoseconds(@as(i96, secs) * std.time.ns_per_s);
+    std.Io.Dir.cwd().setTimestamps(io, path, .{ .follow_symlinks = false, .modify_timestamp = .{ .new = ts } }) catch {};
+}
+
 pub fn apply(io: std.Io, a: std.mem.Allocator, repo: []const u8, items: []const arc.Item, rows: []const Row, trash_root: []const u8, now_secs: i64, file_mode: u32, replace: bool, reseed: bool) ApplyErro!Counts {
     const cwd = std.Io.Dir.cwd();
     var c: Counts = .{};
@@ -87,6 +94,7 @@ pub fn apply(io: std.Io, a: std.mem.Allocator, repo: []const u8, items: []const 
             c.replaced += 1;
         } else c.written += 1;
         try writeOwner(io, path, it.data, file_mode, a);
+        setMtime(io, path, it.mtime);
     }
     return c;
 }

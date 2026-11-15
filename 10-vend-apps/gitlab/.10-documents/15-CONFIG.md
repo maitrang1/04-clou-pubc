@@ -22,7 +22,7 @@ Every key must be present. An unknown key stops the app and names the line and c
 | `data.root` | private folder | `{home}/.04-clou-secr` | path |
 | `data.vaul` / `stat` / `audi` / `acct` | vault, state, audit, private account file names | `gitlab-vault.json` · `gitlab-state.json` · `gitlab-audit.log` · `gitlab-account.json` | file names |
 | `vaul.*` | passphrase variable and lock cost | `CLOUD_HOUSE_VAULT_PASS` · 3 · 65536 · 1 | name, numbers |
-| `repo.path` | the copy folder that gets the extra push URL | `{home}/04-clou-pubc` | path |
+| `repo.path` | the copy folder that gets the extra push URL | `{home}/04-clou-publ` | path |
 | `repo.bran` / `remo` | branch and remote | `main` · `origin` | names |
 | `gitl.host` / `webz` / `apiz` / `oaut` | GitLab addresses | gitlab.com | https addresses |
 | `gitl.user` | your GitLab name | empty (the private account file fills it) | text |

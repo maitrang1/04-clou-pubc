@@ -13,7 +13,7 @@ It checks your GitHub account, makes (or finds) your repo, sets its rules, uploa
 ## Requirements
 - A GitHub account (or the program helps you through sign-up).
 - `git` and `gh` (the GitHub program) installed. `gh` must be logged in.
-- An empty folder for the public copy, for example `/home/mai_trang/04-clou-pubc`. It must not be inside your work folder.
+- An empty folder for the public copy, for example `/home/mai_trang/04-clou-publ`. It must not be inside your work folder.
 
 ---
 
@@ -29,11 +29,11 @@ gh auth refresh -h github.com -s user:email,read:user,write:public_key
 3. Look before you leap (changes nothing):
 ```
 cd /home/mai_trang/04-clou-base/10-vend-apps/github
-/home/mai_trang/04-clou-base/10-vend-apps/github/zig-out/bin/github run --root /home/mai_trang/04-clou-pubc
+/home/mai_trang/04-clou-base/10-vend-apps/github/zig-out/bin/github run --root /home/mai_trang/04-clou-publ
 ```
 4. Run it for real. It asks for a vault passphrase (8 or more characters): save it in your password manager.
 ```
-/home/mai_trang/04-clou-base/10-vend-apps/github/zig-out/bin/github run --live --root /home/mai_trang/04-clou-pubc
+/home/mai_trang/04-clou-base/10-vend-apps/github/zig-out/bin/github run --live --root /home/mai_trang/04-clou-publ
 ```
 It prints each step and ends with `done: 18  skipped: 2  stopped at: (finished)`.
 
@@ -52,4 +52,4 @@ Your passphrase locks one encrypted file in `~/.04-clou-secr/`. Your login, emai
 ---
 
 ## License
-PolyForm Noncommercial 1.0.0. Free for personal and noncommercial use (hobby, study, research, charity). Using it in a business or for profit needs a paid commercial license: open an issue at https://github.com/maitrang1/04-clou-pubc/issues. Full text: `25-LICENSE`.
+PolyForm Noncommercial 1.0.0. Free for personal and noncommercial use (hobby, study, research, charity). Using it in a business or for profit needs a paid commercial license: open an issue at https://github.com/maitrang1/04-clou-publ/issues. Full text: `25-LICENSE`.

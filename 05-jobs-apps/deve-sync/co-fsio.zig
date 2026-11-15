@@ -50,6 +50,19 @@ pub fn writeAtomic(io: std.Io, a: std.mem.Allocator, path: []const u8, data: []c
     cwd.rename(part, cwd, path, io) catch return error.WriteFail;
 }
 
+// modified time in whole seconds; 0 = unknown or missing ----
+pub fn mtimeOf(io: std.Io, path: []const u8) i64 {
+    const st = std.Io.Dir.cwd().statFile(io, path, .{ .follow_symlinks = false }) catch return 0;
+    return if (st.kind == .file) st.mtime.toSeconds() else 0;
+}
+
+// the content keeps the time of the edit it came from; best effort, a failure only makes the file look newer ----
+pub fn setMtime(io: std.Io, path: []const u8, secs: i64) void {
+    if (secs <= 0) return;
+    const ts = std.Io.Timestamp.fromNanoseconds(@as(i96, secs) * std.time.ns_per_s);
+    std.Io.Dir.cwd().setTimestamps(io, path, .{ .follow_symlinks = false, .modify_timestamp = .{ .new = ts } }) catch {};
+}
+
 pub const Listed = struct { rels: []const []const u8, skipped: u32 };
 
 fn lessStr(_: void, x: []const u8, y: []const u8) bool {

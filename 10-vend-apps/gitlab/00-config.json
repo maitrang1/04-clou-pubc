@@ -2,7 +2,7 @@
   "vers": 1,
   "data": { "root": "{home}/.04-clou-secr", "vaul": "gitlab-vault.json", "stat": "gitlab-state.json", "audi": "gitlab-audit.log", "step": "steps.json", "acct": "gitlab-account.json" },
   "vaul": { "envz": "CLOUD_HOUSE_VAULT_PASS", "time": 3, "memo": 65536, "para": 1 },
-  "repo": { "path": "{home}/04-clou-pubc", "bran": "main", "remo": "origin" },
+  "repo": { "path": "{home}/04-clou-publ", "bran": "main", "remo": "origin" },
   "gitl": {
     "host": "gitlab.com",
     "webz": "https://gitlab.com",
@@ -17,7 +17,7 @@
   },
   "gith": {
     "apiz": "https://api.github.com",
-    "repo": "04-clou-pubc",
+    "repo": "04-clou-publ",
     "vers": "2022-11-28",
     "secr": "GITLAB_MIRROR_TOKEN",
     "ping": "HC_PING_URL",

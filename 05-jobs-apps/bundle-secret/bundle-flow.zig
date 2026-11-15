@@ -99,6 +99,7 @@ pub fn pack(e: Env, pass: ?[]const u8, go: bool, rekey: bool, reseed: bool) Flow
                     if (!gm.hitAny(e.conf.pick.seed_only, it.rel)) continue;
                     for (old_items) |o| if (std.mem.eql(u8, o.rel, it.rel)) {
                         it.data = o.data;
+                        it.mtime = o.mtime;
                         break;
                     };
                 }
@@ -160,7 +161,10 @@ pub fn shaHex(blob: []const u8) [64]u8 {
 
 fn openBlob(e: Env, pass: []const u8, blob: []const u8, reseed: bool) FlowErro!OpenRes {
     const plain = try box.unseal(e.a, e.io, pass, blob);
-    const items = try arc.decode(e.a, plain);
+    // a retired path (moved or renamed on purpose) is ignored: not compared, not restored ----
+    var kept: std.ArrayList(arc.Item) = .empty;
+    for (try arc.decode(e.a, plain)) |it| if (!gm.hitAny(e.conf.sync.retired, it.rel)) try kept.append(e.a, it);
+    const items = kept.items;
     const rows = try apply.plan(e.io, e.a, e.repo, items, e.conf.pick.seed_only, reseed);
     return .{ .items = items, .rows = rows };
 }
