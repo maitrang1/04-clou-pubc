@@ -33,7 +33,7 @@ test "usagText shows the percent and warns past the limit" {
     try std.testing.expect(std.mem.indexOf(u8, hi, "WARN") != null);
 }
 
-const CF = .{ .vaulGlProj = "gitl.proj_path", .keyzComm = "cloud-house for gitlab" };
+const CF = .{ .vaulGlProj = "gitl.proj_path", .keyzComm = "clou-base for gitlab" };
 
 pub const Ctx = struct {
     gpa: std.mem.Allocator,

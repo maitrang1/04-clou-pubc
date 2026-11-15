@@ -15,7 +15,7 @@ const engi = @import("step-engine.zig");
 const tool = @import("tool-exec.zig");
 const forg = @import("forg-adapter.zig");
 
-const CF = .{ .keyzComm = "cloud-house for forgejo", .headMin = 40 };
+const CF = .{ .keyzComm = "clou-base for forgejo", .headMin = 40 };
 
 pub const Ctx = struct {
     gpa: std.mem.Allocator,

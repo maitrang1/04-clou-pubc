@@ -21,12 +21,12 @@ Every key must be present. An unknown key stops the app and names the line and c
 |---|---|---|---|
 | `data.root` | private folder | `{home}/.04-clou-secr` | path |
 | `data.vaul` / `stat` / `audi` / `acct` | vault, state, audit, private account file names | `gitlab-vault.json` · `gitlab-state.json` · `gitlab-audit.log` · `gitlab-account.json` | file names |
-| `vaul.*` | passphrase variable and lock cost | `CLOUD_HOUSE_VAULT_PASS` · 3 · 65536 · 1 | name, numbers |
+| `vaul.*` | passphrase variable and lock cost | `CLOU_BASE_VAULT_PASS` · 3 · 65536 · 1 | name, numbers |
 | `repo.path` | the copy folder that gets the extra push URL | `{home}/04-clou-publ` | path |
 | `repo.bran` / `remo` | branch and remote | `main` · `origin` | names |
 | `gitl.host` / `webz` / `apiz` / `oaut` | GitLab addresses | gitlab.com | https addresses |
 | `gitl.user` | your GitLab name | empty (the private account file fills it) | text |
-| `gitl.proj` / `visi` | project name and visibility | `cloud-house` · `public` | `visi`: `private`, `internal`, `public` |
+| `gitl.proj` / `visi` | project name and visibility | `clou-base` · `public` | `visi`: `private`, `internal`, `public` |
 | `gitl.push` / `sign` | push URL and sign-up page templates | see file | templates |
 | `gitl.sett` | project features, all switched off | see file | GitLab project settings |
 | `gith.repo` / `*` | the GitHub repo that runs the mirror, then its secret and variable names, workflow file and template, wait | `GITLAB_MIRROR_TOKEN` · `.github/workflows/mirror.yml` | text, number |
@@ -34,7 +34,7 @@ Every key must be present. An unknown key stops the app and names the line and c
 | `logi.orde` | reserved, not used yet | `vault`, `devi`, `glab` | list |
 | `tool.*` | programs to run | `git` · `ssh-keygen` · `ssh` · `glab` · `gh` · 120 s | names, number |
 | `glab.*` / `ghcl.*` | the arguments for `glab` and `gh` (`{host}` is filled in) | see file | argument lists |
-| `sshz.file` / `titl` | SSH key file and its title | `{home}/.ssh/id_ed25519_gitlab` · `cloud-house` | path, text |
+| `sshz.file` / `titl` | SSH key file and its title | `{home}/.ssh/id_ed25519_gitlab` · `clou-base` | path, text |
 | `prot.*` | who may push and merge to `main` | 30 · 40 · no force push | `forc` must be false |
 | `toke.*` | the push token: name, scope, role, days, renew margin | `mirror` · `write_repository` · 30 · 90 · 14 | text, numbers |
 | `guid.*` · `http.*` · `limi.*` | waits, retries, free-tier caps and warnings | see file | numbers |

@@ -1,7 +1,7 @@
 .{
-    .name = .cloud_house_deve_sync,
+    .name = .clou_base_deve_sync,
     .version = "0.1.0",
-    .fingerprint = 0xd59a7a11bd984653,
+    .fingerprint = 0x5e1ec2cc9f8d70d8,
     .minimum_zig_version = "0.16.0",
     .paths = .{""},
 }

@@ -163,14 +163,14 @@ test "cloud-init holds the app user, port and unit; the heartbeat only when on" 
     const off = try cloudInit(gpa, &cfg);
     try std.testing.expect(std.mem.indexOf(u8, off, "useradd --system --create-home --shell /usr/sbin/nologin chouse") != null);
     try std.testing.expect(std.mem.indexOf(u8, off, "--dport 8080") != null);
-    try std.testing.expect(std.mem.indexOf(u8, off, "ExecStart=/usr/local/bin/cloud-house-app") != null);
+    try std.testing.expect(std.mem.indexOf(u8, off, "ExecStart=/usr/local/bin/clou-base-app") != null);
     try std.testing.expect(std.mem.indexOf(u8, off, "SHA=\"abc123\"") != null); // x86_64 binary
     try std.testing.expect(std.mem.indexOf(u8, off, "= aarch64 ]; then URL=\"https://example.test/app-arm\"; SHA=\"def456\"") != null); // Arm binary
     try std.testing.expect(std.mem.indexOf(u8, off, "keep.timer") == null);
     try std.testing.expect(std.mem.indexOf(u8, off, "{") == null or std.mem.indexOf(u8, off, "{unit}") == null);
     cfg.keep.on = true;
     const on = try cloudInit(gpa, &cfg);
-    try std.testing.expect(std.mem.indexOf(u8, on, "cloud-house-app-keep.timer") != null);
+    try std.testing.expect(std.mem.indexOf(u8, on, "clou-base-app-keep.timer") != null);
     try std.testing.expect(std.mem.indexOf(u8, on, "timeout 15 ") != null); // 25% of 60 s
     try std.testing.expectEqual(@as(u32, 8080), appPort(&cfg));
 }

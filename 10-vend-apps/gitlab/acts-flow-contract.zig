@@ -34,14 +34,14 @@ fn confMake(gpa: std.mem.Allocator) !@import("config-load.zig").Conf {
         .data = .{ .root = "", .vaul = "", .stat = "", .audi = "", .step = "", .acct = "" },
         .vaul = .{ .envz = "", .time = 1, .memo = 64, .para = 1 },
         .repo = .{ .path = "", .bran = "main", .remo = "origin" },
-        .gitl = .{ .host = "gitlab.com", .webz = "", .apiz = "", .oaut = "", .user = "", .proj = "cloud-house", .visi = "public", .push = "", .sign = "", .sett = sett },
-        .gith = .{ .apiz = "", .repo = "cloud-house", .vers = "2022-11-28", .secr = "GITLAB_MIRROR_TOKEN", .ping = "", .varz = "MIRROR_ON", .flow = ".github/workflows/mirror.yml", .tmpl = "mirror-template.yml", .mess = "", .wait = 0 },
+        .gitl = .{ .host = "gitlab.com", .webz = "", .apiz = "", .oaut = "", .user = "", .proj = "clou-base", .visi = "public", .push = "", .sign = "", .sett = sett },
+        .gith = .{ .apiz = "", .repo = "clou-base", .vers = "2022-11-28", .secr = "GITLAB_MIRROR_TOKEN", .ping = "", .varz = "MIRROR_ON", .flow = ".github/workflows/mirror.yml", .tmpl = "mirror-template.yml", .mess = "", .wait = 0 },
         .oaut = .{ .clid = mock.clid, .scop = "api" },
         .logi = .{ .orde = &.{"devi"} },
         .tool = .{ .gitz = "git", .sshk = "ssh-keygen", .sshz = "ssh", .glab = "glab", .ghcl = "gh", .time = 20 },
         .glab = .{ .stat = &.{}, .logi = &.{}, .toke = &.{} },
         .ghcl = .{ .toke = &.{}, .user = &.{} },
-        .sshz = .{ .file = "", .titl = "cloud-house" },
+        .sshz = .{ .file = "", .titl = "clou-base" },
         .prot = .{ .push = 30, .merg = 40, .forc = false },
         .toke = .{ .name = "mirror", .scop = &.{"write_repository"}, .role = 30, .days = 90, .rota = 14 },
         .guid = .{ .open = false, .clip = false, .poll = 1, .wait = 30 },
@@ -62,7 +62,7 @@ test "full setup flow: account, project, mirror, all through the real engine" {
     const tlen = try tmpz.dir.realPath(io, &tbuf);
     const root = tbuf[0..tlen];
 
-    // a real scratch git repo standing in for the live cloud-house tree
+    // a real scratch git repo standing in for the live clou-base tree
     const repo = try std.fs.path.join(gpa, &.{ root, "repo" });
     var pare = std.process.Environ.Map.init(gpa);
     try pare.put("PATH", "/usr/bin:/bin:/usr/local/bin");
@@ -78,7 +78,7 @@ test "full setup flow: account, project, mirror, all through the real engine" {
     const head1 = try tool1.runz(&.{ "git", "rev-parse", "main" }, repo);
     try std.testing.expect(head1.okay());
     // the GitHub remote must exist first (pushUrlz only adds a second push url to it)
-    const githDir = try std.fmt.allocPrint(gpa, "{s}/github/cloud-house.git", .{root});
+    const githDir = try std.fmt.allocPrint(gpa, "{s}/github/clou-base.git", .{root});
     try std.Io.Dir.cwd().createDirPath(io, githDir);
     _ = try tool1.runz(&.{ "git", "init", "--quiet", "--bare" }, githDir);
     _ = try tool1.runz(&.{ "git", "remote", "add", "origin", githDir }, repo);
@@ -100,7 +100,7 @@ test "full setup flow: account, project, mirror, all through the real engine" {
     var http1 = http.Http.init(gpa, io, &logz, testOpts);
     defer http1.deinit();
     var gitl1 = gitl.Gitl{ .gpa = gpa, .http = &http1, .apiz = try mock1.base(gpa, "/api/v4"), .oaut = try mock1.base(gpa, "/oauth") };
-    var gith1 = gith.Gith{ .gpa = gpa, .io = io, .http = &http1, .apiz = try mock1.base(gpa, "/gh"), .vers = "2022-11-28", .toke = mock.ghToke, .owne = "ghowner", .repo = "cloud-house" };
+    var gith1 = gith.Gith{ .gpa = gpa, .io = io, .http = &http1, .apiz = try mock1.base(gpa, "/gh"), .vers = "2022-11-28", .toke = mock.ghToke, .owne = "ghowner", .repo = "clou-base" };
 
     var queu = inpu.Inpu{ .io = io };
     try queu.list.append(gpa, try gpa.dupe(u8, "g")); // stands in for the human on the email-link step (never auto-detected)
@@ -118,7 +118,7 @@ test "full setup flow: account, project, mirror, all through the real engine" {
     try std.testing.expectEqualStrings("public", mock1.projVisi); // the project took its visibility from the config
 
     // the first push: mimic "git push" by updating the bare project repo straight from the scratch repo
-    const gitDir = try std.fmt.allocPrint(gpa, "{s}/ghowner/cloud-house.git", .{root});
+    const gitDir = try std.fmt.allocPrint(gpa, "{s}/ghowner/clou-base.git", .{root});
     _ = try tool1.runz(&.{ "git", "push", "--quiet", gitDir, "main" }, repo);
 
     var mirrCtx = mirr.Ctx{ .gpa = gpa, .io = io, .conf = &conf1, .vaul = &vaul1, .stat = &stat1, .gitl = &gitl1, .gith = &gith1 };
@@ -133,7 +133,7 @@ test "full setup flow: account, project, mirror, all through the real engine" {
 
     // the mirror workflow was written into the copy folder from the template, every marker filled
     const flow = try std.Io.Dir.cwd().readFileAlloc(io, try std.fs.path.join(gpa, &.{ repo, ".github/workflows/mirror.yml" }), gpa, .limited(64 * 1024));
-    try std.testing.expect(std.mem.indexOf(u8, flow, "ghowner/cloud-house.git") != null or std.mem.indexOf(u8, flow, "/cloud-house.git") != null);
+    try std.testing.expect(std.mem.indexOf(u8, flow, "ghowner/clou-base.git") != null or std.mem.indexOf(u8, flow, "/clou-base.git") != null);
     try std.testing.expect(std.mem.indexOf(u8, flow, "secrets.GITLAB_MIRROR_TOKEN") != null);
     try std.testing.expect(std.mem.indexOf(u8, flow, "branches: [main]") != null);
     try std.testing.expect(std.mem.indexOf(u8, flow, "{") == null or std.mem.indexOf(u8, flow, "{branch}") == null);

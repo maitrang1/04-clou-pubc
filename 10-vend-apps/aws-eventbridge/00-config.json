@@ -1,7 +1,7 @@
 {
   "vers": 1,
   "data": { "root": "{home}/.04-clou-secr", "vaul": "awseb-vault.json", "stat": "awseb-state.json", "audi": "awseb-audit.log", "back": "awseb-backup" },
-  "vaul": { "envz": "CLOUD_HOUSE_VAULT_PASS", "time": 3, "memo": 65536, "para": 1 },
+  "vaul": { "envz": "CLOU_BASE_VAULT_PASS", "time": 3, "memo": 65536, "para": 1 },
   "http": { "trys": 3, "back": 2, "maxw": 30, "agen": "aws-eventbridge-setup/0.1", "maxb": 4194304 },
   "cred": { "regi": "us-east-1", "mail": "" },
   "apis": {
@@ -20,16 +20,16 @@
     "plan": "https://console.aws.amazon.com/billing/home#/account"
   },
   "name": {
-    "user": "cloud-house-sched",
-    "grup": "cloud-house",
-    "sche": "cloud-house-tick",
-    "conn": "cloud-house-conn",
-    "dest": "cloud-house-dest",
-    "rule": "cloud-house-tick-rule",
-    "rols": "cloud-house-sched-role",
-    "rolr": "cloud-house-rule-role",
-    "budg": "cloud-house-budget",
-    "poli": "cloud-house-sched-policy"
+    "user": "clou-base-sched",
+    "grup": "clou-base",
+    "sche": "clou-base-tick",
+    "conn": "clou-base-conn",
+    "dest": "clou-base-dest",
+    "rule": "clou-base-tick-rule",
+    "rols": "clou-base-sched-role",
+    "rolr": "clou-base-rule-role",
+    "budg": "clou-base-budget",
+    "poli": "clou-base-sched-policy"
   },
   "tick": {
     "urlz": "",
@@ -37,7 +37,7 @@
     "keyn": "x-tick-key",
     "rate": "rate(1 minute)",
     "rlim": 5,
-    "srcz": "cloud-house.tick",
+    "srcz": "clou-base.tick",
     "dtyp": "tick",
     "busn": "default",
     "body": "{\"tick\":true}",

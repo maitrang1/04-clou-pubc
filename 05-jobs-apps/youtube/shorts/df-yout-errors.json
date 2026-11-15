@@ -1,0 +1,17 @@
+[
+  { "reason": "quotaExceeded", "class": "stop_quota", "why": "this API project's upload quota is used up for the day" },
+  { "reason": "uploadLimitExceeded", "class": "stop_channel", "why": "the channel's own daily upload limit is reached (separate from API quota)" },
+  { "reason": "forbidden", "class": "hard", "why": "YouTube refused the request: a person must look" },
+  { "reason": "forbiddenPrivacySetting", "class": "hard", "why": "YouTube refused the privacy setting" },
+  { "reason": "forbiddenLicenseSetting", "class": "hard", "why": "YouTube refused the license setting" },
+  { "reason": "insufficientPermissions", "class": "blocked", "why": "the token has the wrong scope: run login again" },
+  { "reason": "youtubeSignupRequired", "class": "blocked", "why": "the Google account has no YouTube channel" },
+  { "reason": "invalidTitle", "class": "fail", "why": "YouTube refused the title" },
+  { "reason": "invalidDescription", "class": "fail", "why": "YouTube refused the description" },
+  { "reason": "invalidTags", "class": "fail", "why": "YouTube refused the tags" },
+  { "reason": "invalidCategoryId", "class": "fail", "why": "YouTube refused the category id" },
+  { "reason": "invalidVideoMetadata", "class": "fail", "why": "YouTube refused the metadata" },
+  { "reason": "defaultLanguageNotSet", "class": "fail", "why": "YouTube wants a default language" },
+  { "reason": "mediaBodyRequired", "class": "fail", "why": "the request had no video bytes" },
+  { "reason": "videoNotFound", "class": "notfound", "why": "no such video" }
+]

@@ -106,7 +106,7 @@ test "redaction masks every secret shape" {
         .{ "token glpat-AbC_12-xy. done", "token glpat-*** done" },
         .{ "gho_16C7e42F292c6912E7710c838347Ae178B4a", "gho_***" },
         .{ "https://gitlab.com/api/v4/users?username=ann", "https://gitlab.com/api/v4/users?username=ann" },
-        .{ "git@gitlab.com:ann/cloud-house.git", "git@gitlab.com:ann/cloud-house.git" },
+        .{ "git@gitlab.com:ann/clou-base.git", "git@gitlab.com:ann/clou-base.git" },
     };
     for (case) |pair| {
         const outp = try redaText(gpa, pair[0]);

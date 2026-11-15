@@ -21,7 +21,7 @@ Every key must be present. An unknown key stops the app and names the line and c
 |---|---|---|---|
 | `data.root` | folder for vault, state, log | `{home}/.04-clou-secr` | path |
 | `data.vaul` / `stat` / `audi` / `acct` | vault, state, audit, private account file names | `forgejo-vault.json` · `forgejo-state.json` · `forgejo-audit.log` · `forgejo-account.json` | file names |
-| `vaul.envz` | env var holding the passphrase | `CLOUD_HOUSE_VAULT_PASS` | name |
+| `vaul.envz` | env var holding the passphrase | `CLOU_BASE_VAULT_PASS` | name |
 | `vaul.time` / `memo` / `para` | vault key cost | 3 · 65536 · 1 | numbers |
 | `repo.path` | the git checkout to add the push URL to | `{home}/04-clou-publ` (set to your own folder) | path |
 | `repo.bran` / `remo` | branch and remote | `main` · `origin` | names |
@@ -36,10 +36,10 @@ Every key must be present. An unknown key stops the app and names the line and c
 | `ini` / `unit` | the lines of app.ini and the unit | see file | list of lines; must keep `DISABLE_REGISTRATION = true` |
 | `cmds.*` | commands for user, chmod, chown, systemd | see file | command lists |
 | `admi.user` / `mail` | admin name and email | empty; the private `forgejo-account.json` (keys `user`, `mail`) fills them | text |
-| `toke.name` / `scop` | token name and scopes | `cloud-house` · `write:repository`, `write:user` | text, list |
-| `frep.name` / `visi` / `sett` | repo name, visibility, features | `cloud-house` · `private` · all features off | `visi` is `private` or `public`; set when the repo is made, never changed later (a mismatch stops the step) |
+| `toke.name` / `scop` | token name and scopes | `clou-base` · `write:repository`, `write:user` | text, list |
+| `frep.name` / `visi` / `sett` | repo name, visibility, features | `clou-base` · `private` · all features off | `visi` is `private` or `public`; set when the repo is made, never changed later (a mismatch stops the step) |
 | `prot` | branch protection body | push on, force push off | `enable_force_push` must be false |
-| `sshz.file` / `titl` | SSH key file and its title | `{home}/.ssh/id_ed25519_forgejo` · `cloud-house` | path, text |
+| `sshz.file` / `titl` | SSH key file and its title | `{home}/.ssh/id_ed25519_forgejo` · `clou-base` | path, text |
 | `tool.*` | git, ssh-keygen, time limit | `git` · `ssh-keygen` · 120 s | names, number |
 | `boot.poll` / `wait` | how often and how long to wait for the server | 2 s · 60 s | numbers |
 | `http.*` | retries, back-off, size cap | 3 · 2 · 30 · 1 MB | numbers |

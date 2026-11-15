@@ -120,17 +120,17 @@ pub fn slugPars(urlz: []const u8) ?Slug {
 
 test "slug from remote urls" {
     const case = [_][3][]const u8{
-        .{ "https://github.com/ann/cloud-house.git", "ann", "cloud-house" },
-        .{ "git@github.com:ann/cloud-house.git", "ann", "cloud-house" },
-        .{ "ssh://git@github.com/ann/cloud-house", "ann", "cloud-house" },
-        .{ "/tmp/remotes/github/ann/cloud-house.git\n", "ann", "cloud-house" },
+        .{ "https://github.com/ann/clou-base.git", "ann", "clou-base" },
+        .{ "git@github.com:ann/clou-base.git", "ann", "clou-base" },
+        .{ "ssh://git@github.com/ann/clou-base", "ann", "clou-base" },
+        .{ "/tmp/remotes/github/ann/clou-base.git\n", "ann", "clou-base" },
     };
     for (case) |item| {
         const slug = slugPars(item[0]).?;
         try std.testing.expectEqualStrings(item[1], slug.owne);
         try std.testing.expectEqualStrings(item[2], slug.repo);
     }
-    try std.testing.expect(slugPars("cloud-house") == null);
+    try std.testing.expect(slugPars("clou-base") == null);
 }
 
 // ========================___THIS_IS_THE_END___========================

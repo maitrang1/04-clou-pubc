@@ -10,16 +10,16 @@ Steps marked **(not tested on a real account)** need your Render account. Everyt
 It protects your vault. Use 8 or more characters and keep it somewhere safe.
 Linux:
 ```
-export CLOUD_HOUSE_VAULT_PASS="your long passphrase"
+export CLOU_BASE_VAULT_PASS="your long passphrase"
 ```
 Windows (CMD):
 ```
-set CLOUD_HOUSE_VAULT_PASS=your long passphrase
+set CLOU_BASE_VAULT_PASS=your long passphrase
 ```
 If you skip this, the app asks you to type it, hidden.
 
 **Step 2 · Set your image**
-Open `/home/mai_trang/04-clou-base/10-vend-apps/render/00-config.json`. Under `rend`, set `imag` to your public image, for example `ghcr.io/you/cloud-house-trigger:latest`. The image must be public and listen on the port Render gives it.
+Open `/home/mai_trang/04-clou-base/10-vend-apps/render/00-config.json`. Under `rend`, set `imag` to your public image, for example `ghcr.io/you/clou-base-trigger:latest`. The image must be public and listen on the port Render gives it.
 
 **Step 3 · Preview**
 ```

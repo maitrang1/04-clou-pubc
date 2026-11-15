@@ -13,7 +13,7 @@ Every command, step by step. See `05-README.md` first. Commands run on your Linu
 forgejo-setup run
 ```
 It prints what it would do.
-5. Run it for real (as root). Type a vault passphrase when asked, or set `CLOUD_HOUSE_VAULT_PASS` first:
+5. Run it for real (as root). Type a vault passphrase when asked, or set `CLOU_BASE_VAULT_PASS` first:
 ```
 forgejo-setup run --go
 ```
@@ -70,5 +70,5 @@ Every step above was tested on a pretend server. The first real run should be on
 | `failed: TokenMintFail` | The token name exists but the vault lost it. Run `revoke`, then `run --go` |
 | `failed: BootTime` | Forgejo did not start. Check `systemctl status forgejo` |
 | `failed: RepoNotPrivate` | The repo was made public by hand. Make it private in Forgejo, run again |
-| `failed: NoPassphrase` | Set `CLOUD_HOUSE_VAULT_PASS` or run in a terminal |
+| `failed: NoPassphrase` | Set `CLOU_BASE_VAULT_PASS` or run in a terminal |
 | `failed: Unauthorized` | The token is wrong or revoked. Run `revoke`, then `run --go` |

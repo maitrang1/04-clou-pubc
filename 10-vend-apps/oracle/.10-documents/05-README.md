@@ -26,7 +26,7 @@ Oracle gives every new account a small always-on Linux computer for free. Settin
 You will see 12 steps and `hand jobs: 3 total, 0 done · steps left: 12`.
 2. Set a passphrase for the key vault (8+ characters):
 ```
-export CLOUD_HOUSE_VAULT_PASS='pick-a-long-phrase'
+export CLOU_BASE_VAULT_PASS='pick-a-long-phrase'
 ```
 3. Run it for real and follow the prompts:
 ```

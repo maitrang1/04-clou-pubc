@@ -98,7 +98,7 @@ test "ssh key add, duplicate refused, delete" {
     rig.mock.sign("ann");
     rig.gitl.toke = try tokeGetz(&rig);
 
-    const iden = try rig.gitl.keysAddz("cloud-house", "ssh-ed25519 AAAATESTKEY ann@host");
+    const iden = try rig.gitl.keysAddz("clou-base", "ssh-ed25519 AAAATESTKEY ann@host");
     try std.testing.expect(iden > 0);
     try std.testing.expectError(error.ApiError, rig.gitl.keysAddz("dupe", "ssh-ed25519 AAAATESTKEY ann@host"));
     const list = try rig.gitl.keysList();
@@ -115,10 +115,10 @@ test "project create, settings edit, protect main, access token lifecycle" {
     rig.mock.sign("ann");
     rig.gitl.toke = try tokeGetz(&rig);
 
-    try std.testing.expect((try rig.gitl.projFind("ann/cloud-house")) == null);
-    const made = try rig.gitl.projMake("cloud-house", "private", "main");
+    try std.testing.expect((try rig.gitl.projFind("ann/clou-base")) == null);
+    const made = try rig.gitl.projMake("clou-base", "private", "main");
     try std.testing.expectEqual(@as(i64, @intCast(mock.prid)), made.object.get("id").?.integer);
-    try std.testing.expectError(error.ApiError, rig.gitl.projMake("cloud-house", "private", "main"));
+    try std.testing.expectError(error.ApiError, rig.gitl.projMake("clou-base", "private", "main"));
 
     const sett = try std.json.parseFromSliceLeaky(std.json.Value, rig.gitl.gpa, "{\"shared_runners_enabled\":false,\"builds_access_level\":\"disabled\"}", .{});
     const edit = try rig.gitl.projEdit(mock.prid, sett);

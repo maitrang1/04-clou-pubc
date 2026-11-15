@@ -206,7 +206,7 @@ test "unsafe values refused" {
     try std.testing.expectError(error.ConfValu, confPars(gpa, urlz, &diag));
     const paid = try std.mem.replaceOwned(u8, gpa, good, "\"okay\": false, \"cap\": 0", "\"okay\": true, \"cap\": 0");
     try std.testing.expectError(error.ConfValu, confPars(gpa, paid, &diag));
-    const srcz = try std.mem.replaceOwned(u8, gpa, good, "\"cloud-house.tick\"", "\"aws.tick\"");
+    const srcz = try std.mem.replaceOwned(u8, gpa, good, "\"clou-base.tick\"", "\"aws.tick\"");
     try std.testing.expectError(error.ConfValu, confPars(gpa, srcz, &diag));
 }
 

@@ -30,7 +30,7 @@ Every key has a default. An unknown key stops the app and names the line and col
 | `repo.nest_okay` | allow a repo inside another repo | `false` | true, false |
 | `tool.gitz` / `ghcl` | programs to run | `git` · `gh` | names or paths |
 | `sshc.file` / `hosts` | private ssh config and one row per git host (`name`, `host`, `port`, `user`, `key`) | GitHub, GitLab, Forgejo rows | `key` may use `{keys}`, `{keyz}`, `{home}` |
-| `sshz.keyz_name` / `titl` | SSH key file name and its title on GitHub | `id_ed25519_deploy` · `cloud-house` | text |
+| `sshz.keyz_name` / `titl` | SSH key file name and its title on GitHub | `id_ed25519_deploy` · `clou-base` | text |
 | `sshz.kind` | where the key lives: `deploy` = this one repo only (safer), `account` = your whole GitHub account | `deploy` | deploy, account |
 | `file.igno` / `attr` | lines for `.gitignore` and `.gitattributes` | see file | lists |
 | `scan.name` / `mark` | file names and text shapes that count as secrets | see file | lists |
@@ -47,7 +47,7 @@ Every key has a default. An unknown key stops the app and names the line and col
 | `ciiz.*` | cloud flows, one file per app in `dir_path`: runner (`runs_on`, 15-minute limit on slim runners), timeout, Zig version, release job (`rele_runs_on`, `rele_tmos_mins`, `rele_targets`); `drop` lists old workflow files to move to the trash | see file | see file |
 | `ghcr.onzz` | check for a container image | `false` | true, false |
 | `mirr` | extra git hosts to push to | none | rows |
-| `vaul.*` | passphrase variable and lock cost | `CLOUD_HOUSE_VAULT_PASS` · 3 · 65536 · 1 | name, numbers |
+| `vaul.*` | passphrase variable and lock cost | `CLOU_BASE_VAULT_PASS` · 3 · 65536 · 1 | name, numbers |
 | `http.*` · `guid.*` · `osiz.*` · `sign.*` · `warn.*` | timeouts, waits, browser and clipboard help, sign-up pages, free-tier warnings | see file | numbers, text |
 
 ## Files

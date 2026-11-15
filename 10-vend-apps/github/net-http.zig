@@ -42,7 +42,7 @@ pub const Opts = struct {
     retr_maxz: u32 = 3,
     wait_maxz_secs: u32 = 120,
     body_maxz_kbyt: u32 = 2048,
-    user_agen: []const u8 = "cloud-house-github",
+    user_agen: []const u8 = "clou-base-github",
     audi: ?*audit.Audit = null,
 };
 

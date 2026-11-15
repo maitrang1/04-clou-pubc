@@ -22,7 +22,7 @@ const work = @import("ve-worker.zig");
 const wire = @import("ve-wire.zig");
 const cmdz = @import("cm-run.zig");
 
-const CF = .{ .pass = "test passphrase 1234", .secr = "TICKSECRET-fake-0001", .secr2 = "TICKSECRET-fake-0002", .cron = "*/5 * * * *", .scri = "cloud-house-tick" };
+const CF = .{ .pass = "test passphrase 1234", .secr = "TICKSECRET-fake-0001", .secr2 = "TICKSECRET-fake-0002", .cron = "*/5 * * * *", .scri = "clou-base-tick" };
 
 // everything one test needs: mock, temp home, config file, arena
 const Rig = struct {
@@ -55,7 +55,7 @@ const Rig = struct {
         try std.Io.Dir.cwd().writeFile(std.testing.io, .{ .sub_path = self.conf, .data = text });
         self.envz = std.process.Environ.Map.init(gpa);
         try self.envz.put("HOME", self.home);
-        try self.envz.put("CLOUD_HOUSE_VAULT_PASS", CF.pass);
+        try self.envz.put("CLOU_BASE_VAULT_PASS", CF.pass);
         return self;
     }
 
@@ -169,7 +169,7 @@ test "full flow: first run builds everything, a tick reaches the Trigger, second
     // wiring file + no secret on disk in plain text
     const wirj = try rig.read("schedule-c.json");
     try std.testing.expect(std.mem.indexOf(u8, wirj, "\"slot\": \"C\"") != null);
-    try std.testing.expect(std.mem.indexOf(u8, wirj, "/w/cloud-house-tick") != null);
+    try std.testing.expect(std.mem.indexOf(u8, wirj, "/w/clou-base-tick") != null);
     try std.testing.expect(std.mem.indexOf(u8, wirj, "\"ticks_per_day\": 288") != null);
     inline for (.{ "cf-cron-vault.json", "cf-cron-state.json", "cf-cron-audit.log", "schedule-c.json" }) |name| {
         const body = try rig.read(name);

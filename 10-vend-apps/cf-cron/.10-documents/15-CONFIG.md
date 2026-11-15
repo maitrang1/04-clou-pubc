@@ -32,7 +32,7 @@ Every key must be present. A typo or an unknown key stops the app and names the 
 | `data.root` | Folder for the vault, state, log and wiring file; `{home}` is your home folder | `{home}/.04-clou-secr` | any path |
 | `data.vaul` / `stat` / `audi` | Vault, progress and log file names | `cf-cron-vault.json` / `cf-cron-state.json` / `cf-cron-audit.log` | file names |
 | `data.wire` | Wiring file the Schedule layer reads | `schedule-c.json` | file name |
-| `vaul.envz` | Environment variable that holds the vault passphrase | `CLOUD_HOUSE_VAULT_PASS` | name |
+| `vaul.envz` | Environment variable that holds the vault passphrase | `CLOU_BASE_VAULT_PASS` | name |
 | `vaul.time` / `memo` / `para` | Vault lock strength (time, memory in KiB, threads) | `3` / `65536` / `1` | positive numbers |
 | `vaul.keyz` | Vault name of the Cloudflare API token | `cloudflare.apitoken` | name |
 | `cfla.apiz` | Cloudflare API address | `https://api.cloudflare.com/client/v4` | URL |
@@ -40,7 +40,7 @@ Every key must be present. A typo or an unknown key stops the app and names the 
 | `cfla.minl` | Shortest token accepted | `30` | 8 or more |
 | `cfla.acco` | Account id to use; empty means the first one | empty | text |
 | `cfla.subd` | Your `workers.dev` name; empty means a stable one is made | empty | lowercase letters, digits, `-` |
-| `cfla.scri` | Worker name | `cloud-house-tick` | text |
+| `cfla.scri` | Worker name | `clou-base-tick` | text |
 | `cfla.rout` | Worker address template; must hold `{scri}` | `https://{scri}.{subd}.workers.dev` | URL |
 | `cfla.comp` | Worker runtime date | `2025-01-01` | date |
 | `trig.url` | Your Trigger address. **You must set this.** | empty | URL, no path |
@@ -53,7 +53,7 @@ Every key must be present. A typo or an unknown key stops the app and names the 
 | `guid.open` / `clip` | Open pages / fill the clipboard for you | `true` / `true` | `true`/`false` |
 | `guid.poll` / `wait` | Seconds between checks / longest wait for you | `5` / `900` | numbers |
 | `http.trys` / `back` / `maxw` | Retries, first back-off, longest back-off (seconds) | `4` / `2` / `60` | numbers |
-| `http.agen` / `maxb` | Name sent to Cloudflare / largest answer in bytes | `cloud-house-cf-cron/1` / `4194304` | text / number |
+| `http.agen` / `maxb` | Name sent to Cloudflare / largest answer in bytes | `clou-base-cf-cron/1` / `4194304` | text / number |
 | `limi.reqs` / `warn` / `trig` | Free requests per day / warning percent / free cron triggers | `100000` / `80` / `5` | numbers |
 
 ## Input

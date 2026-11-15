@@ -18,7 +18,7 @@ const cinf = @import("cm-info.zig");
 const crev = @import("cm-revo.zig");
 const mock = @import("te-mock.zig");
 
-const CF = .{ .passEnvz = "CLOUD_HOUSE_VAULT_PASS", .passVal = "test-vault-pass-1", .keyEnvz = "CRONJOBORG_KEY", .fileMax = 1 << 20 };
+const CF = .{ .passEnvz = "CLOU_BASE_VAULT_PASS", .passVal = "test-vault-pass-1", .keyEnvz = "CRONJOBORG_KEY", .fileMax = 1 << 20 };
 
 // everything one test needs; built in place (the Boot holds pointers into it)
 const Rig = struct {

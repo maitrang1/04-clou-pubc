@@ -1,4 +1,4 @@
-// cloud-house tick: the cron only calls the Trigger endpoint. url and secret come from Worker bindings.
+// clou-base tick: the cron only calls the Trigger endpoint. url and secret come from Worker bindings.
 export default {
   async scheduled(controller, env, ctx) {
     const head = { "x-tick-time": String(controller.scheduledTime) };

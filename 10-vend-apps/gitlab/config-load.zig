@@ -187,8 +187,8 @@ test "account file fills gitl.user, a missing file changes nothing, an unknown k
 test "template fill" {
     var aren = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer aren.deinit();
-    const text = try tmplFill(aren.allocator(), "git@{host}:{user}/{proj}.git", &.{ .{ "host", "gitlab.com" }, .{ "user", "ann" }, .{ "proj", "cloud-house" } });
-    try std.testing.expectEqualStrings("git@gitlab.com:ann/cloud-house.git", text);
+    const text = try tmplFill(aren.allocator(), "git@{host}:{user}/{proj}.git", &.{ .{ "host", "gitlab.com" }, .{ "user", "ann" }, .{ "proj", "clou-base" } });
+    try std.testing.expectEqualStrings("git@gitlab.com:ann/clou-base.git", text);
 }
 
 // ========================___THIS_IS_THE_END___========================

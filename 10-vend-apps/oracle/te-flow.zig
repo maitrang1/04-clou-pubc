@@ -65,7 +65,7 @@ const Rig = struct {
         self.envz = std.process.Environ.Map.init(gpa);
         try self.envz.put("HOME", self.home);
         try self.envz.put("PATH", "/usr/bin:/bin:/usr/local/bin");
-        try self.envz.put("CLOUD_HOUSE_VAULT_PASS", "test pass phrase");
+        try self.envz.put("CLOU_BASE_VAULT_PASS", "test pass phrase");
     }
 
     fn down(self: *Rig) void {

@@ -77,7 +77,7 @@ test "shipped config parses" {
         std.debug.print("config: {s} line {d} col {d}\n", .{ diag.mess, diag.line, diag.colu });
         return erro;
     };
-    try std.testing.expectEqualStrings("cloud-house-tick", conf.cfla.scri);
+    try std.testing.expectEqualStrings("clou-base-tick", conf.cfla.scri);
     try std.testing.expectEqual(@as(u32, 5), conf.cron.peri);
 }
 

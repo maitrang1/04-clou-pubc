@@ -1,7 +1,7 @@
 .{
-    .name = .cloud_house_ggc_run,
+    .name = .clou_base_ggc_run,
     .version = "0.1.0",
-    .fingerprint = 0xff810c4c257ce7cb,
+    .fingerprint = 0x4ae7982d9e7d45e0,
     .minimum_zig_version = "0.16.0",
     .paths = .{""},
 }

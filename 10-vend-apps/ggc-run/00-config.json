@@ -1,7 +1,7 @@
 {
   "vers": 1,
   "data": { "root": "{home}/.04-clou-secr", "stat": "ggc-run-state.json", "audi": "ggc-run-audit.log", "hand": "ggc-run-handoff.json", "step": "df-steps.json" },
-  "goog": { "regi": "us-central1", "free": ["us-central1", "us-east1", "us-west1"], "proj_base": "cloud-house", "proj_iden": "", "proj_name": "Cloud House", "serv": "cloud-job", "sacc": "cloud-job-run", "arty": "ghcr-remote" },
+  "goog": { "regi": "us-central1", "free": ["us-central1", "us-east1", "us-west1"], "proj_base": "clou-base", "proj_iden": "", "proj_name": "Clou Base", "serv": "cloud-job", "sacc": "cloud-job-run", "arty": "ghcr-remote" },
   "apis": {
     "crmz": "https://cloudresourcemanager.googleapis.com",
     "bill": "https://cloudbilling.googleapis.com",
@@ -21,11 +21,11 @@
     "toke": ["auth", "print-access-token"],
     "revo": ["auth", "revoke", "{acct}"]
   },
-  "budg": { "name": "cloud-house-ggc-run", "amou": 1, "step": [0.5, 0.8, 1.0], "bill_acct": "" },
+  "budg": { "name": "clou-base-ggc-run", "amou": 1, "step": [0.5, 0.8, 1.0], "bill_acct": "" },
   "imag": { "refe": "us-docker.pkg.dev/cloudrun/container/hello", "sour": "", "upst": "https://ghcr.io" },
   "serv": { "mini": 0, "maxi": 1, "cpuz": "1", "memo": "256Mi", "idle": true, "conc": 80, "time": "30s", "publ": true, "ingr": "INGRESS_TRAFFIC_ALL", "port": 8080, "role": "roles/logging.logWriter" },
   "tick": { "path": "/tick", "prob": false, "okay": [200, 202], "ruid": "probe-run-1" },
   "guid": { "open": true, "clip": true, "poll": 5, "wait": 900, "sign": "https://accounts.google.com/signup", "bill": "https://console.cloud.google.com/billing/create", "cons": "https://console.cloud.google.com" },
-  "http": { "trys": 4, "back": 2, "maxw": 60, "agen": "cloud-house-ggc-run/1", "maxb": 4194304, "lro_msec": 3000, "lro_secs": 600 },
+  "http": { "trys": 4, "back": 2, "maxw": 60, "agen": "clou-base-ggc-run/1", "maxb": 4194304, "lro_msec": 3000, "lro_secs": 600 },
   "limi": { "reqs": 2000000, "vcpu": 180000, "gibs": 360000, "warn": 80 }
 }

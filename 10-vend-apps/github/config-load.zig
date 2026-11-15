@@ -18,7 +18,7 @@ pub const Http = struct {
     apiz_base: []const u8 = "https://api.github.com",
     webz_base: []const u8 = "https://github.com",
     apiz_vers: []const u8 = "2022-11-28",
-    user_agen: []const u8 = "cloud-house-github",
+    user_agen: []const u8 = "clou-base-github",
     tmos_secs: u32 = 30,
     retr_maxz: u32 = 3,
     wait_maxz_secs: u32 = 120,
@@ -34,7 +34,7 @@ pub const Auth = struct {
 
 pub const Acct = struct { logi: []const u8 = "", mail: []const u8 = "" };
 
-// where the app keeps its private files (state, audit, vault, keys, account); names are plain, the folder is shared by every cloud-house app ----
+// where the app keeps its private files (state, audit, vault, keys, account); names are plain, the folder is shared by every clou-base app ----
 pub const Data = struct {
     root: []const u8 = "{home}/.04-clou-secr",
     acct: []const u8 = "github-account.json",
@@ -61,7 +61,7 @@ pub const Guid = struct { poll_secs: u32 = 5, tmos_secs: u32 = 600 };
 
 pub const Osiz = struct { brow_open: bool = true, clip_copy: bool = true, clip_clea_secs: u32 = 60, clip_osc5: bool = true, clip_tool: []const []const u8 = &.{}, brow_tool: []const []const u8 = &.{} };
 
-pub const Vaul = struct { pass_envz: []const u8 = "CLOUD_HOUSE_VAULT_PASS", argo_time: u32 = 3, argo_memo_kbyt: u32 = 65536, argo_para: u32 = 1 };
+pub const Vaul = struct { pass_envz: []const u8 = "CLOU_BASE_VAULT_PASS", argo_time: u32 = 3, argo_memo_kbyt: u32 = 65536, argo_para: u32 = 1 };
 
 pub const Repo = struct {
     nest_okay: bool = false,
@@ -91,7 +91,7 @@ pub const Gitz = struct { scop: []const u8 = "local", prot: []const u8 = "ssh", 
 pub const Sshz = struct {
     keyz_name: []const u8 = "id_ed25519_deploy",
     kind: []const u8 = "deploy",
-    titl: []const u8 = "cloud-house",
+    titl: []const u8 = "clou-base",
     host_test: bool = true,
     host_user: []const u8 = "git@github.com",
     host_tmos_secs: u32 = 20,

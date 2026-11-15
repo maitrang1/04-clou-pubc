@@ -12,7 +12,7 @@ It uploads a tiny Worker to your Cloudflare account, turns on its free `workers.
 
 ## Requirements
 - Windows 10+ or Linux (64-bit)
-- Your Trigger address (for example `https://cloud-house-trigger.onrender.com`)
+- Your Trigger address (for example `https://clou-base-trigger.onrender.com`)
 - Nothing else. No install, no Node.
 
 ---

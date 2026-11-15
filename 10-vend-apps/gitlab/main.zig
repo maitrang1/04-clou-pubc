@@ -25,7 +25,7 @@ const acct = @import("acts-account.zig");
 const proj = @import("acts-project.zig");
 const mirr = @import("acts-mirror.zig");
 
-const CF = .{ .confPath = "00-config.json", .passPrmp = "vault passphrase: ", .passEnvz = "CLOUD_HOUSE_VAULT_PASS", .exitOkay = 0, .exitFail = 1, .exitUsag = 2, .exitDrif = 3, .exitHand = 4 };
+const CF = .{ .confPath = "00-config.json", .passPrmp = "vault passphrase: ", .passEnvz = "CLOU_BASE_VAULT_PASS", .exitOkay = 0, .exitFail = 1, .exitUsag = 2, .exitDrif = 3, .exitHand = 4 };
 
 // a set of named commands the CLI understands
 const Cmd = enum { run, status, drift, rotate, revoke, drill, vault, help };

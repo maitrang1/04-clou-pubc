@@ -30,7 +30,7 @@ const Rig = struct {
         self.logz = .{ .io = io, .path = "/dev/null/no-such-dir/audit.log", .fail = true };
         self.http = http.Http.init(gpa, io, &self.logz, testOpts);
         const apiz = try self.mock.base(gpa, "/gh");
-        self.gith = .{ .gpa = gpa, .io = io, .http = &self.http, .apiz = apiz, .vers = "2022-11-28", .toke = mock.ghToke, .owne = "ghowner", .repo = "cloud-house" };
+        self.gith = .{ .gpa = gpa, .io = io, .http = &self.http, .apiz = apiz, .vers = "2022-11-28", .toke = mock.ghToke, .owne = "ghowner", .repo = "clou-base" };
     }
 
     fn halt(self: *Rig) void {

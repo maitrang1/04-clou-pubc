@@ -235,8 +235,8 @@ test "repo name comes from the folder unless the config names one; paths join un
     var env = std.process.Environ.Map.init(a);
     var st: state.State = .{ .a = a, .path = "" };
     var au: audit.Audit = .{ .a = a };
-    var c: Ctx = .{ .io = std.testing.io, .a = a, .env = &env, .conf = .{}, .steps = .{ .vend = "gith", .step = &.{} }, .stat = &st, .audi = &au, .home = "h", .root = "/x/cloud-house/", .conf_dirz = "" };
-    try std.testing.expectEqualStrings("cloud-house", c.repoName());
+    var c: Ctx = .{ .io = std.testing.io, .a = a, .env = &env, .conf = .{}, .steps = .{ .vend = "gith", .step = &.{} }, .stat = &st, .audi = &au, .home = "h", .root = "/x/clou-base/", .conf_dirz = "" };
+    try std.testing.expectEqualStrings("clou-base", c.repoName());
     c.conf.repo.name = "other";
     try std.testing.expectEqualStrings("other", c.repoName());
     try std.testing.expect(std.mem.endsWith(u8, try c.keysPath(true), "id_ed25519_deploy.pub"));

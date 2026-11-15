@@ -6,7 +6,7 @@ No cloud account. No sign-up. Your code stays on your own machine.
 ---
 
 ## What it does
-It installs Forgejo on your own Linux server, checks the download is genuine, turns public sign-up off, creates your admin, a private `cloud-house` repo, and adds it as a second place your code is pushed to. Run it twice and nothing breaks.
+It installs Forgejo on your own Linux server, checks the download is genuine, turns public sign-up off, creates your admin, a private `clou-base` repo, and adds it as a second place your code is pushed to. Run it twice and nothing breaks.
 
 ---
 

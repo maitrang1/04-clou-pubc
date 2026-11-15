@@ -65,7 +65,7 @@ pub fn gitzIden(ctx: *Ctx, mode: Mode) anyerror!Outc {
     if (try ensureRepo(ctx)) |bad| return bad;
     const login = ctx.stat.valu("logi");
     const rows: [4][2][]const u8 = .{
-        .{ "user.name", if (login.len > 0) login else "cloud-house" },
+        .{ "user.name", if (login.len > 0) login else "clou-base" },
         .{ "user.email", nore },
         .{ "init.defaultBranch", ctx.conf.repo.bran },
         .{ "core.autocrlf", ctx.conf.gitz.crlf },
@@ -364,7 +364,7 @@ test "deploy key: repo path, listing says absent, read-only or writable" {
     defer arena.deinit();
     const a = arena.allocator();
     try std.testing.expectEqualStrings("/repos/me/04-clou-publ/keys", try deployPath(a, "me", "04-clou-publ"));
-    const mine = "ssh-ed25519 AAAAmine cloud-house\n";
+    const mine = "ssh-ed25519 AAAAmine clou-base\n";
     const rows = [_]DeployRow{ .{ .key = "ssh-ed25519 AAAAother x", .read_only = false }, .{ .key = "ssh-ed25519 AAAAmine", .read_only = true } };
     try std.testing.expectEqual(Deploy.absent, deployState(&.{}, mine));
     try std.testing.expectEqual(Deploy.absent, deployState(rows[0..1], mine));

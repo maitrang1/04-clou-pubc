@@ -1,7 +1,7 @@
 .{
-    .name = .cloud_house_github,
+    .name = .clou_base_github,
     .version = "0.1.0",
-    .fingerprint = 0x1e447dc3d5c43231,
+    .fingerprint = 0xa81f2d7eb61f2869,
     .minimum_zig_version = "0.16.0",
     .paths = .{""},
 }

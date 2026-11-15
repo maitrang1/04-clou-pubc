@@ -185,7 +185,7 @@ test "unsafe values refused" {
         .{ "https://run.googleapis.com", "http://run.googleapis.com" },
         .{ "\"warn\": 80", "\"warn\": 0" },
         .{ "\"path\": \"/tick\"", "\"path\": \"tick\"" },
-        .{ "\"proj_base\": \"cloud-house\"", "\"proj_base\": \"Cloud House\"" },
+        .{ "\"proj_base\": \"clou-base\"", "\"proj_base\": \"Clou Base\"" },
         .{ "\"amou\": 1", "\"amou\": 0" },
         .{ "\"regi\": \"us-central1\"", "\"regi\": \"europe-west1\"" },
     };
@@ -196,7 +196,7 @@ test "unsafe values refused" {
 }
 
 test "project id rule and template fill" {
-    try std.testing.expect(projIdenOkay("cloud-house-ab12cd"));
+    try std.testing.expect(projIdenOkay("clou-base-ab12cd"));
     try std.testing.expect(!projIdenOkay("Cloud"));
     try std.testing.expect(!projIdenOkay("1abcdef"));
     try std.testing.expect(!projIdenOkay("abc"));

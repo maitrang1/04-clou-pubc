@@ -32,7 +32,7 @@ Every key must be present. A typo or an unknown key stops the app and names the 
 | `data.stat` | Progress file name | `render-state.json` | file name |
 | `data.audi` | Log file name | `render-audit.log` | file name |
 | `data.wire` | Wiring file the Schedule layer reads | `trigger-c.json` | file name |
-| `vaul.envz` | Name of the environment variable that holds the vault passphrase | `CLOUD_HOUSE_VAULT_PASS` | name |
+| `vaul.envz` | Name of the environment variable that holds the vault passphrase | `CLOU_BASE_VAULT_PASS` | name |
 | `vaul.time` / `memo` / `para` | Vault lock strength (time, memory in KiB, threads) | `3` / `65536` / `1` | positive numbers |
 | `vaul.keyz` | Vault name of the Render API key | `render.apikey` | name |
 | `rend.apiz` | Render API address | `https://api.render.com/v1` | URL |
@@ -40,7 +40,7 @@ Every key must be present. A typo or an unknown key stops the app and names the 
 | `rend.keyp` | Page opened for the API key | `https://dashboard.render.com/u/settings#api-keys` | URL |
 | `rend.keyf` | What a real key starts with | `rnd_` | text |
 | `rend.owne` | Workspace name to use; empty means the first one | empty | text |
-| `rend.name` | Service name (unique in your workspace) | `cloud-house-trigger` | text |
+| `rend.name` | Service name (unique in your workspace) | `clou-base-trigger` | text |
 | `rend.kind` | Service kind | `web_service` | `web_service` |
 | `rend.imag` | Your public image path. **You must set this.** | empty | image path |
 | `rend.plan` | Plan. Anything but `free` needs the guard below. | `free` | `free` or a paid plan name |
@@ -57,7 +57,7 @@ Every key must be present. A typo or an unknown key stops the app and names the 
 | `guid.open` / `clip` | Open pages / fill the clipboard for you | `true` / `true` | `true`/`false` |
 | `guid.poll` / `wait` | Seconds between checks / longest wait for you | `5` / `900` | numbers |
 | `http.trys` / `back` / `maxw` | Retries, first back-off, longest back-off (seconds) | `4` / `2` / `60` | numbers |
-| `http.agen` / `maxb` | Name sent to Render / largest answer in bytes | `cloud-house-render/1` / `4194304` | text / number |
+| `http.agen` / `maxb` | Name sent to Render / largest answer in bytes | `clou-base-render/1` / `4194304` | text / number |
 | `limi.hour` / `day` / `warn` | Free hours per month / days counted / warning percent | `750` / `31` / `80` | numbers |
 
 ## Input

@@ -14,7 +14,7 @@
     "apiz_base": "https://api.github.com",
     "webz_base": "https://github.com",
     "apiz_vers": "2022-11-28",
-    "user_agen": "cloud-house-github",
+    "user_agen": "clou-base-github",
     "tmos_secs": 30,
     "retr_maxz": 3,
     "wait_maxz_secs": 120,
@@ -53,7 +53,7 @@
     "brow_tool": []
   },
   "vaul": {
-    "pass_envz": "CLOUD_HOUSE_VAULT_PASS",
+    "pass_envz": "CLOU_BASE_VAULT_PASS",
     "argo_time": 3,
     "argo_memo_kbyt": 65536,
     "argo_para": 1
@@ -63,7 +63,7 @@
     "name": "04-clou-publ",
     "visi": "public",
     "bran": "main",
-    "desc": "cloud-house: Zig 0.16 std-only apps and vendor adapters",
+    "desc": "clou-base: Zig 0.16 std-only apps and vendor adapters",
     "wiki": false,
     "proj": false,
     "merg_dele": true,
@@ -90,7 +90,7 @@
   "sshz": {
     "keyz_name": "id_ed25519_deploy",
     "kind": "deploy",
-    "titl": "cloud-house",
+    "titl": "clou-base",
     "host_test": true,
     "host_user": "git@github.com",
     "host_tmos_secs": 20

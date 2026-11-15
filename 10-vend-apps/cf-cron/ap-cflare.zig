@@ -11,7 +11,7 @@
 const std = @import("std");
 const http = @import("co-http.zig");
 
-const CF = .{ .listLimi = 50, .modName = "worker.js", .boundary = "cloudhouseboundary7e3a91", .modType = "application/javascript+module" };
+const CF = .{ .listLimi = 50, .modName = "worker.js", .boundary = "cloubaseboundary7e3a91", .modType = "application/javascript+module" };
 
 pub const Erro = error{ CflaAuth, CflaMiss, CflaBad, CflaLimi, CflaDown, CflaForm, CflaAcco };
 
@@ -158,7 +158,7 @@ test "multipart body has both parts and the closing boundary" {
     try std.testing.expect(std.mem.indexOf(u8, body, "name=\"metadata\"") != null);
     try std.testing.expect(std.mem.indexOf(u8, body, "\"type\":\"secret_text\"") != null);
     try std.testing.expect(std.mem.indexOf(u8, body, "filename=\"worker.js\"") != null);
-    try std.testing.expect(std.mem.endsWith(u8, body, "--cloudhouseboundary7e3a91--\r\n"));
+    try std.testing.expect(std.mem.endsWith(u8, body, "--cloubaseboundary7e3a91--\r\n"));
 }
 
 // ========================___THIS_IS_THE_END___========================

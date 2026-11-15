@@ -121,13 +121,13 @@ pub fn bare(line: []const u8) []const u8 {
 test "fixed seed gives a stable, well-formed pair; a bad comment is refused" {
     const a = std.testing.allocator;
     const seed = [_]u8{7} ** 32;
-    const p = try fromSeed(a, seed, 0x01020304, "cloud-house");
+    const p = try fromSeed(a, seed, 0x01020304, "clou-base");
     defer a.free(p.priv);
     defer a.free(p.publ);
     try std.testing.expect(std.mem.startsWith(u8, p.priv, HEAD));
     try std.testing.expect(std.mem.endsWith(u8, p.priv, FOOT));
     try std.testing.expect(std.mem.startsWith(u8, p.publ, "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI"));
-    try std.testing.expect(std.mem.endsWith(u8, p.publ, " cloud-house\n"));
+    try std.testing.expect(std.mem.endsWith(u8, p.publ, " clou-base\n"));
     try std.testing.expectEqualStrings("ssh-ed25519 AAAA", bare("ssh-ed25519 AAAA note\n"));
     try std.testing.expectEqualStrings("", bare("ssh-ed25519"));
     try std.testing.expectError(error.BadNote, fromSeed(a, seed, 1, "two words"));
@@ -138,7 +138,7 @@ test "OpenSSH itself reads the private file and prints the same public key" {
     defer arena.deinit();
     const a = arena.allocator();
     const io = std.testing.io;
-    const p = try make(a, io, "cloud-house");
+    const p = try make(a, io, "clou-base");
     var tmp = std.testing.tmpDir(.{});
     defer tmp.cleanup();
     {

@@ -142,9 +142,9 @@ pub fn urlzEnco(gpa: std.mem.Allocator, text: []const u8) ![]u8 {
 }
 
 test "url encoding" {
-    const outp = try urlzEnco(std.testing.allocator, "ann/cloud-house x");
+    const outp = try urlzEnco(std.testing.allocator, "ann/clou-base x");
     defer std.testing.allocator.free(outp);
-    try std.testing.expectEqualStrings("ann%2Fcloud-house%20x", outp);
+    try std.testing.expectEqualStrings("ann%2Fclou-base%20x", outp);
 }
 
 // ========================___THIS_IS_THE_END___========================

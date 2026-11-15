@@ -1,7 +1,7 @@
 .{
-    .name = .cloud_house_bundle_secret,
+    .name = .clou_base_bundle_secret,
     .version = "0.1.0",
-    .fingerprint = 0xba93d8d6b3d34010,
+    .fingerprint = 0x806511dd24a8fee2,
     .minimum_zig_version = "0.16.0",
     .paths = .{""},
 }

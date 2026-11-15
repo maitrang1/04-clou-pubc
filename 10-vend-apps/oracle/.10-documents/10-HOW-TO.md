@@ -32,11 +32,11 @@ This changes nothing.
 The vault locks the keys the program makes. Pick 8 or more characters and keep it.
 Linux or Mac:
 ```
-export CLOUD_HOUSE_VAULT_PASS='pick-a-long-phrase'
+export CLOU_BASE_VAULT_PASS='pick-a-long-phrase'
 ```
 Windows (PowerShell):
 ```
-$env:CLOUD_HOUSE_VAULT_PASS = 'pick-a-long-phrase'
+$env:CLOU_BASE_VAULT_PASS = 'pick-a-long-phrase'
 ```
 Skip this and the program asks you each time.
 
@@ -69,7 +69,7 @@ The program then checks the key works. After that it needs nothing from you.
 You should end with a report like:
 ```
 free quota: VMs 1/2 (50%), boot disk 50/200 GB (25%)
-VM: cloud-house-vm  ip: <address>
+VM: clou-base-vm  ip: <address>
 ```
 Not working? → see "When something goes wrong".
 
@@ -108,7 +108,7 @@ This removes the keys from the vault. It cannot touch Oracle. To remove the API 
 |---|---|
 | `unknown or missing command` | Use one of: plan, run, status, drift, revoke, sshkey, vault, version, help |
 | `config error: ... line N` | Fix that line in `00-config.json` and run again |
-| `no vault passphrase` | Set `CLOUD_HOUSE_VAULT_PASS` (step 3) |
+| `no vault passphrase` | Set `CLOU_BASE_VAULT_PASS` (step 3) |
 | `vault error: VaulPass` | Wrong passphrase. Retype it |
 | `openssl not found` | Install openssl, or set `keyz.file` to an existing key file |
 | `Oracle still refuses the key` | The key was added to the wrong user, or your PC clock is off by 5+ minutes. Fix and rerun |

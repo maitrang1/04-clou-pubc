@@ -341,7 +341,7 @@ test "nameClean and mailOkay follow GitHub's shapes" {
     var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena.deinit();
     const a = arena.allocator();
-    try std.testing.expectEqualStrings("cloud-house-dev", try nameClean(a, "Cloud.House__dev"));
+    try std.testing.expectEqualStrings("clou-base-dev", try nameClean(a, "Clou.Base__dev"));
     try std.testing.expectEqualStrings("a", try nameClean(a, "--a--"));
     try std.testing.expectEqualStrings("", try nameClean(a, "..."));
     try std.testing.expectEqual(@as(usize, 30), (try nameClean(a, "x" ** 80)).len);

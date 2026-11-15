@@ -104,7 +104,7 @@ test "redaction masks every secret shape" {
         .{ "https://user:pw@api.render.com/v1/services", "https://***@api.render.com/v1/services" },
         .{ "GET https://x.test/o?name=1&api_key=zzz&limit=5", "GET https://x.test/o?name=1&api_key=***&limit=5" },
         .{ "key rnd_AbC_12-xy. done", "key rnd_*** done" },
-        .{ "https://api.render.com/v1/services?name=cloud-house", "https://api.render.com/v1/services?name=cloud-house" },
+        .{ "https://api.render.com/v1/services?name=clou-base", "https://api.render.com/v1/services?name=clou-base" },
     };
     for (case) |pair| {
         const outp = try redaText(gpa, pair[0]);

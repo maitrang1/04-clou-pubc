@@ -10,16 +10,16 @@ Steps marked **(not tested on a real account)** need your Cloudflare account. Ev
 It protects your vault. Use 8 or more characters and keep it somewhere safe.
 Linux:
 ```
-export CLOUD_HOUSE_VAULT_PASS="your long passphrase"
+export CLOU_BASE_VAULT_PASS="your long passphrase"
 ```
 Windows (CMD):
 ```
-set CLOUD_HOUSE_VAULT_PASS=your long passphrase
+set CLOU_BASE_VAULT_PASS=your long passphrase
 ```
 If you skip this, the app asks you to type it, hidden.
 
 **Step 2 · Set your Trigger address**
-Open `/home/mai_trang/04-clou-base/10-vend-apps/cf-cron/00-config.json`. Under `trig`, set `url` to your Trigger address, with no path, for example `https://cloud-house-trigger.onrender.com`. The Worker will call `url` + `path` (`/tick`).
+Open `/home/mai_trang/04-clou-base/10-vend-apps/cf-cron/00-config.json`. Under `trig`, set `url` to your Trigger address, with no path, for example `https://clou-base-trigger.onrender.com`. The Worker will call `url` + `path` (`/tick`).
 
 **Step 3 · Preview**
 ```

@@ -56,7 +56,7 @@ pub const Mock = struct {
     secr: std.ArrayList(Pair) = .empty,
     varz: std.ArrayList(Pair) = .empty,
     ghOwne: []const u8 = "ghowner",
-    ghRepo: []const u8 = "cloud-house",
+    ghRepo: []const u8 = "clou-base",
     nextIden: u64 = 100,
     revoOaut: u32 = 0,
 

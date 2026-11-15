@@ -1,12 +1,12 @@
 {
   "vers": 1,
   "data": { "root": "{home}/.04-clou-secr", "vaul": "forgejo-vault.json", "stat": "forgejo-state.json", "audi": "forgejo-audit.log", "acct": "forgejo-account.json" },
-  "vaul": { "envz": "CLOUD_HOUSE_VAULT_PASS", "time": 3, "memo": 65536, "para": 1 },
+  "vaul": { "envz": "CLOU_BASE_VAULT_PASS", "time": 3, "memo": 65536, "para": 1 },
   "repo": { "path": "{home}/04-clou-publ", "bran": "main", "remo": "origin", "push": "ssh://git@{pubh}:{sshp}/{path}.git" },
   "rele": { "base": "https://codeberg.org/forgejo/forgejo/releases/download", "vers": "15.0.5", "arch": "linux-amd64", "file": "forgejo-{vers}-{arch}", "sums": ".sha256", "maxb": 268435456 },
   "host": { "bina": "/usr/local/bin/forgejo", "work": "/var/lib/forgejo", "conf": "/etc/forgejo/app.ini", "unit": "/etc/systemd/system/forgejo.service", "svcu": "git", "pubh": "127.0.0.1", "port": 3000, "sshp": 2222 },
   "ini": [
-    "APP_NAME = cloud-house",
+    "APP_NAME = clou-base",
     "RUN_USER = {svcu}",
     "WORK_PATH = {work}",
     "RUN_MODE = prod",
@@ -63,7 +63,7 @@
   ],
   "unit": [
     "[Unit]",
-    "Description=Forgejo (cloud-house)",
+    "Description=Forgejo (clou-base)",
     "After=network.target",
     "",
     "[Service]",
@@ -117,14 +117,14 @@
     "enab": ["systemctl", "enable", "--now", "forgejo"]
   },
   "admi": { "user": "", "mail": "" },
-  "toke": { "name": "cloud-house", "scop": ["write:repository", "write:user"] },
+  "toke": { "name": "clou-base", "scop": ["write:repository", "write:user"] },
   "frep": {
-    "name": "cloud-house",
+    "name": "clou-base",
     "visi": "private",
     "sett": { "has_wiki": false, "has_issues": false, "has_projects": false, "has_pull_requests": false, "has_actions": false, "has_packages": false, "has_releases": false }
   },
   "prot": { "enable_push": true, "enable_force_push": false, "enable_merge_whitelist": false, "required_approvals": 0 },
-  "sshz": { "file": "{home}/.ssh/id_ed25519_forgejo", "titl": "cloud-house" },
+  "sshz": { "file": "{home}/.ssh/id_ed25519_forgejo", "titl": "clou-base" },
   "tool": { "gitz": "git", "sshk": "ssh-keygen", "time": 120 },
   "boot": { "poll": 2, "wait": 60 },
   "http": { "trys": 3, "back": 2, "maxw": 30, "agen": "forgejo-setup/0.1", "maxb": 1048576 },

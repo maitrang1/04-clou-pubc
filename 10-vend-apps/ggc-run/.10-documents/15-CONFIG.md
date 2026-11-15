@@ -29,9 +29,9 @@ A misspelled or unknown setting stops the tool and names the line and column.
 | `data.step` | Optional steps file next to the settings; the built-in copy is used if absent | `df-steps.json` | file name |
 | `goog.regi` | Cloud Run region | `us-central1` | must be in `goog.free` (other regions bill from the first second) |
 | `goog.free` | Free-tier regions (Iowa, S. Carolina, Oregon) | `us-central1`, `us-east1`, `us-west1` | list of region ids |
-| `goog.proj_base` | Start of a new project id | `cloud-house` | 6-30 chars: lowercase, digits, hyphen |
+| `goog.proj_base` | Start of a new project id | `clou-base` | 6-30 chars: lowercase, digits, hyphen |
 | `goog.proj_iden` | Fixed project id (empty = base + random 6) | empty | legal project id or empty |
-| `goog.proj_name` | Project display name | `Cloud House` | text |
+| `goog.proj_name` | Project display name | `Clou Base` | text |
 | `goog.serv` | Service name | `cloud-job` | text |
 | `goog.sacc` | Runtime account name | `cloud-job-run` | 6-30 chars |
 | `goog.arty` | Pull-through repo name | `ghcr-remote` | text |
@@ -44,7 +44,7 @@ A misspelled or unknown setting stops the tool and names the line and column.
 | `tool.gclo` | The `gcloud` program | `gcloud` | name or full path |
 | `tool.time` | Time limit for helper programs | `600` | seconds |
 | `gclo.acct/logi/toke/revo` | Arguments for `gcloud` (`{acct}` = account) | standard | lists of text |
-| `budg.name` | Budget name | `cloud-house-ggc-run` | text |
+| `budg.name` | Budget name | `clou-base-ggc-run` | text |
 | `budg.amou` | Budget amount (whole units, your billing currency); alert at each `budg.step` | `1` | 1 or more |
 | `budg.step` | Alert points as fractions | `[0.5, 0.8, 1.0]` | numbers above 0, at most 10 |
 | `budg.bill_acct` | Billing account to use (needed only if you have several) | empty | account id or empty |
@@ -71,7 +71,7 @@ A misspelled or unknown setting stops the tool and names the line and column.
 | `guid.wait` | Longest wait for one step | `900` | seconds |
 | `guid.sign/bill/cons` | Pages to open | Google pages | addresses |
 | `http.trys` / `back` / `maxw` | Tries, first pause, longest pause (seconds) | `4` / `2` / `60` | numbers |
-| `http.agen` | Name sent to Google | `cloud-house-ggc-run/1` | text |
+| `http.agen` | Name sent to Google | `clou-base-ggc-run/1` | text |
 | `http.maxb` | Biggest answer accepted (bytes) | `4194304` | number |
 | `http.lro_msec` / `lro_secs` | Pause between checks of a Google job / longest wait | `3000` / `600` | milliseconds / seconds |
 | `limi.reqs` / `vcpu` / `gibs` | Free grant per month (requests, vCPU-seconds, GiB-seconds) | `2000000` / `180000` / `360000` | numbers |

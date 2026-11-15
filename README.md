@@ -1,4 +1,4 @@
-# cloud-house
+# clou-base
 
 Small command-line tools that set up and run your cloud accounts for you: code on GitHub and GitLab, scheduled jobs, hosted runs. One folder per tool, written in Zig 0.16.0 with no third-party packages.
 

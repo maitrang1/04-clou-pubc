@@ -173,7 +173,7 @@ test "policy templates fill with no mark left" {
     ctx.conf = &cfg;
     ctx.stat = &stz;
     const doc = try docFill(&ctx, CF.userPol);
-    try std.testing.expect(std.mem.indexOf(u8, doc, "arn:aws:scheduler:us-east-1:123456789012:schedule-group/cloud-house") != null);
+    try std.testing.expect(std.mem.indexOf(u8, doc, "arn:aws:scheduler:us-east-1:123456789012:schedule-group/clou-base") != null);
     try std.testing.expect(std.mem.indexOfScalar(u8, doc, '{') != null); // json braces stay
     for ([_][]const u8{ "{regi}", "{acct}", "{grup}", "{busn}", "{rule}", "{conn}", "{dest}", "{rols}", "{rolr}", "{budg}" }) |mark| try std.testing.expect(std.mem.indexOf(u8, doc, mark) == null);
     _ = try std.json.parseFromSlice(std.json.Value, gpa, doc, .{}); // still valid JSON

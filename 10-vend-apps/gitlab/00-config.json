@@ -1,7 +1,7 @@
 {
   "vers": 1,
   "data": { "root": "{home}/.04-clou-secr", "vaul": "gitlab-vault.json", "stat": "gitlab-state.json", "audi": "gitlab-audit.log", "step": "steps.json", "acct": "gitlab-account.json" },
-  "vaul": { "envz": "CLOUD_HOUSE_VAULT_PASS", "time": 3, "memo": 65536, "para": 1 },
+  "vaul": { "envz": "CLOU_BASE_VAULT_PASS", "time": 3, "memo": 65536, "para": 1 },
   "repo": { "path": "{home}/04-clou-publ", "bran": "main", "remo": "origin" },
   "gitl": {
     "host": "gitlab.com",
@@ -9,7 +9,7 @@
     "apiz": "https://gitlab.com/api/v4",
     "oaut": "https://gitlab.com/oauth",
     "user": "",
-    "proj": "cloud-house",
+    "proj": "clou-base",
     "visi": "public",
     "push": "git@{host}:{user}/{proj}.git",
     "sign": "{webz}/users/sign_up",
@@ -36,10 +36,10 @@
     "toke": ["config", "get", "token", "--host", "{host}"]
   },
   "ghcl": { "toke": ["auth", "token"], "user": ["api", "user", "--jq", ".login"] },
-  "sshz": { "file": "{home}/.ssh/id_ed25519_gitlab", "titl": "cloud-house" },
+  "sshz": { "file": "{home}/.ssh/id_ed25519_gitlab", "titl": "clou-base" },
   "prot": { "push": 30, "merg": 40, "forc": false },
   "toke": { "name": "mirror", "scop": ["write_repository"], "role": 30, "days": 90, "rota": 14 },
   "guid": { "open": true, "clip": true, "poll": 5, "wait": 900 },
-  "http": { "trys": 4, "back": 2, "maxw": 60, "agen": "cloud-house-gitlab/1", "maxb": 4194304 },
+  "http": { "trys": 4, "back": 2, "maxw": 60, "agen": "clou-base-gitlab/1", "maxb": 4194304 },
   "limi": { "stor": 10737418240, "apiz": 5000, "warn": 80, "cimn": 400, "mirx": 10, "usrx": 5 }
 }

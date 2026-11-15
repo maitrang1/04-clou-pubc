@@ -195,7 +195,7 @@ test "full setup flow, then a second run that changes nothing" {
     // admin + token: the fake CLI ran, the vault holds the token, nothing else holds it
     const users = try env.read(try env.path("host/bin/users.txt"));
     try std.testing.expect(std.mem.indexOf(u8, users, "ann ann@example.com") != null);
-    try std.testing.expectEqualStrings("mocktoken-cloud-house", env.vaul1.getz("forg.token").?);
+    try std.testing.expectEqualStrings("mocktoken-clou-base", env.vaul1.getz("forg.token").?);
     const stat1 = try env.read(try env.path("state.json"));
     try std.testing.expect(std.mem.indexOf(u8, stat1, "mocktoken") == null);
     const logz = try env.read(try env.path("audit.log"));
@@ -212,7 +212,7 @@ test "full setup flow, then a second run that changes nothing" {
     const urls = try env.tool1.runz(&.{ "git", "remote", "get-url", "--push", "--all", "origin" }, env.conf1.repo.path);
     var lines = std.mem.splitScalar(u8, urls.text(), '\n');
     try std.testing.expect(std.mem.endsWith(u8, lines.next().?, "origin.git"));
-    try std.testing.expectEqualStrings("ssh://git@127.0.0.1:2222/ann/cloud-house.git", lines.next().?);
+    try std.testing.expectEqualStrings("ssh://git@127.0.0.1:2222/ann/clou-base.git", lines.next().?);
     try std.testing.expect(lines.next() == null);
 
     // second run: fresh state file, same host, same vault: nothing new is made
@@ -310,7 +310,7 @@ test "admin steps refuse a missing name, and a lost token secret is reported" {
     env.conf1.admi.user = "ann";
     try eng.runOne(rows[0]);
     try eng.runOne(rows[1]);
-    try std.testing.expectEqualStrings("mocktoken-cloud-house", env.vaul1.getz("forg.token").?);
+    try std.testing.expectEqualStrings("mocktoken-clou-base", env.vaul1.getz("forg.token").?);
 
     // the vault is lost, the token name is already used: the app says so and keeps the vault empty
     try env.vaul1.drop("forg.token");
@@ -325,7 +325,7 @@ test "repo step refuses a repo whose visibility differs from the config" {
     defer env.done();
     env.forg1.toke = "mocktoken-x";
     env.stat1.data.idsz.adminUser = "ann";
-    _ = try env.forg1.repoMake("cloud-house", false, "main"); // someone made it public by hand
+    _ = try env.forg1.repoMake("clou-base", false, "main"); // someone made it public by hand
     var eng = env.engine();
     var rc = env.repoCtx();
     try std.testing.expectError(error.VisibilityDiffers, eng.runOne(repo.rows(&rc)[1]));
@@ -351,7 +351,7 @@ test "repo step with a public config refuses a repo that is private" {
     env.forg1.toke = "mocktoken-x";
     env.stat1.data.idsz.adminUser = "ann";
     env.conf1.frep.visi = "public";
-    _ = try env.forg1.repoMake("cloud-house", true, "main");
+    _ = try env.forg1.repoMake("clou-base", true, "main");
     var eng = env.engine();
     var rc = env.repoCtx();
     try std.testing.expectError(error.VisibilityDiffers, eng.runOne(repo.rows(&rc)[1]));

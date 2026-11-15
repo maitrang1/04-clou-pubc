@@ -24,7 +24,7 @@ pub fn repoEnsure(g: *gcp.Gcp, base: []const u8, proj: []const u8, regi: []const
     }
     if (got.code != 404) return error.ArtyHttp;
     const Body = struct { format: []const u8, mode: []const u8, description: []const u8, remoteRepositoryConfig: struct { dockerRepository: struct { customRepository: struct { uri: []const u8 } } } };
-    const body = try std.json.Stringify.valueAlloc(g.a, Body{ .format = "DOCKER", .mode = "REMOTE_REPOSITORY", .description = "pull-through cache for cloud-house", .remoteRepositoryConfig = .{ .dockerRepository = .{ .customRepository = .{ .uri = upst } } } }, .{});
+    const body = try std.json.Stringify.valueAlloc(g.a, Body{ .format = "DOCKER", .mode = "REMOTE_REPOSITORY", .description = "pull-through cache for clou-base", .remoteRepositoryConfig = .{ .dockerRepository = .{ .customRepository = .{ .uri = upst } } } }, .{});
     const rep = try g.call(.POST, try std.fmt.allocPrint(g.a, "{s}?repositoryId={s}", .{ urlz, repo }), body);
     if (!rep.okay()) return error.ArtyHttp;
     try g.lroOf(try std.fmt.allocPrint(g.a, "{s}/v1", .{base}), rep);

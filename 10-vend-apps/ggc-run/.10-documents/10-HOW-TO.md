@@ -78,7 +78,7 @@ The first only says what would happen. The second removes public access to the s
 /home/mai_trang/04-clou-base/10-vend-apps/ggc-run/zig-out/bin/ggc-run-mock --bill-after 2
 ```
 It prints `mock port 43425` (your number will differ) and `token ya29.mock-token`.
-2. Copy `00-config.json` to a new file. In the copy set every address under `apis` to `http://127.0.0.1:<port>/crm`, `/bill`, `/budg`, `/usag`, `/iam`, `/arti`, `/run`, `/moni`, set `auth.mode` to `env`, and `goog.proj_iden` to `cloud-house-guide01`.
+2. Copy `00-config.json` to a new file. In the copy set every address under `apis` to `http://127.0.0.1:<port>/crm`, `/bill`, `/budg`, `/usag`, `/iam`, `/arti`, `/run`, `/moni`, set `auth.mode` to `env`, and `goog.proj_iden` to `clou-base-guide01`.
 3. In a second window set the token and use a throw-away home folder, then run:
 ```
 HOME=/tmp/ggc-try GGC_RUN_TOKEN=ya29.mock-token EXE run --go --conf /tmp/ggc-try/conf.json

@@ -12,7 +12,7 @@ It creates a free web service on Render from a public container image, sets its 
 
 ## Requirements
 - Windows 10+ or Linux (64-bit)
-- A public container image on GitHub's registry (for example `ghcr.io/you/cloud-house-trigger:latest`)
+- A public container image on GitHub's registry (for example `ghcr.io/you/clou-base-trigger:latest`)
 - Nothing else. No install.
 
 ---

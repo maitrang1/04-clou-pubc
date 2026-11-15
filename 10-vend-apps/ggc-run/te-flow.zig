@@ -18,7 +18,7 @@ const cinf = @import("cm-info.zig");
 const crev = @import("cm-revo.zig");
 const mock = @import("te-mock.zig");
 
-const CF = .{ .projIden = "cloud-house-test01", .envName = "GGC_RUN_TOKEN" };
+const CF = .{ .projIden = "clou-base-test01", .envName = "GGC_RUN_TOKEN" };
 
 // everything one test needs; built in place (the Boot holds pointers into it)
 const Rig = struct {
@@ -208,7 +208,7 @@ test "a pull-through repo makes the image path; a wrong upstream is refused" {
     try std.testing.expectEqual(@as(u8, 0), (try r.run()).code);
     try std.testing.expectEqual(@as(usize, 1), r.mk.repos.items.len);
     try std.testing.expectEqualStrings("https://ghcr.io", r.mk.repos.items[0].uri);
-    try std.testing.expectEqualStrings("us-central1-docker.pkg.dev/cloud-house-test01/ghcr-remote/maitrang1/cloud-job:latest", r.mk.svc.?.image);
+    try std.testing.expectEqualStrings("us-central1-docker.pkg.dev/clou-base-test01/ghcr-remote/maitrang1/cloud-job:latest", r.mk.svc.?.image);
     r.cfg.imag.upst = "https://registry.example.com";
     try r.stateDrop();
     const rep = try r.run();
@@ -240,7 +240,7 @@ test "a 429 and a slow service-account role are retried" {
     try std.testing.expectEqual(@as(u8, 0), (try r.run()).code);
     // the only 400s are the two the mock injected on purpose
     try std.testing.expectEqual(@as(u32, 2), r.mk.bads);
-    try std.testing.expectEqual(@as(u32, 3), r.mk.seenCoun("POST /crm/v1/projects/cloud-house-test01:setIamPolicy"));
+    try std.testing.expectEqual(@as(u32, 3), r.mk.seenCoun("POST /crm/v1/projects/clou-base-test01:setIamPolicy"));
 }
 
 test "two billing accounts: the app will not guess; config picks one" {

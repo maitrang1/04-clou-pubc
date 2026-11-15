@@ -25,7 +25,7 @@ const serv = @import("ve-service.zig");
 const wire = @import("ve-wire.zig");
 const cmdz = @import("cm-run.zig");
 
-const CF = .{ .pass = "test passphrase 1234", .imag = "ghcr.io/fake/cloud-house-trigger:1", .env1 = "https://hc.example.test/ping/abc" };
+const CF = .{ .pass = "test passphrase 1234", .imag = "ghcr.io/fake/clou-base-trigger:1", .env1 = "https://hc.example.test/ping/abc" };
 
 // everything one test needs: mock, temp home, config file, arena
 const Rig = struct {
@@ -58,7 +58,7 @@ const Rig = struct {
         try std.Io.Dir.cwd().writeFile(std.testing.io, .{ .sub_path = self.conf, .data = text });
         self.envz = std.process.Environ.Map.init(gpa);
         try self.envz.put("HOME", self.home);
-        try self.envz.put("CLOUD_HOUSE_VAULT_PASS", CF.pass);
+        try self.envz.put("CLOU_BASE_VAULT_PASS", CF.pass);
         return self;
     }
 
@@ -146,7 +146,7 @@ test "full flow: first run builds everything, second run changes nothing" {
     // Trigger C wiring file
     const wirj = try rig.read("trigger-c.json");
     try std.testing.expect(std.mem.indexOf(u8, wirj, "\"slot\": \"C\"") != null);
-    try std.testing.expect(std.mem.indexOf(u8, wirj, "/svc/cloud-house-trigger") != null);
+    try std.testing.expect(std.mem.indexOf(u8, wirj, "/svc/clou-base-trigger") != null);
     // no secret anywhere on disk in plain text
     inline for (.{ "render-vault.json", "render-state.json", "render-audit.log", "trigger-c.json" }) |name| {
         const body = try rig.read(name);
@@ -287,13 +287,13 @@ test "contract: every client call matches the strict mock" {
     rig.mock.ownMany = true;
     try std.testing.expectEqualStrings(mock.owne, (try cli.owner("Mock Team")).id);
     try std.testing.expectError(error.RendOwner, cli.owner("Nobody"));
-    try std.testing.expect((try cli.find("cloud-house-trigger", "web_service")) == null);
-    const made = try cli.make(.{ .name = "cloud-house-trigger", .owne = owne.id, .imag = CF.imag, .plan = "free", .regi = "oregon", .heal = "/healthz", .inst = 1 });
+    try std.testing.expect((try cli.find("clou-base-trigger", "web_service")) == null);
+    const made = try cli.make(.{ .name = "clou-base-trigger", .owne = owne.id, .imag = CF.imag, .plan = "free", .regi = "oregon", .heal = "/healthz", .inst = 1 });
     try std.testing.expect(made.serviceDetails.url.len > 0);
     try std.testing.expectEqualStrings("free", made.serviceDetails.plan);
-    try std.testing.expectError(error.RendBad, cli.make(.{ .name = "cloud-house-trigger", .owne = owne.id, .imag = CF.imag, .plan = "free", .regi = "oregon", .heal = "/healthz", .inst = 1 }));
+    try std.testing.expectError(error.RendBad, cli.make(.{ .name = "clou-base-trigger", .owne = owne.id, .imag = CF.imag, .plan = "free", .regi = "oregon", .heal = "/healthz", .inst = 1 }));
     try std.testing.expectEqualStrings("service name already in use", cli.mess);
-    try std.testing.expect((try cli.find("cloud-house-trigger", "web_service")) != null);
+    try std.testing.expect((try cli.find("clou-base-trigger", "web_service")) != null);
     try cli.heal(made.id, "/ready");
     try std.testing.expectEqualStrings("/ready", (try cli.get(made.id)).serviceDetails.healthCheckPath.?);
     try cli.envs(made.id, &.{.{ .key = "A", .value = "1" }});

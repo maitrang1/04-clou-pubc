@@ -1,7 +1,7 @@
 .{
-    .name = .cloud_house_cronjoborg,
+    .name = .clou_base_cronjoborg,
     .version = "0.1.0",
-    .fingerprint = 0x49b9ee16941ac7e,
+    .fingerprint = 0xfc72b4302ad9842a,
     .minimum_zig_version = "0.16.0",
     .paths = .{""},
 }
