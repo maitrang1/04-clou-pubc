@@ -9,7 +9,7 @@ Plain facts: where things go, what the defaults are. For steps, see `10-HOW-TO.m
 |---|---|
 | File | `gitlab-setup` (`.exe` on Windows) |
 | Run | `gitlab-setup <run\|status\|drift\|rotate\|revoke\|drill\|vault\|help> [--go]` |
-| Default output | text on screen; files under `~/.05-cloud-house-secre/` |
+| Default output | text on screen; files under `~/.04-clou-secr/` |
 | Built with | Zig 0.16.0, standard library only |
 | Exit codes | 0 ok · 1 failed · 2 usage/config · 3 drift · 4 needs a human |
 
@@ -19,10 +19,10 @@ Plain facts: where things go, what the defaults are. For steps, see `10-HOW-TO.m
 Every key must be present. An unknown key stops the app and names the line and column. Your GitLab name and OAuth app id do not go here.
 | Setting | What it does | Default | Allowed |
 |---|---|---|---|
-| `data.root` | private folder | `{home}/.05-cloud-house-secre` | path |
+| `data.root` | private folder | `{home}/.04-clou-secr` | path |
 | `data.vaul` / `stat` / `audi` / `acct` | vault, state, audit, private account file names | `gitlab-vault.json` · `gitlab-state.json` · `gitlab-audit.log` · `gitlab-account.json` | file names |
 | `vaul.*` | passphrase variable and lock cost | `CLOUD_HOUSE_VAULT_PASS` · 3 · 65536 · 1 | name, numbers |
-| `repo.path` | the copy folder that gets the extra push URL | `{home}/05-cloud-house-synch` | path |
+| `repo.path` | the copy folder that gets the extra push URL | `{home}/04-clou-pubc` | path |
 | `repo.bran` / `remo` | branch and remote | `main` · `origin` | names |
 | `gitl.host` / `webz` / `apiz` / `oaut` | GitLab addresses | gitlab.com | https addresses |
 | `gitl.user` | your GitLab name | empty (the private account file fills it) | text |
@@ -42,7 +42,7 @@ Every key must be present. An unknown key stops the app and names the line and c
 ## Files
 | File | Where | Holds |
 |---|---|---|
-| `gitlab-account.json` | `~/.05-cloud-house-secre/` | your GitLab name and OAuth app id (owner-only) |
+| `gitlab-account.json` | `~/.04-clou-secr/` | your GitLab name and OAuth app id (owner-only) |
 | `gitlab-vault.json` | same | the encrypted vault |
 | `gitlab-state.json` | same | which steps are done |
 | `gitlab-audit.log` | same | one line per action, secrets hidden |

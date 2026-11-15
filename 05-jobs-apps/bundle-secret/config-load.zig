@@ -25,13 +25,13 @@ pub const Pick = struct {
     file_maxz_kbyt: u32 = 256,
     total_maxz_mbyt: u32 = 64,
 };
-pub const Bundle = struct { root: []const u8 = "{home}/05-cloud-house-vault", path: []const u8 = "bundle-secret.enc", need_git: bool = true, pass_file: []const u8 = "{home}/.05-cloud-house-secre/05-cloud-house-vault.pass", pass_envz: []const u8 = "BUNDLE_SECRET_PASS", pass_min: u32 = 16 };
+pub const Bundle = struct { root: []const u8 = "{home}/04-clou-vaul", path: []const u8 = "bundle-secret.enc", need_git: bool = true, pass_file: []const u8 = "{home}/.04-clou-secr/04-clou-vaul.pass", pass_envz: []const u8 = "BUNDLE_SECRET_PASS", pass_min: u32 = 16 };
 pub const Argon = struct { time: u32 = 3, memo_kbyt: u32 = 65536, para: u32 = 1 };
-pub const Unpack = struct { file_mode: []const u8 = "600", trash: []const u8 = "{home}/.05-cloud-house-secre/bundle-trash" };
+pub const Unpack = struct { file_mode: []const u8 = "600", trash: []const u8 = "{home}/.04-clou-secr/bundle-trash" };
 pub const GitCf = struct { bin: []const u8 = "git", timeout_secs: u32 = 120 };
 pub const FetchCf = struct { on_differ: []const u8 = "keep" };
 pub const ShipCf = struct { message: []const u8 = "update bundle" };
-pub const StateCf = struct { file: []const u8 = "{home}/.05-cloud-house-secre/bundle-secret-state.json" };
+pub const StateCf = struct { file: []const u8 = "{home}/.04-clou-secr/bundle-secret-state.json" };
 pub const Conf = struct { vers: u32 = CF.vers, pick: Pick = .{}, bundle: Bundle = .{}, argon: Argon = .{}, unpack: Unpack = .{}, git: GitCf = .{}, fetch: FetchCf = .{}, ship: ShipCf = .{}, state: StateCf = .{} };
 
 var why_buf: [512]u8 = undefined;

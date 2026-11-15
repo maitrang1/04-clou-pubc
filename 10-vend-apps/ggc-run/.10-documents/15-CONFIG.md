@@ -7,10 +7,10 @@ Plain facts: where things go, what each setting does. For steps, see `10-HOW-TO.
 ## The Program
 | Item | Value |
 |---|---|
-| File | `/home/mai_trang/05-cloud-house/10-vend-apps/ggc-run/zig-out/bin/ggc-run` |
+| File | `/home/mai_trang/04-clou-base/10-vend-apps/ggc-run/zig-out/bin/ggc-run` |
 | Run | `ggc-run <run\|plan\|status\|usage\|revoke\|help> [--go] [--conf PATH]` |
 | Settings file | `00-config.json` in the folder you run from (or `--conf PATH`) |
-| Memory folder | `{home}/.05-cloud-house-secre/` |
+| Memory folder | `{home}/.04-clou-secr/` |
 | Built with | Zig 0.16.0, nothing else |
 | Exit codes | 0 ok · 1 failed · 2 wrong use or bad settings · 3 quota at the warn level · 4 waiting for you |
 
@@ -22,7 +22,7 @@ A misspelled or unknown setting stops the tool and names the line and column.
 | Setting | What it does | Default | Allowed |
 |---|---|---|---|
 | `vers` | Settings format number | `1` | `1` |
-| `data.root` | Memory folder; `{home}` is your home folder | `{home}/.05-cloud-house-secre` | any path |
+| `data.root` | Memory folder; `{home}` is your home folder | `{home}/.04-clou-secr` | any path |
 | `data.stat` | State file name | `ggc-run-state.json` | file name |
 | `data.audi` | Log file name | `ggc-run-audit.log` | file name |
 | `data.hand` | Handoff file name (tick address for the timer) | `ggc-run-handoff.json` | file name |
@@ -90,9 +90,9 @@ A misspelled or unknown setting stops the tool and names the line and column.
 ## Output
 | Item | Value |
 |---|---|
-| State | `{home}/.05-cloud-house-secre/ggc-run-state.json` (ids only, no secrets) |
-| Log | `{home}/.05-cloud-house-secre/ggc-run-audit.log` (one line per call, secrets masked) |
-| Handoff | `{home}/.05-cloud-house-secre/ggc-run-handoff.json` (project, region, service, address, tick address) |
+| State | `{home}/.04-clou-secr/ggc-run-state.json` (ids only, no secrets) |
+| Log | `{home}/.04-clou-secr/ggc-run-audit.log` (one line per call, secrets masked) |
+| Handoff | `{home}/.04-clou-secr/ggc-run-handoff.json` (project, region, service, address, tick address) |
 
 ## Files In This Tool
 ```

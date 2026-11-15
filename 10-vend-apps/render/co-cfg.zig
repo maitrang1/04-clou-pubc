@@ -5,7 +5,7 @@
 // Who: zzOWN.com - Own Fast. Work Faster.  - | Ema: zzown.com@gmail.com
 // Inp: path of 00-config.json
 // Out: Conf struct, or an error with line and column
-// Run: cd /home/mai_trang/05-cloud-house/10-vend-apps/render && zig build test
+// Run: cd /home/mai_trang/04-clou-base/10-vend-apps/render && zig build test
 // Exe: none (library file)
 // =====================================================================
 const std = @import("std");
@@ -122,8 +122,8 @@ test "paid plan refused without the opt-in and a cap" {
 test "home fill" {
     var aren = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer aren.deinit();
-    const text = try homeFill(aren.allocator(), "/h", "{home}/.05-cloud-house-secre");
-    try std.testing.expectEqualStrings("/h/.05-cloud-house-secre", text);
+    const text = try homeFill(aren.allocator(), "/h", "{home}/.04-clou-secr");
+    try std.testing.expectEqualStrings("/h/.04-clou-secr", text);
 }
 
 // ========================___THIS_IS_THE_END___========================

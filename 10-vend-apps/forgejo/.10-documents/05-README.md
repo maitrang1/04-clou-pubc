@@ -18,21 +18,21 @@ It installs Forgejo on your own Linux server, checks the download is genuine, tu
 ---
 
 ## Quick Start
-1. Create `~/.05-cloud-house-secre/forgejo-account.json` with `{"user": "your-name", "mail": "you@example.com"}`.
+1. Create `~/.04-clou-secr/forgejo-account.json` with `{"user": "your-name", "mail": "you@example.com"}`.
 2. Look before you leap (changes nothing):
 ```
-/home/mai_trang/05-cloud-house/10-vend-apps/forgejo/zig-out/bin/forgejo-setup run
+/home/mai_trang/04-clou-base/10-vend-apps/forgejo/zig-out/bin/forgejo-setup run
 ```
 3. Run it for real:
 ```
-/home/mai_trang/05-cloud-house/10-vend-apps/forgejo/zig-out/bin/forgejo-setup run --go
+/home/mai_trang/04-clou-base/10-vend-apps/forgejo/zig-out/bin/forgejo-setup run --go
 ```
 It asks for a vault passphrase, then prints each step and ends with `done · skipped · to-do · hand jobs used`.
 
 ---
 
 ## Where secrets go
-The access token lives in an encrypted vault file under `~/.05-cloud-house-secre/`. It is never printed, never written to git, never written to the log.
+The access token lives in an encrypted vault file under `~/.04-clou-secr/`. It is never printed, never written to git, never written to the log.
 
 ---
 
@@ -44,4 +44,4 @@ The access token lives in an encrypted vault file under `~/.05-cloud-house-secre
 ---
 
 ## License
-PolyForm Noncommercial 1.0.0. Free for personal and noncommercial use (hobby, study, research, charity). Using it in a business or for profit needs a paid commercial license: open an issue at https://github.com/maitrang1/05-cloud-house/issues. Full text: `25-LICENSE`.
+PolyForm Noncommercial 1.0.0. Free for personal and noncommercial use (hobby, study, research, charity). Using it in a business or for profit needs a paid commercial license: open an issue at https://github.com/maitrang1/04-clou-pubc/issues. Full text: `25-LICENSE`.

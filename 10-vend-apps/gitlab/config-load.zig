@@ -5,7 +5,7 @@
 // Who: zzOWN.com - Own Fast. Work Faster.  - | Ema: zzown.com@gmail.com
 // Inp: path of 00-config.json
 // Out: Conf struct, or an error with line and column
-// Run: cd /home/mai_trang/05-cloud-house/10-vend-apps/gitlab && zig build test
+// Run: cd /home/mai_trang/04-clou-base/10-vend-apps/gitlab && zig build test
 // Exe: none (library file)
 // =====================================================================
 const std = @import("std");
@@ -123,7 +123,7 @@ test "shipped config parses" {
     };
     try std.testing.expectEqualStrings("gitlab.com", conf.gitl.host);
     try std.testing.expectEqual(@as(u32, 90), conf.toke.days);
-    try std.testing.expectEqualStrings("05-cloud-house", conf.gith.repo); // the GitHub repo the mirror job lives in
+    try std.testing.expectEqualStrings("04-clou-pubc", conf.gith.repo); // the GitHub repo the mirror job lives in
     try std.testing.expect(std.mem.startsWith(u8, conf.repo.path, "{home}/")); // no machine name in the shipped file
     try std.testing.expect(std.mem.startsWith(u8, conf.sshz.file, "{home}/"));
     try std.testing.expect(!conf.gitl.sett.object.get("shared_runners_enabled").?.bool);

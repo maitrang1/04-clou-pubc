@@ -5,8 +5,8 @@
 // Who: zzOWN.com - Own Fast. Work Faster.  - | Ema: zzown.com@gmail.com
 // Inp: none - `github plan|run|status|revoke|push|publish|test|build|version|help` -- --config --steps --home --root --from --live --app --app-all --target
 // Out: exit 0 ok · 1 failed · 2 usage/config · 3 secret found · 4 waiting on a human
-// Run: cd /home/mai_trang/05-cloud-house/10-vend-apps/github && zig build run -- plan
-// Exe: /home/mai_trang/05-cloud-house/10-vend-apps/github/zig-out/bin/github
+// Run: cd /home/mai_trang/04-clou-base/10-vend-apps/github && zig build run -- plan
+// Exe: /home/mai_trang/04-clou-base/10-vend-apps/github/zig-out/bin/github
 // =====================================================================
 const std = @import("std");
 const build_options = @import("build_options");
@@ -43,7 +43,7 @@ const Args = struct {
 };
 
 const USAGE =
-    \\github - set up a GitHub repo with CI, secrets and keys for 05-cloud-house.
+    \\github - set up a GitHub repo with CI, secrets and keys for 04-clou-pubc.
     \\
     \\Usage: github <command> [flags]
     \\

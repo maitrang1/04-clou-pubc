@@ -7,7 +7,7 @@ Every command, step by step. See `05-README.md` first. Commands run on your Linu
 ## Set it up (first time)
 1. Create your Linux server first (the only manual job).
 2. Copy `forgejo-setup` and `00-config.json` to the server, in the same folder.
-3. Create the private file `~/.05-cloud-house-secre/forgejo-account.json` with your admin name and email: `{"user": "your-name", "mail": "you@example.com"}`. Keep it out of `00-config.json`, which is copied to the public repo.
+3. Create the private file `~/.04-clou-secr/forgejo-account.json` with your admin name and email: `{"user": "your-name", "mail": "you@example.com"}`. Keep it out of `00-config.json`, which is copied to the public repo.
 4. Check the plan, nothing changes:
 ```
 forgejo-setup run

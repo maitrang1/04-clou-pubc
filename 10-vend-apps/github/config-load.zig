@@ -36,7 +36,7 @@ pub const Acct = struct { logi: []const u8 = "", mail: []const u8 = "" };
 
 // where the app keeps its private files (state, audit, vault, keys, account); names are plain, the folder is shared by every cloud-house app ----
 pub const Data = struct {
-    root: []const u8 = "{home}/.05-cloud-house-secre",
+    root: []const u8 = "{home}/.04-clou-secr",
     acct: []const u8 = "github-account.json",
     stat: []const u8 = "github-state.json",
     vaul: []const u8 = "github-main.vault",

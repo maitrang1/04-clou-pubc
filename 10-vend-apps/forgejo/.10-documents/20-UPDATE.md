@@ -10,7 +10,7 @@ What changed, newest first.
 ---
 
 ## Private account file (2026-11-13)
-**Changed:** your admin name and email now live in `~/.05-cloud-house-secre/forgejo-account.json`, not in `00-config.json`, so they never reach a public repo. A missing file changes nothing.
+**Changed:** your admin name and email now live in `~/.04-clou-secr/forgejo-account.json`, not in `00-config.json`, so they never reach a public repo. A missing file changes nothing.
 
 ---
 

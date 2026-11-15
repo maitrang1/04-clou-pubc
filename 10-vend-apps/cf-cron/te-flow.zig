@@ -5,7 +5,7 @@
 // Who: zzOWN.com - Own Fast. Work Faster.  - | Ema: zzown.com@gmail.com
 // Inp: none (tests)
 // Out: pass or fail
-// Run: cd /home/mai_trang/05-cloud-house/10-vend-apps/cf-cron && zig build test
+// Run: cd /home/mai_trang/04-clou-base/10-vend-apps/cf-cron && zig build test
 // Exe: none (test-only library file)
 // =====================================================================
 const std = @import("std");
@@ -67,7 +67,7 @@ const Rig = struct {
     }
 
     fn path(self: *Rig, name: []const u8) ![]u8 {
-        return std.fs.path.join(self.aren.allocator(), &.{ self.home, ".05-cloud-house-secre", name });
+        return std.fs.path.join(self.aren.allocator(), &.{ self.home, ".04-clou-secr", name });
     }
 
     fn read(self: *Rig, name: []const u8) ![]u8 {

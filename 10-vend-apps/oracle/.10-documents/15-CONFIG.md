@@ -22,7 +22,7 @@ A wrong or unknown setting stops the program and names the line. Every setting m
 | Setting | What it does | Default | Allowed |
 |---|---|---|---|
 | `vers` | Settings format version | `1` | `1` |
-| `data.root` | Folder for the vault, state, log and backups. `{home}` means your home folder | `{home}/.05-cloud-house-secre` | any path |
+| `data.root` | Folder for the vault, state, log and backups. `{home}` means your home folder | `{home}/.04-clou-secr` | any path |
 | `data.vaul` · `data.stat` · `data.audi` | File names of the vault, the progress file and the call log | `oracle-vault.json` · `oracle-state.json` · `oracle-audit.log` | file names |
 | `data.back` | Backup folder name (inside `data.root`) | `oracle-backup` | folder name |
 | `vaul.envz` | Name of the environment variable that holds your vault passphrase | `CLOUD_HOUSE_VAULT_PASS` | a name |

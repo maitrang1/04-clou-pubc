@@ -5,7 +5,7 @@
 // Who: zzOWN.com - Own Fast. Work Faster.  - | Ema: zzown.com@gmail.com
 // Inp: none
 // Out: test results
-// Run: cd /home/mai_trang/05-cloud-house/10-vend-apps/oracle && zig build test
+// Run: cd /home/mai_trang/04-clou-base/10-vend-apps/oracle && zig build test
 // Exe: none (test file)
 // =====================================================================
 const std = @import("std");
@@ -98,7 +98,7 @@ const Rig = struct {
 
     fn loadState(self: *Rig) !stat.Stat {
         const gpa = self.aren.allocator();
-        return stat.Stat.load(gpa, std.testing.io, try std.fs.path.join(gpa, &.{ self.home, ".05-cloud-house-secre", "oracle-state.json" }));
+        return stat.Stat.load(gpa, std.testing.io, try std.fs.path.join(gpa, &.{ self.home, ".04-clou-secr", "oracle-state.json" }));
     }
 };
 
@@ -109,7 +109,7 @@ test "dry-run and plan touch nothing" {
     try std.testing.expectEqual(@as(u8, 0), try rig.go(.run, false, false, &.{}));
     try std.testing.expectEqual(@as(u8, 0), try rig.go(.plan, false, false, &.{}));
     try std.testing.expectEqual(@as(u32, 0), rig.mok.seen);
-    const root = try std.fs.path.join(rig.aren.allocator(), &.{ rig.home, ".05-cloud-house-secre" });
+    const root = try std.fs.path.join(rig.aren.allocator(), &.{ rig.home, ".04-clou-secr" });
     try std.testing.expectError(error.FileNotFound, std.Io.Dir.cwd().openDir(std.testing.io, root, .{}));
 }
 
@@ -137,7 +137,7 @@ test "full live run, then a rerun that changes nothing" {
 
     // the backup holds ids and config, never a key
     const gpa = rig.aren.allocator();
-    const dirz = try std.fs.path.join(gpa, &.{ rig.home, ".05-cloud-house-secre", "oracle-backup" });
+    const dirz = try std.fs.path.join(gpa, &.{ rig.home, ".04-clou-secr", "oracle-backup" });
     var dir = try std.Io.Dir.cwd().openDir(std.testing.io, dirz, .{ .iterate = true });
     defer dir.close(std.testing.io);
     var iter = dir.iterate();
@@ -148,7 +148,7 @@ test "full live run, then a rerun that changes nothing" {
     try std.testing.expect(std.mem.indexOf(u8, back, "test-key.pem") != null); // a path, not the key
 
     // the vault holds the secrets, the state file and the audit log do not
-    const root = try std.fs.path.join(gpa, &.{ rig.home, ".05-cloud-house-secre" });
+    const root = try std.fs.path.join(gpa, &.{ rig.home, ".04-clou-secr" });
     inline for (.{ "oracle-state.json", "oracle-audit.log", "oracle-vault.json" }) |name| {
         const text = try std.Io.Dir.cwd().readFileAlloc(std.testing.io, try std.fs.path.join(gpa, &.{ root, name }), gpa, .limited(1 << 22));
         try std.testing.expect(std.mem.indexOf(u8, text, "MIIEow") == null);

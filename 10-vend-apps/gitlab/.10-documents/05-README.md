@@ -14,26 +14,26 @@ It finds your GitHub login, helps you sign up on GitLab (you press the buttons),
 - Your GitHub repo set up first (see the GitHub app). `gh` logged in.
 - `git` and `ssh-keygen` installed.
 - To log in to GitLab: either `glab` (GitLab's program) installed, or your own GitLab OAuth app id (see `10-HOW-TO.md`).
-- The public copy folder from the GitHub app, for example `/home/mai_trang/05-cloud-house-synch`.
+- The public copy folder from the GitHub app, for example `/home/mai_trang/04-clou-pubc`.
 
 ---
 
 ## Quick Start
 1. Look before you leap (changes nothing):
 ```
-cd /home/mai_trang/05-cloud-house/10-vend-apps/gitlab
-/home/mai_trang/05-cloud-house/10-vend-apps/gitlab/zig-out/bin/gitlab-setup run
+cd /home/mai_trang/04-clou-base/10-vend-apps/gitlab
+/home/mai_trang/04-clou-base/10-vend-apps/gitlab/zig-out/bin/gitlab-setup run
 ```
 2. Run it for real. It asks for a vault passphrase (8 or more characters): save it in your password manager.
 ```
-/home/mai_trang/05-cloud-house/10-vend-apps/gitlab/zig-out/bin/gitlab-setup run --go
+/home/mai_trang/04-clou-base/10-vend-apps/gitlab/zig-out/bin/gitlab-setup run --go
 ```
 It stops when it needs you (sign-up, email, login), says exactly what to do, and you run the same command again.
 
 ---
 
 ## Where secrets go
-Your passphrase locks one encrypted file in `~/.05-cloud-house-secre/`. The GitLab token and the audit log live there too. None of it is ever uploaded.
+Your passphrase locks one encrypted file in `~/.04-clou-secr/`. The GitLab token and the audit log live there too. None of it is ever uploaded.
 
 ---
 
@@ -45,4 +45,4 @@ Your passphrase locks one encrypted file in `~/.05-cloud-house-secre/`. The GitL
 ---
 
 ## License
-PolyForm Noncommercial 1.0.0. Free for personal and noncommercial use (hobby, study, research, charity). Using it in a business or for profit needs a paid commercial license: open an issue at https://github.com/maitrang1/05-cloud-house/issues. Full text: `25-LICENSE`.
+PolyForm Noncommercial 1.0.0. Free for personal and noncommercial use (hobby, study, research, charity). Using it in a business or for profit needs a paid commercial license: open an issue at https://github.com/maitrang1/04-clou-pubc/issues. Full text: `25-LICENSE`.

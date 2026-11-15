@@ -21,12 +21,12 @@ It creates a free web service on Render from a public container image, sets its 
 1. Open `00-config.json` and set `imag` (under `rend`) to your public image path.
 2. Preview. Nothing changes:
 ```
-/home/mai_trang/05-cloud-house/10-vend-apps/render/zig-out/bin/render-setup run
+/home/mai_trang/04-clou-base/10-vend-apps/render/zig-out/bin/render-setup run
 ```
 You see the plan and `hand jobs: 2`.
 3. Run it for real:
 ```
-/home/mai_trang/05-cloud-house/10-vend-apps/render/zig-out/bin/render-setup run --go
+/home/mai_trang/04-clou-base/10-vend-apps/render/zig-out/bin/render-setup run --go
 ```
 It opens the sign-up page, waits for you to type `g`, asks for your API key (hidden), then does the rest. It ends with:
 ```
@@ -37,7 +37,7 @@ done: 8  skipped: 1  to-do: 0  hand jobs used: 2
 ---
 
 ## Where your secrets go
-Your API key and passphrase never touch `00-config.json`. The key lives in an encrypted vault file in your home folder (`.05-cloud-house-secre`). Only you hold the passphrase.
+Your API key and passphrase never touch `00-config.json`. The key lives in an encrypted vault file in your home folder (`.04-clou-secr`). Only you hold the passphrase.
 
 ---
 
@@ -49,4 +49,4 @@ Your API key and passphrase never touch `00-config.json`. The key lives in an en
 ---
 
 ## License
-PolyForm Noncommercial 1.0.0. Free for personal and noncommercial use (hobby, study, research, charity). Using it in a business or for profit needs a paid commercial license: open an issue at https://github.com/maitrang1/05-cloud-house/issues. Full text: `25-LICENSE`.
+PolyForm Noncommercial 1.0.0. Free for personal and noncommercial use (hobby, study, research, charity). Using it in a business or for profit needs a paid commercial license: open an issue at https://github.com/maitrang1/04-clou-pubc/issues. Full text: `25-LICENSE`.

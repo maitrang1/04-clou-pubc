@@ -21,7 +21,7 @@ Oracle gives every new account a small always-on Linux computer for free. Settin
 ## Quick Start
 1. See the plan (nothing happens):
 ```
-/home/mai_trang/05-cloud-house/10-vend-apps/oracle/zig-out/rel/x86_64-linux-musl/bin/oracle-setup plan
+/home/mai_trang/04-clou-base/10-vend-apps/oracle/zig-out/rel/x86_64-linux-musl/bin/oracle-setup plan
 ```
 You will see 12 steps and `hand jobs: 3 total, 0 done · steps left: 12`.
 2. Set a passphrase for the key vault (8+ characters):
@@ -30,13 +30,13 @@ export CLOUD_HOUSE_VAULT_PASS='pick-a-long-phrase'
 ```
 3. Run it for real and follow the prompts:
 ```
-/home/mai_trang/05-cloud-house/10-vend-apps/oracle/zig-out/rel/x86_64-linux-musl/bin/oracle-setup run --live
+/home/mai_trang/04-clou-base/10-vend-apps/oracle/zig-out/rel/x86_64-linux-musl/bin/oracle-setup run --live
 ```
 
 ---
 
 ## Where Output Goes
-Everything lives in one folder, `~/.05-cloud-house-secre`: the locked vault, a progress file, a call log with secrets hidden, and a backup of your settings. The last step prints your computer's address and the login command.
+Everything lives in one folder, `~/.04-clou-secr`: the locked vault, a progress file, a call log with secrets hidden, and a backup of your settings. The last step prints your computer's address and the login command.
 
 ---
 
@@ -48,4 +48,4 @@ Everything lives in one folder, `~/.05-cloud-house-secre`: the locked vault, a p
 ---
 
 ## License
-PolyForm Noncommercial 1.0.0. Free for personal and noncommercial use (hobby, study, research, charity). Using it in a business or for profit needs a paid commercial license: open an issue at https://github.com/maitrang1/05-cloud-house/issues. Full text: `25-LICENSE`.
+PolyForm Noncommercial 1.0.0. Free for personal and noncommercial use (hobby, study, research, charity). Using it in a business or for profit needs a paid commercial license: open an issue at https://github.com/maitrang1/04-clou-pubc/issues. Full text: `25-LICENSE`.

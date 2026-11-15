@@ -29,7 +29,7 @@ Every key must be present. A typo or an unknown key stops the app and names the 
 | Setting | What it does | Default | Allowed |
 |---|---|---|---|
 | `vers` | Settings format version | `1` | `1` |
-| `data.root` | Folder for the vault, state, log and wiring file; `{home}` is your home folder | `{home}/.05-cloud-house-secre` | any path |
+| `data.root` | Folder for the vault, state, log and wiring file; `{home}` is your home folder | `{home}/.04-clou-secr` | any path |
 | `data.vaul` / `stat` / `audi` | Vault, progress and log file names | `cf-cron-vault.json` / `cf-cron-state.json` / `cf-cron-audit.log` | file names |
 | `data.wire` | Wiring file the Schedule layer reads | `schedule-c.json` | file name |
 | `vaul.envz` | Environment variable that holds the vault passphrase | `CLOUD_HOUSE_VAULT_PASS` | name |

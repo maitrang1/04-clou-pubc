@@ -6,13 +6,13 @@ Nothing is sent anywhere by this program. Nothing is ever deleted.
 ---
 
 ## What it does
-It finds your secret files (the ones in `.secrets` folders and files such as `*token.json`), locks them with your passphrase into `bundle-secret.enc`, and unlocks them on another device. Without the passphrase the file is unreadable, names included. The file lives in its own private repo (default folder `~/05-cloud-house-vault`), never in your code repo and never in the public copy.
+It finds your secret files (the ones in `.secrets` folders and files such as `*token.json`), locks them with your passphrase into `bundle-secret.enc`, and unlocks them on another device. Without the passphrase the file is unreadable, names included. The file lives in its own private repo (default folder `~/04-clou-vaul`), never in your code repo and never in the public copy.
 
 ---
 
 ## Requirements
 - Your code repo folder (where the secrets are).
-- A private git repo for the bundle, cloned to `~/05-cloud-house-vault` (one-time, see `10-HOW-TO.md`).
+- A private git repo for the bundle, cloned to `~/04-clou-vaul` (one-time, see `10-HOW-TO.md`).
 - A passphrase of 16 or more characters. You type it, or save it once on a device with `keep-pass` (owner-only local file, never in git).
 
 ---
@@ -20,11 +20,11 @@ It finds your secret files (the ones in `.secrets` folders and files such as `*t
 ## Quick Start
 1. Look first (changes nothing):
 ```
-/home/mai_trang/05-cloud-house/05-jobs-apps/bundle-secret/zig-out/bin/bundle-secret pack --repo /home/mai_trang/00_modules --config /home/mai_trang/05-cloud-house/05-jobs-apps/bundle-secret/00-config.json
+/home/mai_trang/04-clou-base/05-jobs-apps/bundle-secret/zig-out/bin/bundle-secret pack --repo /home/mai_trang/00_modules --config /home/mai_trang/04-clou-base/05-jobs-apps/bundle-secret/00-config.json
 ```
 2. Lock them (you type the passphrase twice, hidden):
 ```
-/home/mai_trang/05-cloud-house/05-jobs-apps/bundle-secret/zig-out/bin/bundle-secret pack --repo /home/mai_trang/00_modules --config /home/mai_trang/05-cloud-house/05-jobs-apps/bundle-secret/00-config.json --go
+/home/mai_trang/04-clou-base/05-jobs-apps/bundle-secret/zig-out/bin/bundle-secret pack --repo /home/mai_trang/00_modules --config /home/mai_trang/04-clou-base/05-jobs-apps/bundle-secret/00-config.json --go
 ```
 3. Upload the file from the vault folder (see `10-HOW-TO.md`).
 

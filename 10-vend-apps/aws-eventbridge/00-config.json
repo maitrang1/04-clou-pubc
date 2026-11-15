@@ -1,6 +1,6 @@
 {
   "vers": 1,
-  "data": { "root": "{home}/.05-cloud-house-secre", "vaul": "awseb-vault.json", "stat": "awseb-state.json", "audi": "awseb-audit.log", "back": "awseb-backup" },
+  "data": { "root": "{home}/.04-clou-secr", "vaul": "awseb-vault.json", "stat": "awseb-state.json", "audi": "awseb-audit.log", "back": "awseb-backup" },
   "vaul": { "envz": "CLOUD_HOUSE_VAULT_PASS", "time": 3, "memo": 65536, "para": 1 },
   "http": { "trys": 3, "back": 2, "maxw": 30, "agen": "aws-eventbridge-setup/0.1", "maxb": 4194304 },
   "cred": { "regi": "us-east-1", "mail": "" },

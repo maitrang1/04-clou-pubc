@@ -10,7 +10,7 @@ Plain facts: where things go, what the defaults are. For steps, see `10-HOW-TO.m
 | File | `github` (`.exe` on Windows) |
 | Run | `github <plan\|run\|status\|push\|publish\|revoke\|version\|help> [flags]` |
 | Flags | `--config` · `--steps` · `--home` · `--root` · `--from` · `--live` |
-| Default output | text on screen; files under `~/.05-cloud-house-secre/` |
+| Default output | text on screen; files under `~/.04-clou-secr/` |
 | Built with | Zig 0.16.0, standard library only |
 | Exit codes | 0 ok · 1 failed · 2 usage/config · 3 secret found · 4 waiting on a human |
 
@@ -20,11 +20,11 @@ Plain facts: where things go, what the defaults are. For steps, see `10-HOW-TO.m
 Every key has a default. An unknown key stops the app and names the line and column. Your login and email do not go here.
 | Setting | What it does | Default | Allowed |
 |---|---|---|---|
-| `data.root` | private folder | `{home}/.05-cloud-house-secre` | path |
+| `data.root` | private folder | `{home}/.04-clou-secr` | path |
 | `data.acct` / `stat` / `vaul` / `audi` / `keys` / `host` | file names in that folder | `github-account.json` · `github-state.json` · `github-main.vault` · `github-audit.jsonl` · `github-keys` · `github-known_hosts` | plain names |
 | `auth.mode` | how it logs in | `gh` | `gh`, `device` |
 | `auth.scop` | permissions asked | `repo workflow read:user user:email write:public_key` | text |
-| `repo.name` / `visi` | repo name and visibility | `05-cloud-house` · `public` | `visi`: `public`, `private` |
+| `repo.name` / `visi` | repo name and visibility | `04-clou-pubc` · `public` | `visi`: `public`, `private` |
 | `repo.bran` / `remo` | branch and remote | `main` · `origin` | names |
 | `repo.comm_text` / `publ_text` | commit messages | `first commit` · `sync from the work tree` | text |
 | `repo.nest_okay` | allow a repo inside another repo | `false` | true, false |
@@ -42,7 +42,7 @@ Every key has a default. An unknown key stops the app and names the line and col
 | `task.edit_skip` | files `--app-edit` ignores when it checks whether an app changed (docs) | `*.10-documents/*` | patterns |
 | `data.seen` | private file with each app's last green hash (never synced) | `github-task.seen` | file name |
 | `push.keep` | files in the copy the mirror never moves | `.gitignore`, `.gitattributes` | patterns |
-| `push.trash` | where removed files go | `{home}/00_modules/zzzz-delete-force-items/05-cloud-house-synch` | path |
+| `push.trash` | where removed files go | `{home}/00_modules/zzzz-delete-force-items/04-clou-pubc` | path |
 | `rule.*` | branch rule: block deletion, block force push | on | true, false |
 | `ciiz.*` | cloud flows, one file per app in `dir_path`: runner (`runs_on`, 15-minute limit on slim runners), timeout, Zig version, release job (`rele_runs_on`, `rele_tmos_mins`, `rele_targets`); `drop` lists old workflow files to move to the trash | see file | see file |
 | `ghcr.onzz` | check for a container image | `false` | true, false |
@@ -53,7 +53,7 @@ Every key has a default. An unknown key stops the app and names the line and col
 ## Files
 | File | Where | Holds |
 |---|---|---|
-| `github-account.json` | `~/.05-cloud-house-secre/` | your login and email (owner-only) |
+| `github-account.json` | `~/.04-clou-secr/` | your login and email (owner-only) |
 | `github-main.vault` | same | the encrypted vault |
 | `github-state.json` | same | which steps are done |
 | `github-audit.jsonl` | same | one line per action, secrets hidden |

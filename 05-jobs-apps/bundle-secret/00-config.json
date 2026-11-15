@@ -11,20 +11,20 @@
     "total_maxz_mbyt": 64
   },
   "bundle": {
-    "root": "{home}/05-cloud-house-vault",
+    "root": "{home}/04-clou-vaul",
     "path": "bundle-secret.enc",
     "need_git": true,
-    "pass_file": "{home}/.05-cloud-house-secre/05-cloud-house-vault.pass",
+    "pass_file": "{home}/.04-clou-secr/04-clou-vaul.pass",
     "pass_envz": "BUNDLE_SECRET_PASS",
     "pass_min": 16
   },
   "git": { "bin": "git", "timeout_secs": 120 },
   "fetch": { "on_differ": "keep" },
   "ship": { "message": "update bundle" },
-  "state": { "file": "{home}/.05-cloud-house-secre/bundle-secret-state.json" },
+  "state": { "file": "{home}/.04-clou-secr/bundle-secret-state.json" },
   "argon": { "time": 3, "memo_kbyt": 65536, "para": 1 },
   "unpack": {
     "file_mode": "600",
-    "trash": "{home}/.05-cloud-house-secre/bundle-trash"
+    "trash": "{home}/.04-clou-secr/bundle-trash"
   }
 }

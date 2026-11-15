@@ -363,7 +363,7 @@ test "deploy key: repo path, listing says absent, read-only or writable" {
     var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena.deinit();
     const a = arena.allocator();
-    try std.testing.expectEqualStrings("/repos/me/05-cloud-house/keys", try deployPath(a, "me", "05-cloud-house"));
+    try std.testing.expectEqualStrings("/repos/me/04-clou-pubc/keys", try deployPath(a, "me", "04-clou-pubc"));
     const mine = "ssh-ed25519 AAAAmine cloud-house\n";
     const rows = [_]DeployRow{ .{ .key = "ssh-ed25519 AAAAother x", .read_only = false }, .{ .key = "ssh-ed25519 AAAAmine", .read_only = true } };
     try std.testing.expectEqual(Deploy.absent, deployState(&.{}, mine));

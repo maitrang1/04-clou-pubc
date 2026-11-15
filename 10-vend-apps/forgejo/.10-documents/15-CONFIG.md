@@ -9,7 +9,7 @@ Plain facts: where things go, what the defaults are. For steps, see `10-HOW-TO.m
 |---|---|
 | File | `forgejo-setup` (`.exe` on Windows) |
 | Run | `forgejo-setup <run\|status\|drift\|revoke\|vault\|help> [--go]` |
-| Default output | text on screen; files under `~/.05-cloud-house-secre/` |
+| Default output | text on screen; files under `~/.04-clou-secr/` |
 | Built with | Zig 0.16.0, standard library only |
 | Exit codes | 0 ok · 1 failed · 2 usage/config · 3 drift · 4 needs a human |
 
@@ -19,11 +19,11 @@ Plain facts: where things go, what the defaults are. For steps, see `10-HOW-TO.m
 Every key must be present. An unknown key stops the app and names the line and column.
 | Setting | What it does | Default | Allowed |
 |---|---|---|---|
-| `data.root` | folder for vault, state, log | `{home}/.05-cloud-house-secre` | path |
+| `data.root` | folder for vault, state, log | `{home}/.04-clou-secr` | path |
 | `data.vaul` / `stat` / `audi` / `acct` | vault, state, audit, private account file names | `forgejo-vault.json` · `forgejo-state.json` · `forgejo-audit.log` · `forgejo-account.json` | file names |
 | `vaul.envz` | env var holding the passphrase | `CLOUD_HOUSE_VAULT_PASS` | name |
 | `vaul.time` / `memo` / `para` | vault key cost | 3 · 65536 · 1 | numbers |
-| `repo.path` | the git checkout to add the push URL to | `{home}/05-cloud-house-synch` (set to your own folder) | path |
+| `repo.path` | the git checkout to add the push URL to | `{home}/04-clou-pubc` (set to your own folder) | path |
 | `repo.bran` / `remo` | branch and remote | `main` · `origin` | names |
 | `repo.push` | push URL template | `ssh://git@{pubh}:{sshp}/{path}.git` | template |
 | `rele.base` / `vers` / `arch` | where and which release | Codeberg · `15.0.5` · `linux-amd64` | text, version required |
@@ -53,9 +53,9 @@ Every key must be present. An unknown key stops the app and names the line and c
 ## Output
 | Item | Value |
 |---|---|
-| Vault | `~/.05-cloud-house-secre/forgejo-vault.json` (encrypted; holds the token) |
-| State | `~/.05-cloud-house-secre/forgejo-state.json` (ids only, no secret) |
-| Audit | `~/.05-cloud-house-secre/forgejo-audit.log` (secrets masked) |
+| Vault | `~/.04-clou-secr/forgejo-vault.json` (encrypted; holds the token) |
+| State | `~/.04-clou-secr/forgejo-state.json` (ids only, no secret) |
+| Audit | `~/.04-clou-secr/forgejo-audit.log` (secrets masked) |
 
 ## Free-Tier Settings (added 2026-11-13)
 | Setting | What it does | Default |

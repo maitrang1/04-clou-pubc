@@ -1,25 +1,25 @@
 # How To
 
-`EXE` = `/home/mai_trang/05-cloud-house/05-jobs-apps/bundle-secret/zig-out/bin/bundle-secret`, `CFG` = `/home/mai_trang/05-cloud-house/05-jobs-apps/bundle-secret/00-config.json`, `SECRETS` = the folder that holds the secret files (the `00_modules` checkout, e.g. `/home/mai_trang/00_modules`), `VAULT` = the vault repo folder (default `~/05-cloud-house-vault`, set by `bundle.root`).
+`EXE` = `/home/mai_trang/04-clou-base/05-jobs-apps/bundle-secret/zig-out/bin/bundle-secret`, `CFG` = `/home/mai_trang/04-clou-base/05-jobs-apps/bundle-secret/00-config.json`, `SECRETS` = the folder that holds the secret files (the `00_modules` checkout, e.g. `/home/mai_trang/00_modules`), `VAULT` = the vault repo folder (default `~/04-clou-vaul`, set by `bundle.root`).
 
 ---
 
 ## Build it (once per device)
 ```
-cd /home/mai_trang/05-cloud-house/05-jobs-apps/bundle-secret && zig build
+cd /home/mai_trang/04-clou-base/05-jobs-apps/bundle-secret && zig build
 ```
 
 ---
 
 ## Set up the vault repo (once)
-1. Make a private repo on GitHub, for example `05-cloud-house-vault`:
+1. Make a private repo on GitHub, for example `04-clou-vaul`:
 ```
-gh repo create 05-cloud-house-vault --private --clone
+gh repo create 04-clou-vaul --private --clone
 ```
 (run it in `~`, or clone it to `VAULT` yourself.)
 2. Turn on the guards for that repo; it may then hold only the bundle and a README:
 ```
-bash /home/mai_trang/05-cloud-house/setup-git.sh VAULT --only '^(bundle-secret\.enc|README\.md|\.hooks-local\.conf)$'
+bash /home/mai_trang/04-clou-base/setup-git.sh VAULT --only '^(bundle-secret\.enc|README\.md|\.hooks-local\.conf)$'
 ```
 3. Give each device access to this repo only (its own deploy key; read-only if the device never locks secrets).
 
@@ -78,7 +78,7 @@ Change the file on the device that holds it, run `pack --go` again, push the vau
 ## Save the passphrase on this device (optional)
 So you need not type it each time:
 1. `EXE keep-pass --repo SECRETS --config CFG`. Type the passphrase twice (hidden). If a bundle exists, it must open with it, or nothing is saved.
-2. It writes `~/.05-cloud-house-secre/05-cloud-house-vault.pass` (owner-only). The program refuses that file if other users can read it (`chmod 600`).
+2. It writes `~/.04-clou-secr/04-clou-vaul.pass` (owner-only). The program refuses that file if other users can read it (`chmod 600`).
 3. **Also keep one copy of the passphrase offline** (password manager or paper). If this disk dies, the bundle cannot be opened without it.
 The file never goes in git (the guards block `*.pass`) and is not synced. Each device makes its own. To stop using it, set `bundle.pass_file` to `""` in `00-config.json`, or move the file away.
 

@@ -88,8 +88,8 @@ test "build: one block per host with its key, a row without a key file is skippe
         .{ .name = "gitlab", .host = "gitlab.com", .key = "{home}/.ssh/id_ed25519_gitlab" },
         .{ .name = "forgejo", .host = "127.0.0.1", .port = 2222, .key = "{home}/.ssh/id_ed25519_forgejo" },
     };
-    const text = try build(a, &hosts, "C:\\Users\\Dell 7750\\.05-cloud-house-secre\\github-keys", "id_ed25519", "C:\\Users\\Dell 7750", "C:\\Users\\Dell 7750\\known", &onlyGit, null);
-    try std.testing.expect(std.mem.indexOf(u8, text, "Host github github.com\n  HostName github.com\n  Port 22\n  User git\n  IdentityFile \"C:/Users/Dell 7750/.05-cloud-house-secre/github-keys/id_ed25519\"\n  IdentitiesOnly yes\n") != null);
+    const text = try build(a, &hosts, "C:\\Users\\Dell 7750\\.04-clou-secr\\github-keys", "id_ed25519", "C:\\Users\\Dell 7750", "C:\\Users\\Dell 7750\\known", &onlyGit, null);
+    try std.testing.expect(std.mem.indexOf(u8, text, "Host github github.com\n  HostName github.com\n  Port 22\n  User git\n  IdentityFile \"C:/Users/Dell 7750/.04-clou-secr/github-keys/id_ed25519\"\n  IdentitiesOnly yes\n") != null);
     try std.testing.expect(std.mem.indexOf(u8, text, "Host gitlab") == null); // key file missing: no block
     try std.testing.expect(std.mem.indexOf(u8, text, "Host forgejo 127.0.0.1\n  HostName 127.0.0.1\n  Port 2222\n") != null);
     try std.testing.expect(std.mem.indexOf(u8, text, "Host *\n  UserKnownHostsFile \"C:/Users/Dell 7750/known\"\n  StrictHostKeyChecking accept-new\n") != null);

@@ -19,21 +19,21 @@ You give it Zalo page addresses, or connect your own Zalo Official Account. It c
 ## Quick Start
 1. Add a customer and a Zalo page:
 ```
-/home/mai_trang/05-cloud-house/05-jobs-apps/zalochat/scrape/zig-out/linux-x86_64/bin/scrape cust --cust acme --add-url https://zalo.me/cuahangmau
+/home/mai_trang/04-clou-base/05-jobs-apps/zalochat/scrape/zig-out/linux-x86_64/bin/scrape cust --cust acme --add-url https://zalo.me/cuahangmau
 ```
 ```
 acme: 1 url(s) · webhook none · vendors on · consent NO
 ```
 2. Record that the customer agrees to their data being stored:
 ```
-/home/mai_trang/05-cloud-house/05-jobs-apps/zalochat/scrape/zig-out/linux-x86_64/bin/scrape consent --cust acme --grant
+/home/mai_trang/04-clou-base/05-jobs-apps/zalochat/scrape/zig-out/linux-x86_64/bin/scrape consent --cust acme --grant
 ```
 ```
 acme: consent granted
 ```
 3. Check the address is allowed (no page is fetched yet):
 ```
-/home/mai_trang/05-cloud-house/05-jobs-apps/zalochat/scrape/zig-out/linux-x86_64/bin/scrape scan --cust acme --dry-run
+/home/mai_trang/04-clou-base/05-jobs-apps/zalochat/scrape/zig-out/linux-x86_64/bin/scrape scan --cust acme --dry-run
 ```
 ```
   ok       https://zalo.me/cuahangmau
@@ -41,7 +41,7 @@ scan acme (dry-run): fetched 0 · added 0 · dup 0 · 404 0 · robots 0 · block
 ```
 4. Collect it for real: run the same command without `--dry-run`.
 
-On Windows use `E:\00_modules\05-cloud-house\05-jobs-apps\zalochat\scrape\zig-out\windows-x86_64\bin\scrape.exe` instead.
+On Windows use `E:\04-clou-base\05-jobs-apps\zalochat\scrape\zig-out\windows-x86_64\bin\scrape.exe` instead.
 
 ---
 
@@ -58,4 +58,4 @@ Everything is kept in one folder (your home folder, in `.zalochat-scrape`). Each
 ---
 
 ## License
-PolyForm Noncommercial 1.0.0. Free for personal and noncommercial use (hobby, study, research, charity). Using it in a business or for profit needs a paid commercial license: open an issue at https://github.com/maitrang1/05-cloud-house/issues. Full text: `25-LICENSE`.
+PolyForm Noncommercial 1.0.0. Free for personal and noncommercial use (hobby, study, research, charity). Using it in a business or for profit needs a paid commercial license: open an issue at https://github.com/maitrang1/04-clou-pubc/issues. Full text: `25-LICENSE`.

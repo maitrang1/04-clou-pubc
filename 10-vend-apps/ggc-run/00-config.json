@@ -1,6 +1,6 @@
 {
   "vers": 1,
-  "data": { "root": "{home}/.05-cloud-house-secre", "stat": "ggc-run-state.json", "audi": "ggc-run-audit.log", "hand": "ggc-run-handoff.json", "step": "df-steps.json" },
+  "data": { "root": "{home}/.04-clou-secr", "stat": "ggc-run-state.json", "audi": "ggc-run-audit.log", "hand": "ggc-run-handoff.json", "step": "df-steps.json" },
   "goog": { "regi": "us-central1", "free": ["us-central1", "us-east1", "us-west1"], "proj_base": "cloud-house", "proj_iden": "", "proj_name": "Cloud House", "serv": "cloud-job", "sacc": "cloud-job-run", "arty": "ghcr-remote" },
   "apis": {
     "crmz": "https://cloudresourcemanager.googleapis.com",

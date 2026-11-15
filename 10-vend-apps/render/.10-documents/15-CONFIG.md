@@ -27,7 +27,7 @@ Every key must be present. A typo or an unknown key stops the app and names the 
 | Setting | What it does | Default | Allowed |
 |---|---|---|---|
 | `vers` | Settings format version | `1` | `1` |
-| `data.root` | Folder for the vault, state, log and wiring file; `{home}` is your home folder | `{home}/.05-cloud-house-secre` | any path |
+| `data.root` | Folder for the vault, state, log and wiring file; `{home}` is your home folder | `{home}/.04-clou-secr` | any path |
 | `data.vaul` | Vault file name | `render-vault.json` | file name |
 | `data.stat` | Progress file name | `render-state.json` | file name |
 | `data.audi` | Log file name | `render-audit.log` | file name |

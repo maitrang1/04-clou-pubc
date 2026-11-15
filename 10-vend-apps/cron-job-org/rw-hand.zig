@@ -5,7 +5,7 @@
 // Who: zzOWN.com - Own Fast. Work Faster.  - | Ema: zzown.com@gmail.com
 // Inp: file paths, field name, Row
 // Out: the tick URL text; cronjoborg-handoff.json
-// Run: cd /home/mai_trang/05-cloud-house/10-vend-apps/cron-job-org && zig build test
+// Run: cd /home/mai_trang/04-clou-base/10-vend-apps/cron-job-org && zig build test
 // Exe: none (library file)
 // =====================================================================
 const std = @import("std");

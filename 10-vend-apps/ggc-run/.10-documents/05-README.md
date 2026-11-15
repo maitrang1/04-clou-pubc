@@ -20,13 +20,13 @@ Google Cloud Run runs a small program only when someone calls it, so it costs no
 ## Quick Start
 1. Look at the plan first. Nothing changes:
 ```
-/home/mai_trang/05-cloud-house/10-vend-apps/ggc-run/zig-out/bin/ggc-run run
+/home/mai_trang/04-clou-base/10-vend-apps/ggc-run/zig-out/bin/ggc-run run
 ```
 You see the 12 steps and `hand jobs in the list: 3`.
 
 2. Run it for real:
 ```
-/home/mai_trang/05-cloud-house/10-vend-apps/ggc-run/zig-out/bin/ggc-run run --go
+/home/mai_trang/04-clou-base/10-vend-apps/ggc-run/zig-out/bin/ggc-run run --go
 ```
 3. When it opens a page, do what the three lines say, then wait. It notices on its own, or you type `g`.
 
@@ -39,7 +39,7 @@ done: 10  skipped: 2  to-do: 0  hand jobs used: 1
 ---
 
 ## Where Output Goes
-Everything the tool remembers is in the `.05-cloud-house-secre` folder inside your home folder. It never holds a password or key. The web address for the timer service is in `ggc-run-handoff.json`.
+Everything the tool remembers is in the `.04-clou-secr` folder inside your home folder. It never holds a password or key. The web address for the timer service is in `ggc-run-handoff.json`.
 
 ---
 
@@ -51,4 +51,4 @@ Everything the tool remembers is in the `.05-cloud-house-secre` folder inside yo
 ---
 
 ## License
-PolyForm Noncommercial 1.0.0. Free for personal and noncommercial use (hobby, study, research, charity). Using it in a business or for profit needs a paid commercial license: open an issue at https://github.com/maitrang1/05-cloud-house/issues. Full text: `25-LICENSE`.
+PolyForm Noncommercial 1.0.0. Free for personal and noncommercial use (hobby, study, research, charity). Using it in a business or for profit needs a paid commercial license: open an issue at https://github.com/maitrang1/04-clou-pubc/issues. Full text: `25-LICENSE`.
