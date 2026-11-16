@@ -18,6 +18,7 @@ pub fn get(cx: *const Ctx, a: std.mem.Allocator, tok: []const u8, uid: []const u
             const data = js.obj(root, "data") orelse return .{ .fail = .{ .info = .{ .class = .failed, .msg = "quota reply has no data" }, .body = ok.body } };
             if (data != .array or data.array.items.len == 0) return .{ .fail = .{ .info = .{ .class = .failed, .msg = "quota reply has no data" }, .body = ok.body } };
             const d0 = data.array.items[0];
+            if (js.obj(d0, "quota_usage") == null) return .{ .fail = .{ .info = .{ .class = .retry, .msg = "quota reply has no quota_usage" }, .body = ok.body } }; // a renamed field must block, not read as 0
             var q = Quota{ .usage = js.int(d0, "quota_usage") };
             const t = js.int(js.obj(d0, "config"), "quota_total");
             if (t > 0) q.total = t;

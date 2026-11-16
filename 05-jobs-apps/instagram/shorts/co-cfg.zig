@@ -108,6 +108,9 @@ pub fn validate(c: Config, why: *[160]u8, why_len: *usize) LoadErr!void {
     if (!std.mem.startsWith(u8, c.graph.base, "https://") and !std.mem.startsWith(u8, c.graph.base, "http://127.0.0.1")) return bad(why, why_len, "config: graph.base must start with https://", .{});
     if (!versionOk(c.graph.version)) return bad(why, why_len, "config: graph.version must look like v27.0", .{});
     if (!std.mem.eql(u8, c.graph.login, "facebook")) return bad(why, why_len, "config: graph.login must be \"facebook\" (resumable upload is documented only for Facebook Login)", .{});
+    if (c.net.chunk_kb > 8192 or c.net.body_cap_kb > 4096) return bad(why, why_len, "config: net.chunk_kb must be <= 8192 and body_cap_kb <= 4096", .{});
+    if (c.net.status_poll_max_s > 900 or c.net.resume_max > 5 or c.retry_pre_send > 5 or c.retry_publish > 5) return bad(why, why_len, "config: net.status_poll_max_s <= 900; resume_max, retry_pre_send, retry_publish <= 5", .{});
+    if (c.tz_offset_hours < -12 or c.tz_offset_hours > 14) return bad(why, why_len, "config: tz_offset_hours must be -12..14", .{});
     if (c.db_file.len == 0 or c.data_dir.len == 0) return bad(why, why_len, "config: data_dir and db_file must not be empty", .{});
 }
 

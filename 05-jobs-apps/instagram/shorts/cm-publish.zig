@@ -92,7 +92,15 @@ fn runInner(cx: *Ctx, a: std.mem.Allocator, av: []const []const u8) !Result {
             .held => return .{ .code = exit.BLOCKED, .state = "held", .name = e.name, .note = e.reason },
             .invalid, .skipped => return .{ .code = exit.FAILED, .state = "invalid", .name = e.name, .note = e.reason },
             .done => {
-                if (std.mem.eql(u8, e.reason, "staged") and can_publish_staged) staged = e else if ((std.mem.eql(u8, e.reason, "failed") or std.mem.eql(u8, e.reason, "expired")) and again) pick = e else return replay(a, &db, e);
+                if (std.mem.eql(u8, e.reason, "staged") and can_publish_staged) staged = e else if ((std.mem.eql(u8, e.reason, "failed") or std.mem.eql(u8, e.reason, "expired")) and again) {
+                    // a retry sends the file as it is NOW: judge it again, fully (spec check + review approval)
+                    const fresh = pair.scanOne(cx, a, &db, e.name) catch return res(exit.FAILED, "failed", "cannot re-read the pair");
+                    switch (fresh.kind) {
+                        .ready => pick = fresh,
+                        .held => return .{ .code = exit.BLOCKED, .state = "held", .name = e.name, .note = fresh.reason },
+                        else => return .{ .code = exit.FAILED, .state = "invalid", .name = e.name, .note = fresh.reason },
+                    }
+                } else return replay(a, &db, e);
             },
         }
     } else {
@@ -325,7 +333,7 @@ fn sendOne(cx: *Ctx, a: std.mem.Allocator, db: *sq.Db, e: pair.Entry, cap: text.
 // a staged container goes public (post.public turned on later)
 fn publishStaged(cx: *Ctx, a: std.mem.Allocator, db: *sq.Db, e: pair.Entry, tok: []const u8, ig: []const u8) !Result {
     const row = (try send.byPkey(db, a, e.pkey)) orelse return res(exit.FAILED, "failed", "ledger row vanished");
-    if (row.state != .staged or row.cont_id.len == 0) return replay(a, db, e);
+    if (row.state != .staged or row.cont_id.len == 0 or row.pub_at != 0) return replay(a, db, e);
     if (try quotaGate(cx, a, db, tok, ig)) |why| return res(exit.BLOCKED, "blocked", why);
     switch (pollFinished(cx, a, tok, row.cont_id)) {
         .finished => {},
@@ -344,16 +352,19 @@ fn publishIt(cx: *Ctx, a: std.mem.Allocator, db: *sq.Db, id: i64, name: []const 
     try send.pubAt(cx, db, id);
     var attempt: u32 = 0;
     while (true) {
+        if (attempt > 0) try send.pubAt(cx, db, id); // a repeated call is counted and stamped again
         switch (pub_api.publish(cx, a, tok, ig, cid)) {
             .ok => |d| {
                 if (cx.crash_at == 3) return error.Crash;
+                // record the fact first; the read-backs below are best effort and may be cut short by a kill
+                var note: std.ArrayList(u8) = .empty;
+                try note.appendSlice(a, "published");
+                if (d.issue.len > 0) try note.print(a, "; Instagram says {s} (the media IS published)", .{d.issue});
+                try send.setState(cx, db, id, .posted, note.items, d.media_id, "");
                 try caps.setGap(cx, db);
                 try caps.recordOk(db);
                 try usageStop(cx, a, db);
                 const inf = list_api.info(cx, a, tok, d.media_id);
-                var note: std.ArrayList(u8) = .empty;
-                try note.appendSlice(a, "published");
-                if (d.issue.len > 0) try note.print(a, "; Instagram says {s} (the media IS published)", .{d.issue});
                 if (inf.ai) |ai| if (!ai) try note.appendSlice(a, "; WARNING: Instagram reads is_ai_generated=false");
                 return finishRow(cx, db, id, name, .posted, exit.OK, note.items, cid, d.media_id, inf.permalink);
             },
@@ -364,6 +375,7 @@ fn publishIt(cx: *Ctx, a: std.mem.Allocator, db: *sq.Db, id: i64, name: []const 
                     try caps.setGap(cx, db);
                     return finishRow(cx, db, id, name, .unsure, exit.UNSURE, try std.fmt.allocPrint(a, "publish sent, answer unclear ({s}, http {d}): run resolve", .{ f.info.msg, f.http }), cid, "", "");
                 }
+                if (f.info.definite and (f.info.class == .notready or f.info.class == .wait)) try send.clearPub(db, id); // proven: not published
                 if (f.info.definite and (f.info.class == .notready or f.info.class == .wait) and attempt < cx.cfg.retry_publish) {
                     attempt += 1;
                     cx.sleepMs(@as(i64, cx.cfg.net.notready_wait_s) * 1000);

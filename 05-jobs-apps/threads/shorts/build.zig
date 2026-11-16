@@ -17,12 +17,12 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const opt = b.option(std.builtin.OptimizeMode, "optimize", "Debug | ReleaseSafe | ReleaseFast | ReleaseSmall") orelse .ReleaseSafe;
     const mock = b.option(bool, "mock", "allow loopback http for mocks (never in release)") orelse false;
-    const exe = b.addExecutable(.{ .name = "facebook-shorts", .root_module = rootModule(b, target, opt, mock) });
+    const exe = b.addExecutable(.{ .name = "threads-shorts", .root_module = rootModule(b, target, opt, mock) });
     b.installArtifact(exe);
     const run = b.addRunArtifact(exe);
     run.step.dependOn(b.getInstallStep());
     if (b.args) |a| run.addArgs(a);
-    b.step("run", "Run facebook-shorts").dependOn(&run.step);
+    b.step("run", "Run threads-shorts").dependOn(&run.step);
     const filters = b.option([]const []const u8, "test-filter", "only tests whose name contains this") orelse &.{};
     const tests = b.addTest(.{ .root_module = rootModule(b, target, .Debug, true), .filters = filters });
     b.step("test", "Run all tests (offline, mocks only)").dependOn(&b.addRunArtifact(tests).step);

@@ -101,7 +101,7 @@ fn runInner(cx: *Ctx, a: std.mem.Allocator, av: []const []const u8) !Result {
         }
         return res(exit.NOTHING, "nothing", try std.fmt.allocPrint(a, "no ready pair ({d} held, {d} invalid)", .{ held, bad }));
     };
-    const cap = text.build(a, .{ .hooks = e.j.hooks, .description = e.j.description, .hashtags = e.j.hashtags, .ai_notice = e.j.ai_notice }, .{ .desc_max = cx.cfg.post.desc_max, .title_max = cx.cfg.post.title_max, .tags_max = cx.cfg.post.tags_max, .notice_required = cx.cfg.post.ai_notice_required }) catch |er| return .{ .code = exit.FAILED, .state = "refused", .name = e.name, .note = if (er == error.NoNotice) "no ai_notice in the json: every post must carry it" else "caption cannot be built" };
+    const cap = text.build(a, .{ .hooks = e.j.hooks, .description = e.j.description, .hashtags = e.j.hashtags, .ai_notice = e.j.ai_notice, .brand = pair.brandOf(e.j), .model = pair.modelOf(e.j), .year = pair.valYear(e.j.year), .title = pair.titleOf(e.j) }, .{ .desc_max = cx.cfg.post.desc_max, .title_max = cx.cfg.post.title_max, .tags_max = cx.cfg.post.tags_max, .notice_required = cx.cfg.post.ai_notice_required, .title_pattern = cx.cfg.post.title_pattern, .title_case = cx.cfg.post.title_case }) catch |er| return .{ .code = exit.FAILED, .state = "refused", .name = e.name, .note = if (er == error.NoNotice) "no ai_notice in the json: every post must carry it" else "caption cannot be built" };
     const vstate: []const u8 = if (cx.cfg.post.public) "PUBLISHED" else "DRAFT";
     if (!cx.live) {
         const steps = [_][]const u8{ "start", "upload", "poll", "finish", "poll" };

@@ -52,6 +52,8 @@ An unknown or misspelled setting is refused with its line and column, so a typo 
 | `post.ai_notice_required` | Refuse a video that has no AI notice text | `true` | `true`, `false` |
 | `post.desc_max` | Longest caption (characters, counted cautiously) | `2000` | 100 or more |
 | `post.title_max` | Longest title | `100` | 1 or more |
+| `post.title_pattern` | How the title is built from the video details. `{brand} {model} {year}` is never cut; only `{hook}` is shortened to fit `title_max`. Missing brand, model or year = the hook alone | `"{brand} {model} {year}. {hook}"` | must contain `{hook}` once; other placeholders: `{brand}` `{model}` `{year}` |
+| `post.title_case` | Write the title in Title Case (every word starts with a capital; words that already have capitals, like SUV or VF3, stay as written) | `true` | `true` or `false` |
 | `post.tags_max` | Most hashtags used | `10` | 0 or more |
 | `post.reel_url_base` | Start of the link shown after a send | `https://www.facebook.com/reel` | a web address |
 | `net` | Network behaviour | | |

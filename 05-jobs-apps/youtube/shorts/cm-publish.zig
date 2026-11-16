@@ -53,7 +53,7 @@ fn show(cx: *const ctx_mod.Ctx, a: std.mem.Allocator, json: bool, action: []cons
         util.printAll(cx.io, s);
         util.printAll(cx.io, "\n");
     } else {
-        util.print(cx.io, "{s} {s}: {s}{s}{s}\n", .{ action, name, msg, if (url.len > 0) " " else "", url });
+        util.print(cx.io, "{s}: {s}: {s}{s}{s}\n", .{ action, name, msg, if (url.len > 0) "\n" else "", url });
     }
 }
 
@@ -208,7 +208,7 @@ pub fn run(cx: *const ctx_mod.Ctx, av: []const []const u8, json: bool) u8 {
     }
 
     // text and meta (the pair was checked at scan, so this cannot fail on a ready item)
-    const tx = text.build(a, .{ .hooks = it.pair.hooks, .description = it.pair.description, .hashtags = it.pair.hashtags, .listing_url = it.pair.listing_url, .ai_notice = it.pair.ai_notice }, cx.cfg.post) catch {
+    const tx = text.build(a, .{ .brand = it.pair.brand, .model = it.pair.model, .year = it.pair.year, .hooks = it.pair.hooks, .description = it.pair.description, .hashtags = it.pair.hashtags, .listing_url = it.pair.listing_url, .title = it.pair.title, .ai_notice = it.pair.ai_notice }, cx.cfg.post) catch {
         util.eprint(cx.io, "error: cannot build the text for {s}\nwhy: title or AI notice missing\nfix: shorts scan\n", .{it.name});
         return exit.failed;
     };

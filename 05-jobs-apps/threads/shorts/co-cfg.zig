@@ -4,7 +4,7 @@ const std = @import("std");
 pub const Device = struct { publisher: bool = false };
 pub const Source = struct { dir: []const u8 = "", max_age_days: u32 = 14 };
 pub const Host = struct { dir: []const u8 = "", done_dir: []const u8 = "", base_url: []const u8 = "", selfcheck: bool = true };
-pub const Limits = struct { daily_cap: u32 = 3, quota_margin: u32 = 10, gap_min_s: u32 = 600, gap_max_s: u32 = 1800, disk_min_mb: u32 = 500, run_budget_s: u32 = 1800, quota_block_h: u32 = 6, unsure_wait_min: u32 = 10 };
+pub const Limits = struct { daily_cap: u32 = 3, quota_margin: u32 = 10, gap_min_s: u32 = 600, gap_max_s: u32 = 1800, disk_min_mb: u32 = 500, run_budget_s: u32 = 1800, quota_block_h: u32 = 6, unsure_wait_min: u32 = 60 };
 pub const Video = struct {
     min_s: u32 = 1,
     max_s: u32 = 90,

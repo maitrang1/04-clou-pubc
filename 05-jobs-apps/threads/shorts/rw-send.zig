@@ -19,7 +19,7 @@ pub const Row = struct {
     container_id: []const u8,
     media_id: []const u8,
     url: []const u8,
-    text_hash: []const u8,
+    text_key: []const u8,
     created: i64,
     updated: i64,
     pub_at: i64,
@@ -32,7 +32,7 @@ const schema =
     \\ id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, pkey TEXT NOT NULL UNIQUE, state TEXT NOT NULL,
     \\ attempt INTEGER NOT NULL DEFAULT 1, tries INTEGER NOT NULL DEFAULT 0,
     \\ host_file TEXT NOT NULL DEFAULT '', container_id TEXT NOT NULL DEFAULT '', media_id TEXT NOT NULL DEFAULT '',
-    \\ url TEXT NOT NULL DEFAULT '', text_hash TEXT NOT NULL DEFAULT '', created INTEGER NOT NULL, updated INTEGER NOT NULL,
+    \\ url TEXT NOT NULL DEFAULT '', text_key TEXT NOT NULL DEFAULT '', created INTEGER NOT NULL, updated INTEGER NOT NULL,
     \\ pub_at INTEGER NOT NULL DEFAULT 0, note TEXT NOT NULL DEFAULT '');
     \\CREATE TABLE IF NOT EXISTS pub(id INTEGER PRIMARY KEY AUTOINCREMENT, send_id INTEGER NOT NULL, at INTEGER NOT NULL);
     \\CREATE TABLE IF NOT EXISTS meta(k TEXT PRIMARY KEY, v TEXT NOT NULL);
@@ -70,7 +70,7 @@ pub fn open(cx: *const Ctx) Err!sq.Db {
     return db;
 }
 
-const cols = "id,name,pkey,state,attempt,tries,host_file,container_id,media_id,url,text_hash,created,updated,pub_at,note";
+const cols = "id,name,pkey,state,attempt,tries,host_file,container_id,media_id,url,text_key,created,updated,pub_at,note";
 
 fn rowOf(st: *sq.Stmt, a: std.mem.Allocator) sq.Err!Row {
     const sname = try st.col(a, 3);
@@ -85,7 +85,7 @@ fn rowOf(st: *sq.Stmt, a: std.mem.Allocator) sq.Err!Row {
         .container_id = try st.col(a, 7),
         .media_id = try st.col(a, 8),
         .url = try st.col(a, 9),
-        .text_hash = try st.col(a, 10),
+        .text_key = try st.col(a, 10),
         .created = st.colInt(11),
         .updated = st.colInt(12),
         .pub_at = st.colInt(13),
@@ -116,15 +116,15 @@ pub fn all(db: *sq.Db, a: std.mem.Allocator) Err![]Row {
 }
 
 // a new send. The same pkey in any state = Replay (answered from the ledger).
-pub fn begin(cx: *const Ctx, db: *sq.Db, a: std.mem.Allocator, name: []const u8, pkey: []const u8, text_hash: []const u8) Err!i64 {
+pub fn begin(cx: *const Ctx, db: *sq.Db, a: std.mem.Allocator, name: []const u8, pkey: []const u8, text_key: []const u8) Err!i64 {
     try kill.writeOk(cx);
     if (try byPkey(db, a, pkey)) |_| return Err.Replay;
     const now = cx.nowMs();
-    var st = try db.prepare("INSERT INTO send(name,pkey,state,text_hash,created,updated) VALUES(?1,?2,'sending',?3,?4,?4)");
+    var st = try db.prepare("INSERT INTO send(name,pkey,state,text_key,created,updated) VALUES(?1,?2,'sending',?3,?4,?4)");
     defer st.finalize();
     try st.text(1, name);
     try st.text(2, pkey);
-    try st.text(3, text_hash);
+    try st.text(3, text_key);
     try st.int(4, now);
     _ = try st.step();
     return db.lastId();
@@ -133,7 +133,7 @@ pub fn begin(cx: *const Ctx, db: *sq.Db, a: std.mem.Allocator, name: []const u8,
 // a new attempt on an existing row: nothing public exists (failed before publish, or a person retries). `person` resets the auto-try counter.
 pub fn reuse(cx: *const Ctx, db: *sq.Db, id: i64, person: bool, note: []const u8) Err!void {
     try kill.writeOk(cx);
-    var st = try db.prepare("UPDATE send SET state='sending', attempt=attempt+1, tries=CASE WHEN ?2=1 THEN 0 ELSE tries+1 END, host_file='', container_id='', updated=?3, note=?4 WHERE id=?1");
+    var st = try db.prepare("UPDATE send SET state='sending', attempt=attempt+1, tries=CASE WHEN ?2=1 THEN 0 ELSE tries+1 END, host_file='', container_id='', pub_at=0, updated=?3, note=?4 WHERE id=?1");
     defer st.finalize();
     try st.int(1, id);
     try st.int(2, if (person) 1 else 0);
@@ -161,6 +161,8 @@ pub fn setContainer(cx: *const Ctx, db: *sq.Db, id: i64, container: []const u8) 
 
 // the publish request is about to leave: pub_at is written first so the cap counts it even if the process dies right here
 pub fn markPub(cx: *const Ctx, db: *sq.Db, id: i64) Err!void {
+    try db.exec("BEGIN IMMEDIATE");
+    errdefer db.exec("ROLLBACK") catch {};
     var st = try db.prepare("UPDATE send SET pub_at=?2, updated=?2 WHERE id=?1");
     defer st.finalize();
     try st.int(1, id);
@@ -171,6 +173,7 @@ pub fn markPub(cx: *const Ctx, db: *sq.Db, id: i64) Err!void {
     try f.int(1, id);
     try f.int(2, cx.nowMs());
     _ = try f.step();
+    try db.exec("COMMIT");
 }
 
 // the request provably never left (connect failed): the row is pre-publish again. The `pub` row stays (the cap stays conservative).

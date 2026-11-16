@@ -33,7 +33,6 @@ const schema =
     \\CREATE TABLE IF NOT EXISTS cont(id INTEGER PRIMARY KEY AUTOINCREMENT, send_id INTEGER NOT NULL, at INTEGER NOT NULL);
     \\CREATE TABLE IF NOT EXISTS meta(k TEXT PRIMARY KEY, v TEXT NOT NULL);
     \\CREATE TABLE IF NOT EXISTS appr(name TEXT PRIMARY KEY, state TEXT NOT NULL, at INTEGER NOT NULL);
-    \\PRAGMA user_version=1;
 ;
 
 pub fn stateName(s: State) []const u8 {
@@ -57,11 +56,14 @@ pub fn open(cx: *const Ctx) Err!sq.Db {
     defer cx.gpa.free(p);
     var db = try sq.Db.open(p, cx.gpa);
     errdefer db.close();
+    {
+        var uv = try db.prepare("PRAGMA user_version");
+        defer uv.finalize();
+        _ = try uv.step();
+        if (uv.colInt(0) > 1) return Err.BadState; // a newer app wrote this ledger: do not guess (checked BEFORE touching it)
+    }
     try db.exec(schema);
-    var uv = try db.prepare("PRAGMA user_version");
-    defer uv.finalize();
-    _ = try uv.step();
-    if (uv.colInt(0) > 1) return Err.BadState; // a newer app wrote this ledger: do not guess
+    try db.exec("PRAGMA user_version=1");
     return db;
 }
 
@@ -166,6 +168,14 @@ pub fn setState(cx: *const Ctx, db: *sq.Db, id: i64, state: State, note: []const
     try st.text(4, media_id);
     try st.text(5, url);
     try st.int(6, cx.nowMs());
+    _ = try st.step();
+}
+
+// a definite "not published" answer: the row goes back to the pre-publish state (the `pubs` row stays, so the cap still counts the call)
+pub fn clearPub(db: *sq.Db, id: i64) Err!void {
+    var st = try db.prepare("UPDATE send SET pub_at=0 WHERE id=?1");
+    defer st.finalize();
+    try st.int(1, id);
     _ = try st.step();
 }
 

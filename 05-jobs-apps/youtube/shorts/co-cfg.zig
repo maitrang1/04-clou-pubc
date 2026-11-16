@@ -23,6 +23,8 @@ pub const Post = struct {
     include_listing_url: bool = true,
     category_id: []const u8 = "2",
     title_max: u32 = 100,
+    title_pattern: []const u8 = "{brand} {model} {year}. {hook}",
+    title_case: bool = true,
     desc_max_bytes: u32 = 5000,
     tags_max_chars: u32 = 500,
     hashtags_max: u32 = 15,
@@ -94,6 +96,23 @@ fn oneOf(v: []const u8, list: []const []const u8) bool {
 }
 
 // range + safety checks on a parsed config
+// title pattern check: only {brand} {model} {year} {hook}, {hook} exactly once, no stray braces; returns the problem or null
+pub fn titlePatternBad(p: []const u8) ?[]const u8 {
+    if (p.len == 0 or p.len > 120) return "must be 1..120 bytes";
+    var hooks: u32 = 0;
+    var i: usize = 0;
+    while (i < p.len) : (i += 1) {
+        if (p[i] == '}') return "has a stray }";
+        if (p[i] != '{') continue;
+        const e = std.mem.indexOfScalarPos(u8, p, i, '}') orelse return "has a { without }";
+        const key = p[i + 1 .. e];
+        if (std.mem.eql(u8, key, "hook")) hooks += 1 else if (!oneOf(key, &.{ "brand", "model", "year" })) return "knows only {brand} {model} {year} {hook}";
+        i = e;
+    }
+    if (hooks != 1) return "needs {hook} exactly once";
+    return null;
+}
+
 pub fn validate(c: Config, why: *[160]u8, why_len: *usize) LoadErr!void {
     if (c.limits.daily_cap == 0 or c.limits.daily_cap > c.limits.daily_cap_max) return bad(why, why_len, "config: limits.daily_cap must be 1..daily_cap_max ({d})", .{c.limits.daily_cap_max});
     if (c.limits.daily_cap_max == 0 or c.limits.daily_cap_max > 100000) return bad(why, why_len, "config: limits.daily_cap_max must be 1..100000", .{});
@@ -108,6 +127,7 @@ pub fn validate(c: Config, why: *[160]u8, why_len: *usize) LoadErr!void {
     if (c.post.category_id.len == 0 or c.post.category_id.len > 4) return bad(why, why_len, "config: post.category_id must be a short number string", .{});
     for (c.post.category_id) |ch| if (!std.ascii.isDigit(ch)) return bad(why, why_len, "config: post.category_id must be digits", .{});
     if (c.post.title_max == 0 or c.post.title_max > 100) return bad(why, why_len, "config: post.title_max must be 1..100 (YouTube limit)", .{});
+    if (titlePatternBad(c.post.title_pattern)) |why_bad| return bad(why, why_len, "config: post.title_pattern {s}", .{why_bad});
     if (c.post.desc_max_bytes == 0 or c.post.desc_max_bytes > 5000) return bad(why, why_len, "config: post.desc_max_bytes must be 1..5000 (YouTube limit)", .{});
     if (c.post.tags_max_chars > 500) return bad(why, why_len, "config: post.tags_max_chars must be 0..500 (YouTube limit)", .{});
     if (c.post.hashtags_max > 60) return bad(why, why_len, "config: post.hashtags_max must be 0..60 (more than 60 and YouTube ignores all)", .{});
@@ -223,6 +243,21 @@ test "shipped 00-config.json parses and equals the defaults" {
     try std.testing.expectEqual(d.google.login_wait_s, c.google.login_wait_s);
     try std.testing.expectEqualStrings(d.google.watch_url, c.google.watch_url);
     try std.testing.expectEqualStrings("", c.source.dir);
+    try std.testing.expectEqualStrings(d.post.title_pattern, c.post.title_pattern);
+    try std.testing.expectEqual(d.post.title_case, c.post.title_case);
+}
+
+test "title_pattern: only the four placeholders, {hook} once" {
+    try std.testing.expect(titlePatternBad("{brand} {model} {year}. {hook}") == null);
+    try std.testing.expect(titlePatternBad("{hook}") == null);
+    try std.testing.expect(titlePatternBad("{year} - {hook} | {brand}") == null);
+    try std.testing.expect(titlePatternBad("{color} {hook}") != null);
+    try std.testing.expect(titlePatternBad("{brand} {model}") != null);
+    try std.testing.expect(titlePatternBad("{hook} {hook}") != null);
+    try std.testing.expect(titlePatternBad("{hook} }") != null);
+    try std.testing.expect(titlePatternBad("{hook} {brand") != null);
+    try std.testing.expect(titlePatternBad("") != null);
+    try expectBad("{\"post\":{\"title_pattern\":\"{nope} {hook}\"}}", "title_pattern");
 }
 // ========================___THIS_IS_THE_END___========================
 // ===============___HOLD_YOUR_BREATH_AND_COUNT_TO_TEN___===============

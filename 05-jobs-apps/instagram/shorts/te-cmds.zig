@@ -28,8 +28,20 @@ fn unsureWorld(w: *W) !void {
 }
 
 fn askAgain(w: *W, mode: fk.Mode) void {
-    const one = [_]fk.Mode{mode};
-    w.f.script = &one;
+    const S = struct {
+        const a = [_]fk.Mode{.in_progress};
+        const b = [_]fk.Mode{.finished};
+        const c = [_]fk.Mode{.published};
+        const d = [_]fk.Mode{.error_code};
+        const e = [_]fk.Mode{.expired};
+    };
+    w.f.script = switch (mode) {
+        .in_progress => &S.a,
+        .finished => &S.b,
+        .published => &S.c,
+        .error_code => &S.d,
+        .expired => &S.e,
+    };
     w.f.status_n.store(0, .release);
 }
 
@@ -71,28 +83,25 @@ test "resolve: PUBLISHED but no single new Reel -> still posted (the container i
     try std.testing.expectEqualStrings("17900010", (try w2.row(PK)).?.media_id);
 }
 
-test "resolve: FINISHED -> not published (staged); IN_PROGRESS -> stays unsure; ERROR -> failed; EXPIRED -> expired" {
+test "resolve: after a publish call FINISHED/EXPIRED/IN_PROGRESS stay unsure; only PUBLISHED or ERROR settle" {
     var w: W = undefined;
     try unsureWorld(&w);
     defer w.deinit();
     askAgain(&w, .in_progress);
     try std.testing.expectEqual(exit.UNSURE, d(&w, &.{ "resolve", "--video", "a" }));
     try std.testing.expectEqual(send.State.unsure, (try w.row(PK)).?.state);
-    askAgain(&w, .finished);
-    try std.testing.expectEqual(exit.OK, d(&w, &.{ "resolve", "--video", "a" }));
-    try std.testing.expectEqual(send.State.staged, (try w.row(PK)).?.state);
+    askAgain(&w, .finished); // a publish call WAS sent: FINISHED cannot prove "not published" (slow publish vs lost) -> stays unsure
+    try std.testing.expectEqual(exit.UNSURE, d(&w, &.{ "resolve", "--video", "a" }));
+    try std.testing.expectEqual(send.State.unsure, (try w.row(PK)).?.state);
+    askAgain(&w, .expired);
+    try std.testing.expectEqual(exit.UNSURE, d(&w, &.{ "resolve", "--video", "a" }));
+    try std.testing.expectEqual(send.State.unsure, (try w.row(PK)).?.state);
     var w2: W = undefined;
     try unsureWorld(&w2);
     defer w2.deinit();
     askAgain(&w2, .error_code);
     try std.testing.expectEqual(exit.OK, d(&w2, &.{ "resolve", "--video", "a" }));
     try std.testing.expectEqual(send.State.failed, (try w2.row(PK)).?.state);
-    var w3: W = undefined;
-    try unsureWorld(&w3);
-    defer w3.deinit();
-    askAgain(&w3, .expired);
-    try std.testing.expectEqual(exit.OK, d(&w3, &.{ "resolve", "--video", "a" }));
-    try std.testing.expectEqual(send.State.expired, (try w3.row(PK)).?.state);
 }
 
 test "resolve: a person can answer with --as; a settled row is left alone" {

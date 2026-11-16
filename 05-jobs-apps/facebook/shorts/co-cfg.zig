@@ -20,7 +20,7 @@ pub const Video = struct {
     audio_rate: u32 = 48000,
     probe_tool: []const u8 = "",
 };
-pub const Post = struct { public: bool = false, ai_notice_required: bool = true, desc_max: u32 = 2000, title_max: u32 = 100, tags_max: u32 = 10, reel_url_base: []const u8 = "https://www.facebook.com/reel" };
+pub const Post = struct { public: bool = false, ai_notice_required: bool = true, desc_max: u32 = 2000, title_max: u32 = 100, tags_max: u32 = 10, title_pattern: []const u8 = "{brand} {model} {year}. {hook}", title_case: bool = true, reel_url_base: []const u8 = "https://www.facebook.com/reel" };
 pub const Net = struct {
     timeout_s: u32 = 60,
     upload_timeout_s: u32 = 1800,
@@ -83,6 +83,23 @@ fn versionOk(v: []const u8) bool {
     return true;
 }
 
+fn patternOk(p: []const u8) bool {
+    if (std.mem.count(u8, p, "{hook}") != 1) return false;
+    var i: usize = 0;
+    while (std.mem.indexOfScalarPos(u8, p, i, '{')) |o| {
+        const rest = p[o..];
+        const known = [_][]const u8{ "{brand}", "{model}", "{year}", "{hook}" };
+        var ok = false;
+        for (known) |k| if (std.mem.startsWith(u8, rest, k)) {
+            ok = true;
+            i = o + k.len;
+            break;
+        };
+        if (!ok) return false;
+    }
+    return std.mem.indexOfScalar(u8, p, '}') == null or std.mem.count(u8, p, "}") == std.mem.count(u8, p, "{");
+}
+
 // Plain-language range checks. Returns the first problem.
 pub fn validate(c: Config, why: *[160]u8, why_len: *usize) LoadErr!void {
     if (c.limits.daily_cap < 1 or c.limits.daily_cap > 30) return bad(why, why_len, "config: limits.daily_cap must be 1..30 (Facebook allows 30 per 24 h)", .{});
@@ -99,6 +116,7 @@ pub fn validate(c: Config, why: *[160]u8, why_len: *usize) LoadErr!void {
     if (c.breaker.fails == 0 or c.breaker.cool_h == 0) return bad(why, why_len, "config: breaker.fails and cool_h must be > 0", .{});
     if (!std.mem.startsWith(u8, c.graph.base, "https://") and !std.mem.startsWith(u8, c.graph.base, "http://127.0.0.1")) return bad(why, why_len, "config: graph.base must start with https://", .{});
     if (!versionOk(c.graph.version)) return bad(why, why_len, "config: graph.version must look like v27.0", .{});
+    if (!patternOk(c.post.title_pattern)) return bad(why, why_len, "config: post.title_pattern must contain {{hook}} once and only {{brand}} {{model}} {{year}} {{hook}}", .{});
     var sb: [8]u8 = undefined;
     if (slot.parse(&sb, c.source.slot_hours) == null) return bad(why, why_len, "config: source.slot_hours must be ascending hours 0..23, like \"8,14,20\"", .{});
     if (c.db_file.len == 0 or c.data_dir.len == 0) return bad(why, why_len, "config: data_dir and db_file must not be empty", .{});

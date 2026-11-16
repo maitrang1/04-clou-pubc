@@ -40,7 +40,18 @@ pub fn stage(cx: *const Ctx, a: std.mem.Allocator, src_path: []const u8) Err!Sta
     defer src.close(cx.io);
     var dst = cwd.createFile(cx.io, part, .{ .truncate = true }) catch return Err.Copy;
     var dst_open = true;
+    var done = false;
     defer if (dst_open) dst.close(cx.io);
+    defer if (!done) { // a failed copy leaves nothing in the public folder: the half file is moved aside, never deleted
+        if (!dst_open) {} else dst.close(cx.io);
+        dst_open = false;
+        const dn = cx.path(a, cx.cfg.host.done_dir) catch "";
+        if (dn.len > 0) {
+            util.mkdirp(cx.io, std.mem.trimEnd(u8, dn, "/")) catch {};
+            const to = std.fmt.allocPrint(a, "{s}/{s}.part", .{ std.mem.trimEnd(u8, dn, "/"), file }) catch "";
+            if (to.len > 0) cwd.rename(part, cwd, to, cx.io) catch {};
+        }
+    };
     const buf = a.alloc(u8, @as(usize, cx.cfg.net.copy_chunk_kb) * 1024) catch return Err.OutOfMemory;
     defer a.free(buf);
     var off: u64 = 0;
@@ -54,6 +65,7 @@ pub fn stage(cx: *const Ctx, a: std.mem.Allocator, src_path: []const u8) Err!Sta
     dst.close(cx.io);
     dst_open = false;
     cwd.rename(part, cwd, final, cx.io) catch return Err.Rename;
+    done = true;
     return .{ .file = file, .url = urlOf(cx, a, file) catch return Err.OutOfMemory };
 }
 
@@ -85,9 +97,20 @@ pub fn selfCheck(cx: *const Ctx, a: std.mem.Allocator, url: []const u8, size: u6
     const hosts = [_][]const u8{host};
     const t = guard.parseUrl(a, url, .{ .allow_hosts = &hosts, .mock = cx.mock }) catch |e| return .{ .ok = false, .note = std.fmt.allocPrint(a, "public url refused: {s}", .{@errorName(e)}) catch "public url refused" };
     const ip = guard.pin(cx.io, cx.resolver, t) catch |e| return .{ .ok = false, .note = std.fmt.allocPrint(a, "public url does not resolve to a public address: {s}", .{@errorName(e)}) catch "dns problem" };
+    // HEAD first: status and length without a body (a big error page cannot fool it)
+    if (net.call(cx.io, a, t, ip, .{ .ua = cx.cfg.net.user_agent, .timeout_s = cx.cfg.net.timeout_s, .cap_bytes = 4096, .method = "HEAD" })) |h| {
+        if (h.status >= 300 and h.status < 400) return .{ .ok = false, .note = "public url redirects: the host must serve the file directly" };
+        if (h.status >= 200 and h.status < 300) {
+            const cl = std.fmt.parseInt(u64, net.headerValue(h.headers, "content-length"), 10) catch 0;
+            if (cl != 0 and cl != size) return .{ .ok = false, .note = std.fmt.allocPrint(a, "public url serves {d} bytes, the file has {d}", .{ cl, size }) catch "wrong size at the public url" };
+            return .{ .ok = true, .note = "reachable" };
+        }
+        if (h.status != 405 and h.status != 501) return .{ .ok = false, .note = std.fmt.allocPrint(a, "public url answered http {d}", .{h.status}) catch "public url answered an error" };
+    } else |e| return .{ .ok = false, .note = std.fmt.allocPrint(a, "public url not reachable: {s}", .{@errorName(e)}) catch "public url not reachable" };
+    // the host refuses HEAD: a one-byte-range GET
     const hs = [_]std.http.Header{.{ .name = "Range", .value = "bytes=0-1" }};
     const r = net.call(cx.io, a, t, ip, .{ .ua = cx.cfg.net.user_agent, .timeout_s = cx.cfg.net.timeout_s, .cap_bytes = 4096, .headers = &hs, .method = "GET" }) catch |e| {
-        if (e == net.Err.TooBig) return .{ .ok = true, .note = "host ignores Range and sent the whole file (fine)" };
+        if (e == net.Err.TooBig) return .{ .ok = false, .note = "the host answered with a large body to a tiny request: cannot confirm it serves the video; allow HEAD or Range on it" };
         return .{ .ok = false, .note = std.fmt.allocPrint(a, "public url not reachable: {s}", .{@errorName(e)}) catch "public url not reachable" };
     };
     if (r.status >= 300 and r.status < 400) return .{ .ok = false, .note = "public url redirects: the host must serve the file directly" };

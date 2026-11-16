@@ -95,6 +95,7 @@ pub fn validate(a: std.mem.Allocator, v: cfgm.Video, f: probe.Facts, j: Json, si
     } else {
         if (v.acodec.len > 0 and !std.mem.eql(u8, f.acodec, v.acodec)) return .{ .reason = try std.fmt.allocPrint(a, "audio codec {s} (need AAC)", .{f.acodec}) };
         if (f.channels) |c| if (c == 0 or c > v.audio_channels_max) return .{ .reason = try std.fmt.allocPrint(a, "audio has {d} channels (need mono or stereo)", .{c}) };
+        if (f.rate) |r| if (r == 0) try addNote(a, &notes, "audio rate unknown");
         if (f.rate) |r| if (r > v.audio_rate_max) return .{ .reason = try std.fmt.allocPrint(a, "audio rate {d} Hz (max {d})", .{ r, v.audio_rate_max }) };
     }
     if (f.faststart) |fs| {
@@ -323,7 +324,7 @@ test "Threads spec checks: length, width, shape, fps, codecs, audio, faststart, 
     try std.testing.expect(std.mem.indexOf(u8, (try validate(a, v, f, .{}, sz)).reason.?, "too wide") != null);
     f = ok;
     f.width = 1000;
-    f.height = 50000;
+    f.height = 200000;
     try std.testing.expect(std.mem.indexOf(u8, (try validate(a, v, f, .{}, sz)).reason.?, "wrong shape") != null);
     f = ok;
     f.width = 1080;

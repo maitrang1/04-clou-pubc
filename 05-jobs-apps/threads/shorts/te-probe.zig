@@ -16,7 +16,10 @@ test "ffprobe JSON is parsed (fake tool script)" {
     try Io.Dir.cwd().writeFile(io, .{ .sub_path = tool, .data = "#!/bin/sh\ncat <<'EOF'\n{\"streams\":[{\"codec_type\":\"video\",\"codec_name\":\"h264\",\"width\":1080,\"height\":1920,\"avg_frame_rate\":\"30000/1001\"},{\"codec_type\":\"audio\",\"codec_name\":\"aac\",\"channels\":2,\"sample_rate\":\"48000\"}],\"format\":{\"duration\":\"12.500000\",\"size\":\"1234\"}}\nEOF\n" });
     const ch = try std.process.run(a, io, .{ .argv = &.{ "chmod", "+x", tool } });
     _ = ch;
-    const f = try probe.probe(a, io, tool, "ignored.mp4");
+    const mp = try std.fmt.allocPrint(a, ".zig-cache/tmp/{s}/real.mp4", .{&tmp.sub_path});
+    try @import("te-mp4.zig").write(a, io, mp, .{ .moov_first = true });
+    const f = try probe.probe(a, io, tool, mp);
+    try std.testing.expectEqual(true, f.faststart.?); // the box reader stays authoritative even with a tool
     try std.testing.expectEqualStrings("ffprobe", f.source);
     try std.testing.expectApproxEqAbs(@as(f64, 12.5), f.seconds.?, 0.001);
     try std.testing.expectEqual(@as(u32, 1080), f.width.?);
@@ -26,5 +29,9 @@ test "ffprobe JSON is parsed (fake tool script)" {
     try std.testing.expectEqual(@as(u32, 2), f.channels.?);
     try std.testing.expectEqual(@as(u32, 48000), f.rate.?);
     // a tool that fails = error, the caller then trusts the json
-    try std.testing.expectError(error.ProbeFailed, probe.probe(a, io, "false", "x.mp4"));
+    try std.testing.expectError(error.ProbeFailed, probe.probe(a, io, "false", mp));
+    // a tool that is not installed: our own reader answers, nothing is trusted from the json
+    const g = try probe.probe(a, io, "no-such-tool-xyz", mp);
+    try std.testing.expectEqualStrings("boxes", g.source);
+    try std.testing.expectEqual(true, g.faststart.?);
 }

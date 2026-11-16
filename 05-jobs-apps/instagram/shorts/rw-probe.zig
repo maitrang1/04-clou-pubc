@@ -210,8 +210,8 @@ pub fn ffprobe(a: std.mem.Allocator, io: Io, tool: []const u8, path: []const u8)
         const name = js.str(s, "codec_name");
         if (std.mem.eql(u8, kind, "video")) {
             f.vcodec = if (std.mem.eql(u8, name, "h264")) "avc1" else if (std.mem.eql(u8, name, "hevc")) "hvc1" else name;
-            f.width = @intCast(@max(0, js.int(s, "width")));
-            f.height = @intCast(@max(0, js.int(s, "height")));
+            f.width = std.math.cast(u32, js.int(s, "width")) orelse 0;
+            f.height = std.math.cast(u32, js.int(s, "height")) orelse 0;
             const fr = js.str(s, "avg_frame_rate");
             if (std.mem.indexOfScalar(u8, fr, '/')) |sl| {
                 const nu = std.fmt.parseFloat(f64, fr[0..sl]) catch 0;
@@ -221,14 +221,23 @@ pub fn ffprobe(a: std.mem.Allocator, io: Io, tool: []const u8, path: []const u8)
         } else if (std.mem.eql(u8, kind, "audio")) {
             f.has_audio = true;
             f.acodec = if (std.mem.eql(u8, name, "aac")) "mp4a" else name;
-            f.channels = @intCast(@max(0, js.int(s, "channels")));
+            f.channels = std.math.cast(u32, js.int(s, "channels")) orelse 0;
             f.rate = std.fmt.parseInt(u32, js.str(s, "sample_rate"), 10) catch null;
         }
     }
     return f;
 }
 
+// ffprobe adds codecs/fps/sizes, but the two Instagram file rules (moov first, no edit list) are always read from the boxes themselves
 pub fn probe(a: std.mem.Allocator, io: Io, tool: []const u8, path: []const u8) !Facts {
-    if (tool.len > 0) return ffprobe(a, io, tool, path);
-    return boxes(a, io, path);
+    if (tool.len == 0) return boxes(a, io, path);
+    var f = ffprobe(a, io, tool, path) catch |e| {
+        if (e == error.ToolMissing) return boxes(a, io, path); // tool cannot run: our own reader, never the json's claims
+        return e;
+    };
+    if (boxes(a, io, path)) |b| {
+        f.faststart = b.faststart;
+        f.edit_list = b.edit_list;
+    } else |_| {}
+    return f;
 }

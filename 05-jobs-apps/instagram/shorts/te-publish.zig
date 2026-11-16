@@ -373,6 +373,8 @@ test "crash before the publish call leaves a reusable container: the next run st
     try std.testing.expectEqual(send.State.sending, (try w.row(PK)).?.state);
     try std.testing.expectEqual(@as(u32, 0), w.f.publish_n.load(.acquire));
     w.cx.crash_at = 0;
+    const fin = [_]fk.Mode{.finished};
+    w.f.script = &fin;
     w.f.status_n.store(0, .release);
     try w.pair("b", "car2", false, .{});
     try std.testing.expectEqual(exit.OK, pub1(&w, &.{})); // the other pair goes on
@@ -619,4 +621,42 @@ test "--video with no value is a usage error, not 'the oldest'" {
     try w.pair("a", "c1", false, .{});
     try std.testing.expectEqual(exit.USAGE, pub1(&w, &.{"--video"}));
     try std.testing.expectEqual(@as(u32, 0), w.f.container_n.load(.acquire));
+}
+
+test "not-ready timeout puts the row back before the publish call: next run resumes it, never unsure" {
+    var w: W = undefined;
+    try w.init();
+    defer w.deinit();
+    w.cx.cfg.post.public = true;
+    w.cx.cfg.net.status_poll_max_s = 2;
+    const sc = [_]fk.Mode{ .finished, .in_progress };
+    w.f.script = &sc;
+    w.f.notready_first.store(1, .release);
+    try w.pair("a", "car1", false, .{});
+    try std.testing.expectEqual(exit.BLOCKED, pub1(&w, &.{}));
+    const r = (try w.row(PK)).?;
+    try std.testing.expectEqual(send.State.sending, r.state);
+    try std.testing.expectEqual(@as(i64, 0), r.pub_at);
+    const fin = [_]fk.Mode{.finished};
+    w.f.script = &fin;
+    w.f.status_n.store(0, .release);
+    w.f.notready_first.store(0, .release);
+    try std.testing.expectEqual(exit.OK, pub1(&w, &.{})); // resumed (not unsure), then published once from the same container
+    try std.testing.expectEqual(send.State.posted, (try w.row(PK)).?.state);
+    try std.testing.expectEqual(@as(u32, 1), w.f.container_n.load(.acquire));
+}
+
+test "--again judges the file as it is now: a still-bad file is refused, nothing sent" {
+    var w: W = undefined;
+    try w.init();
+    defer w.deinit();
+    w.cx.cfg.post.public = true;
+    w.f.script = &ready_soon;
+    w.f.publish_rep = try errReply(352, 2207026, w.arena.allocator());
+    try w.pair("a", "car1", false, .{});
+    try std.testing.expectEqual(exit.FAILED, pub1(&w, &.{}));
+    try w.pair("a", "car1", false, .{ .elst = true }); // "fixed" but now has an edit list
+    const n = w.f.container_n.load(.acquire);
+    try std.testing.expectEqual(exit.FAILED, pub1(&w, &.{ "--video", "a", "--again" }));
+    try std.testing.expectEqual(n, w.f.container_n.load(.acquire));
 }

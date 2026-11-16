@@ -159,7 +159,7 @@ pub fn afterPosted(j: *Job, id: []const u8) Outcome {
         switch (status.video(j.t, id)) {
             .ok => |v| {
                 if (v.isDone()) {
-                    say(j, "posted and processed: {s}", .{url});
+                    say(j, "posted and processed", .{});
                     return .posted;
                 }
                 if (v.isBad()) {
@@ -181,7 +181,7 @@ pub fn afterPosted(j: *Job, id: []const u8) Outcome {
         if (i + 1 < polls) cx.sleepMs(@as(i64, n.status_poll_s) * 1000);
     }
     j.l.setState(j.pkey, .posted, note, cx.nowMs()) catch {};
-    say(j, "posted, {s}: {s}", .{ note, url });
+    say(j, "posted, {s}", .{note});
     return .posted;
 }
 

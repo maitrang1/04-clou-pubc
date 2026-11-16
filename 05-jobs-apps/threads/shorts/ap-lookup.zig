@@ -6,6 +6,7 @@ const js = @import("ap-json.zig");
 
 pub const Item = struct { id: []const u8 = "", permalink: []const u8 = "", text: []const u8 = "", timestamp: []const u8 = "", media_type: []const u8 = "" };
 const fields = "id,permalink,text,timestamp,media_type";
+pub const list_limit: usize = 100; // a full page means "maybe more": the lost-ledger probe then refuses to send
 
 fn oomf(comptime T: type) call.Out(T) {
     return .{ .fail = .{ .info = .{ .class = .failed, .msg = "out of memory" } } };
@@ -32,7 +33,7 @@ pub fn media(cx: *const Ctx, a: std.mem.Allocator, tok: []const u8, media_id: []
 // GET /{user}/threads?fields=...&since=<unix s>&limit=N (newest first)
 pub fn list(cx: *const Ctx, a: std.mem.Allocator, tok: []const u8, uid: []const u8, since_s: i64) call.Out([]const Item) {
     if (!call.idOk(uid)) return .{ .fail = .{ .info = .{ .class = .failed, .msg = "user id must be digits" } } };
-    const path = std.fmt.allocPrint(a, "{s}/threads?fields={s}&since={d}&limit=50", .{ uid, fields, @max(0, since_s) }) catch return oomf([]const Item);
+    const path = std.fmt.allocPrint(a, "{s}/threads?fields={s}&since={d}&limit={d}", .{ uid, fields, @max(0, since_s), list_limit }) catch return oomf([]const Item);
     const url = call.graphUrl(cx, a, path) catch return oomf([]const Item);
     switch (call.call(cx, a, .{ .url = url, .token = tok })) {
         .fail => |f| return .{ .fail = f },

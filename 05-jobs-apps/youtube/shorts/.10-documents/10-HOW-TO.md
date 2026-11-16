@@ -57,7 +57,7 @@ shorts publish
 You see:
 ```
 dry run: would upload xe-001 (2304 bytes)
-  title: Xe dep, gia tot
+  title: Ford Everest 2022. Xe Dep, Gia Tot
   privacy: private · kids: false · AI label: on · notify: false · tags: 2 · description: 48 bytes
   nothing was sent. Add --live to send.
 ```
@@ -89,7 +89,7 @@ Every line should say `ok`. A `FAIL` line tells you what to fix. `doctor` never 
 ```
 shorts publish --live
 ```
-You see a line like `publish xe-001: posted and processed: https://www.youtube.com/watch?v=...`.
+You see two lines: `publish: xe-001: posted and processed`, then the video link `https://www.youtube.com/watch?v=...`.
 2. Open YouTube Studio and check the video: it is **private**, it shows as a **Short**, the AI label is on, and the "made for kids" answer is **No**.
 3. Happy? Open `00-config.json`, set `"public": true` in the `post` section. From now on new videos go out public.
 

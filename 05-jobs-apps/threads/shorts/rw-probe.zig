@@ -19,7 +19,7 @@ pub const Facts = struct {
     edit_list: ?bool = null, // an edit list (edts/elst) inside a track (Threads refuses it); null = not known
 };
 
-const CF = .{ .moov_cap = 16 * 1024 * 1024 };
+const CF = .{ .moov_cap = 16 * 1024 * 1024, .max_boxes = 100_000 };
 
 fn be32(b: []const u8) u32 {
     return std.mem.readInt(u32, b[0..4], .big);
@@ -164,7 +164,10 @@ pub fn boxes(a: std.mem.Allocator, io: Io, path: []const u8) !Facts {
     var hb: [16]u8 = undefined;
     var saw_ftyp = false;
     var saw_mdat = false;
+    var nbox: u32 = 0;
     while (at + 8 <= size) {
+        nbox += 1;
+        if (nbox > CF.max_boxes) return error.BadMp4; // a hostile file of tiny boxes must not stall the scan
         const n = try file.readPositionalAll(io, hb[0..16], at);
         if (n < 8) break;
         var bsz: u64 = be32(hb[0..]);
@@ -232,13 +235,14 @@ pub fn ffprobe(a: std.mem.Allocator, io: Io, tool: []const u8, path: []const u8)
 
 // ffprobe knows codecs and fps but not box order: faststart and edit lists always come from our own box reader
 pub fn probe(a: std.mem.Allocator, io: Io, tool: []const u8, path: []const u8) !Facts {
-    if (tool.len > 0) {
-        var f = try ffprobe(a, io, tool, path);
-        if (boxes(a, io, path)) |b| {
-            f.faststart = b.faststart;
-            f.edit_list = b.edit_list;
-        } else |_| {}
-        return f;
-    }
-    return boxes(a, io, path);
+    var b = try boxes(a, io, path); // authoritative for faststart and edit lists; a file we cannot read is invalid
+    if (tool.len == 0) return b;
+    var f = ffprobe(a, io, tool, path) catch |e| {
+        if (e == error.ToolMissing) return b; // our own reader still answers
+        return e;
+    };
+    f.faststart = b.faststart;
+    f.edit_list = b.edit_list;
+    b = f;
+    return b;
 }

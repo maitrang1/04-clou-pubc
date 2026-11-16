@@ -26,7 +26,37 @@ pub const Json = struct {
     plates: []const u8 = "",
     made_at: []const u8 = "",
     listing_url: []const u8 = "",
+    brand: std.json.Value = .null,
+    model: std.json.Value = .null,
+    year: std.json.Value = .null,
+    title: std.json.Value = .null,
 };
+
+fn valStr(v: std.json.Value) []const u8 {
+    return switch (v) {
+        .string => |s| s,
+        else => "",
+    };
+}
+
+pub fn valYear(v: std.json.Value) u32 {
+    return switch (v) {
+        .integer => |n| if (n > 0 and n < 3000) @intCast(n) else 0,
+        .float => |f| if (f > 0 and f < 3000) @intFromFloat(f) else 0,
+        .string => |s| std.fmt.parseInt(u32, std.mem.trim(u8, s, " "), 10) catch 0,
+        else => 0,
+    };
+}
+
+pub fn titleOf(j: Json) []const u8 {
+    return valStr(j.title);
+}
+pub fn brandOf(j: Json) []const u8 {
+    return valStr(j.brand);
+}
+pub fn modelOf(j: Json) []const u8 {
+    return valStr(j.model);
+}
 pub const Kind = enum { ready, held, invalid, skipped, done };
 pub const Entry = struct {
     name: []const u8,

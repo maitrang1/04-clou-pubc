@@ -22,7 +22,7 @@ fn cpWeight(cp: u21, unit: Unit) u32 {
     return switch (unit) {
         .chars => 1,
         .bytes => @intCast(std.unicode.utf8CodepointSequenceLength(cp) catch 1),
-        .weighted => if (cp >= 0x10000) 4 else 1, // emoji count as their UTF-8 bytes (Meta); other text is one each (unconfirmed for non-ASCII, see 15-FEAT)
+        .weighted => if (cp >= 0x2190) @intCast(std.unicode.utf8CodepointSequenceLength(cp) catch 4) else 1, // symbols and emoji (U+2190 up, incl. BMP ones like U+2764) count as their UTF-8 bytes (Meta); letters incl. accents are one each (unconfirmed, see 15-FEAT)
     };
 }
 
@@ -187,6 +187,8 @@ test "weights: emoji = 4 (UTF-8 bytes), accents = 1, bytes mode counts bytes" {
     try std.testing.expectEqual(@as(u32, 2), weight("é", .bytes));
     try std.testing.expectEqual(@as(u32, 3), weight("ệ", .bytes));
     try std.testing.expectEqual(@as(u32, 1), weight("😀", .chars));
+    try std.testing.expectEqual(@as(u32, 3), weight("❤", .weighted)); // BMP symbol: 3 bytes
+    try std.testing.expectEqual(@as(u32, 1), weight("ệ", .weighted)); // Vietnamese letter stays 1
     try std.testing.expectEqual(@as(u32, 5), weight("a😀", .weighted));
     // invalid UTF-8 never under-counts
     try std.testing.expectEqual(@as(u32, 3), weight("\xff\xfe\xfd", .weighted));

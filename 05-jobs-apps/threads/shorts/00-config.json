@@ -6,7 +6,7 @@
   "device": { "publisher": false },
   "source": { "dir": "", "max_age_days": 14 },
   "host": { "dir": "", "done_dir": "", "base_url": "", "selfcheck": true },
-  "limits": { "daily_cap": 3, "quota_margin": 10, "gap_min_s": 600, "gap_max_s": 1800, "disk_min_mb": 500, "run_budget_s": 1800, "quota_block_h": 6, "unsure_wait_min": 10 },
+  "limits": { "daily_cap": 3, "quota_margin": 10, "gap_min_s": 600, "gap_max_s": 1800, "disk_min_mb": 500, "run_budget_s": 1800, "quota_block_h": 6, "unsure_wait_min": 60 },
   "video": { "min_s": 1, "max_s": 90, "max_w": 1920, "fps_min": 23, "fps_max": 60, "max_mb": 1024, "max_mbps": 100, "vcodecs": ["avc1", "hvc1"], "acodec": "mp4a", "audio_channels_max": 2, "audio_rate_max": 48000, "probe_tool": "" },
   "post": { "public": false, "ai_notice_required": true, "text_max": 500, "text_unit": "weighted", "text_margin": 10, "url_in_text": true, "reply_control": "everyone" },
   "net": { "timeout_s": 60, "copy_chunk_kb": 256, "backoff_ms": 2000, "settle_s": 30, "status_poll_s": 60, "status_poll_max_s": 300, "body_cap_kb": 512, "user_agent": "threads-shorts/0.1", "allow_hosts": ["graph.threads.com", "graph.threads.net"], "auth_style": "form" },

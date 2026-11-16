@@ -2,7 +2,8 @@
 const std = @import("std");
 const builtin = @import("builtin");
 
-const posix_c = if (builtin.os.tag == .windows) struct {} else @cImport(@cInclude("sys/statvfs.h"));
+const has_statvfs = builtin.os.tag != .windows and !builtin.abi.isMusl(); // musl: translate-c makes statvfs opaque, free space is then "unknown"
+const posix_c = if (!has_statvfs) struct {} else @cImport(@cInclude("sys/statvfs.h"));
 extern "kernel32" fn GetDiskFreeSpaceExA(dir: ?[*:0]const u8, avail: *u64, total: *u64, free: *u64) callconv(.winapi) c_int;
 
 // free MB on the volume holding `path` (must exist); null = unknown on this OS
@@ -16,6 +17,7 @@ pub fn diskFreeMb(alloc: std.mem.Allocator, path: []const u8) ?u64 {
         if (GetDiskFreeSpaceExA(z.ptr, &a, &t, &f) == 0) return null;
         return a / (1024 * 1024);
     }
+    if (!has_statvfs) return null;
     var s: posix_c.struct_statvfs = undefined;
     if (posix_c.statvfs(z.ptr, &s) != 0) return null;
     return (@as(u64, s.f_bavail) * @as(u64, s.f_frsize)) / (1024 * 1024);
@@ -36,8 +38,9 @@ pub fn writeSecretAtomic(alloc: std.mem.Allocator, io: std.Io, path: []const u8,
     try cwd.rename(tmp, cwd, path, io);
 }
 
-test "disk free is readable here" {
+test "disk free is readable here (or honestly unknown on musl)" {
     const v = diskFreeMb(std.testing.allocator, ".");
+    if (!has_statvfs and builtin.os.tag != .windows) return try std.testing.expect(v == null);
     try std.testing.expect(v != null and v.? > 0);
 }
 

@@ -106,7 +106,7 @@ fn bareName(s: []const u8) bool {
     return std.ascii.endsWithIgnoreCase(s, ".mp4");
 }
 
-fn entryFor(cx: *const Ctx, a: std.mem.Allocator, dir: Io.Dir, dir_path: []const u8, jname: []const u8, mtime: i64, db: ?*sq.Db) !Entry {
+fn entryFor(cx: *const Ctx, a: std.mem.Allocator, dir: Io.Dir, dir_path: []const u8, jname: []const u8, mtime: i64, db: ?*sq.Db, skip_done: bool) !Entry {
     const name = jname[0 .. jname.len - 5];
     var e = Entry{ .name = try a.dupe(u8, name), .kind = .invalid, .mtime_ms = mtime };
     const rej = try std.fmt.allocPrint(a, "{s}.rejected", .{name});
@@ -162,7 +162,7 @@ fn entryFor(cx: *const Ctx, a: std.mem.Allocator, dir: Io.Dir, dir_path: []const
         e.reason = try std.fmt.allocPrint(a, "mp4 is {d} MB (max {d})", .{ st.size / (1024 * 1024), cx.cfg.video.max_mb });
         return e;
     }
-    if (db) |d| if (try send.byPkey(d, a, e.pkey)) |row| { // already sent: no need to probe it again
+    if (!skip_done) if (db) |d| if (try send.byPkey(d, a, e.pkey)) |row| { // already sent: no need to probe it again
         e.kind = .done;
         e.reason = send.stateName(row.state);
         return e;
@@ -209,10 +209,21 @@ pub fn scan(cx: *const Ctx, a: std.mem.Allocator, db: ?*sq.Db) ![]Entry {
     while (try it.next(cx.io)) |e| {
         if (e.kind != .file or !std.ascii.endsWithIgnoreCase(e.name, ".json") or e.name.len <= 5) continue;
         const st = dir.statFile(cx.io, e.name, .{}) catch continue;
-        try out.append(a, try entryFor(cx, a, dir, dp, e.name, st.mtime.toMilliseconds(), db));
+        try out.append(a, try entryFor(cx, a, dir, dp, e.name, st.mtime.toMilliseconds(), db, false));
     }
     std.mem.sort(Entry, out.items, {}, older);
     return out.items;
+}
+
+// one pair judged from scratch: the "already sent" shortcut is skipped (used before a person-approved retry)
+pub fn scanOne(cx: *const Ctx, a: std.mem.Allocator, db: ?*sq.Db, name: []const u8) !Entry {
+    if (cx.cfg.source.dir.len == 0) return error.NoSourceDir;
+    const dp = try cx.path(a, cx.cfg.source.dir);
+    var dir = Io.Dir.cwd().openDir(cx.io, dp, .{ .iterate = true }) catch return error.NoSourceDir;
+    defer dir.close(cx.io);
+    const jn = try std.fmt.allocPrint(a, "{s}.json", .{name});
+    const st = try dir.statFile(cx.io, jn, .{});
+    return entryFor(cx, a, dir, dp, jn, st.mtime.toMilliseconds(), db, true);
 }
 
 pub fn find(entries: []const Entry, name: []const u8) ?Entry {

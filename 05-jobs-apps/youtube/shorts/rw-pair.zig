@@ -30,6 +30,10 @@ pub const Pair = struct {
     plates: []const u8 = "",
     made_at: []const u8 = "",
     listing_url: []const u8 = "",
+    brand: []const u8 = "",
+    model: []const u8 = "",
+    year: u32 = 0,
+    title: []const u8 = "",
 };
 
 pub const Status = enum { ready, invalid, rejected, stale, old };
@@ -119,7 +123,7 @@ fn one(cx: *const ctx_mod.Ctx, a: std.mem.Allocator, src: []const u8, stem: []co
     if (secs > v.max_s) return withPair(a, stem, .invalid, jp, p, "too long ({d}s, video.max_s {d}): it would not be a Short", .{ secs, v.max_s });
     if (f.width < v.min_w or f.height < v.min_h) return withPair(a, stem, .invalid, jp, p, "too small ({d}x{d}, minimum {d}x{d})", .{ f.width, f.height, v.min_w, v.min_h });
     // the text must be buildable: label present, limits respected
-    _ = text_mod.build(a, .{ .hooks = p.hooks, .description = p.description, .hashtags = p.hashtags, .listing_url = p.listing_url, .ai_notice = p.ai_notice }, cx.cfg.post) catch |e| switch (e) {
+    _ = text_mod.build(a, .{ .brand = p.brand, .model = p.model, .year = p.year, .hooks = p.hooks, .description = p.description, .hashtags = p.hashtags, .listing_url = p.listing_url, .title = p.title, .ai_notice = p.ai_notice }, cx.cfg.post) catch |e| switch (e) {
         error.NoNotice => return withPair(a, stem, .invalid, jp, p, "json has no ai_notice: every post must carry the AI label", .{}),
         error.NoTitle => return withPair(a, stem, .invalid, jp, p, "json has no hooks and no description: no title", .{}),
         error.NoticeTooLong => return withPair(a, stem, .invalid, jp, p, "ai_notice is longer than the description limit", .{}),

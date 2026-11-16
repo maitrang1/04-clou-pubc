@@ -74,6 +74,8 @@ A relative path is read from the folder that holds `00-config.json`.
 | `post.include_listing_url` | Put the listing address from the json into the description | `true` | true or false |
 | `post.category_id` | YouTube category number | `2` | digits. `doctor` checks it |
 | `post.title_max` | Title length in characters | `100` | 1 to 100 |
+| `post.title_pattern` | How the title is built. `{brand} {model} {year}` is never cut; only `{hook}` is shortened, at a word. A missing brand, model or year drops that part | `{brand} {model} {year}. {hook}` | text with `{hook}` once; other placeholders: `{brand}` `{model}` `{year}` |
+| `post.title_case` | Title Case: every word starts with a capital, the rest stays as written (SUV, VF3, VinFast keep their spelling) | `true` | true or false |
 | `post.desc_max_bytes` | Description length in bytes (not characters) | `5000` | 1 to 5000 |
 | `post.tags_max_chars` | Total tag length | `500` | 0 to 500 |
 | `post.hashtags_max` | Most hashtags. YouTube ignores all of them above 60 | `15` | 0 to 60 |

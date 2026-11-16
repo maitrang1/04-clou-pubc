@@ -22,7 +22,7 @@ test "get with token in header, never in the URL" {
     const u = try call.graphUrl(&cx, arena.allocator(), "1234567890");
     const r = call.call(&cx, arena.allocator(), .{ .url = u, .token = "TESTTOKEN" });
     try std.testing.expect(r == .ok);
-    try std.testing.expect(std.mem.indexOf(u8, r.ok.body, "Test Page") != null);
+    try std.testing.expect(std.mem.indexOf(u8, r.ok.body, "test_account") != null);
     try std.testing.expect(f.logHas("auth=yes"));
     try std.testing.expect(!f.logHas("TESTTOKEN"));
     const bad = call.call(&cx, arena.allocator(), .{ .url = u, .token = "WRONG" });

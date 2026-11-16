@@ -78,7 +78,7 @@ pub fn call(cx: *const Ctx, a: std.mem.Allocator, sp: Spec) Result {
     usage_regain = @max(usage_regain, us.regain_min);
     const has_err = r.status < 300 and topError(a, r.body);
     if (r.status >= 200 and r.status < 300 and !has_err) {
-        if (std.mem.indexOf(u8, r.body, "ProcessingFailedError") == null) return .{ .ok = rep };
+        if (std.mem.indexOf(u8, r.body, "debug_info") == null or std.mem.indexOf(u8, r.body, "ProcessingFailedError") == null) return .{ .ok = rep };
     }
     const info = err.classify(a, r.status, r.body);
     const red = guard.redactUrl(a, sp.url) catch "?";

@@ -1,0 +1,7 @@
+.{
+    .name = .threads_shorts,
+    .fingerprint = 0xc5095d8ce3ae900f,
+    .version = "0.1.0",
+    .minimum_zig_version = "0.16.0",
+    .paths = .{""},
+}

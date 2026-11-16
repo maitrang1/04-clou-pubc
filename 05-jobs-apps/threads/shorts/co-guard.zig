@@ -191,7 +191,7 @@ pub fn redactUrl(alloc: std.mem.Allocator, url: []const u8) ![]u8 {
     return std.fmt.allocPrint(alloc, "{s}{s}", .{ scheme, s });
 }
 
-const secret_keys = [_][]const u8{ "api_key=", "apikey=", "token=", "key=", "access_token=", "secret=", "authorization: bearer ", "authorization: oauth ", "\"access_token\":\"", "\"token\":\"", "\"input_token\":\"", "\"client_secret\":\"", "input_token=", "fb_exchange_token=", "client_secret=", "x-api-key: " };
+const secret_keys = [_][]const u8{ "api_key=", "apikey=", "token=", "key=", "access_token=", "secret=", "authorization: bearer ", "authorization: oauth ", "th_exchange_token=", "access_token\":\"", "\"access_token\":\"", "\"token\":\"", "\"input_token\":\"", "\"client_secret\":\"", "input_token=", "fb_exchange_token=", "client_secret=", "x-api-key: " };
 
 // Replace the value after a secret-ish key with ***. Case-insensitive; value ends at & space quote newline.
 pub fn redactText(alloc: std.mem.Allocator, text: []const u8) ![]u8 {
@@ -215,25 +215,25 @@ pub fn redactText(alloc: std.mem.Allocator, text: []const u8) ![]u8 {
 }
 
 // ---- tests ----
-const hosts = [_][]const u8{ "graph.facebook.com", "rupload.facebook.com", "*.facebook.com" };
+const hosts = [_][]const u8{ "graph.threads.com", "graph.threads.net", "*.threads.com" };
 
-test "only https on allowed Facebook hosts passes" {
+test "only https on allowed Threads hosts passes" {
     var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena.deinit();
     const a = arena.allocator();
     const o = Opts{ .allow_hosts = &hosts };
-    try std.testing.expect((try parseUrl(a, "https://graph.facebook.com/v27.0/1/video_reels", o)).tls);
-    _ = try parseUrl(a, "https://rupload.facebook.com/video-upload/123", o);
-    _ = try parseUrl(a, "https://GRAPH.facebook.com/x", o);
-    try std.testing.expectError(GuardErr.Scheme, parseUrl(a, "http://graph.facebook.com/x", o));
+    try std.testing.expect((try parseUrl(a, "https://graph.threads.com/v1.0/1/threads", o)).tls);
+    _ = try parseUrl(a, "https://graph.threads.net/v1.0/123", o);
+    _ = try parseUrl(a, "https://GRAPH.threads.com/x", o);
+    try std.testing.expectError(GuardErr.Scheme, parseUrl(a, "http://graph.threads.com/x", o));
     try std.testing.expectError(GuardErr.NotAllowed, parseUrl(a, "https://evil.example.com/x", o));
-    try std.testing.expectError(GuardErr.NotAllowed, parseUrl(a, "https://graph.facebook.com.evil.com/x", o));
-    try std.testing.expectError(GuardErr.Userinfo, parseUrl(a, "https://graph.facebook.com@evil.com/x", o));
+    try std.testing.expectError(GuardErr.NotAllowed, parseUrl(a, "https://graph.threads.com.evil.com/x", o));
+    try std.testing.expectError(GuardErr.Userinfo, parseUrl(a, "https://graph.threads.com@evil.com/x", o));
     try std.testing.expectError(GuardErr.IpLiteral, parseUrl(a, "https://127.0.0.1/x", o));
     try std.testing.expectError(GuardErr.IpLiteral, parseUrl(a, "https://2130706433/x", o));
-    try std.testing.expectError(GuardErr.Port, parseUrl(a, "https://graph.facebook.com:8443/x", o));
+    try std.testing.expectError(GuardErr.Port, parseUrl(a, "https://graph.threads.com:8443/x", o));
     try std.testing.expectError(GuardErr.Scheme, parseUrl(a, "file:///etc/passwd", o));
-    try std.testing.expectError(GuardErr.BadChars, parseUrl(a, "https://graph.facebook.com/a b", o));
+    try std.testing.expectError(GuardErr.BadChars, parseUrl(a, "https://graph.threads.com/a b", o));
 }
 
 test "loopback http only in mock builds" {
@@ -254,9 +254,9 @@ test "private addresses are refused at pin time" {
 
 test "redaction strips secrets and queries" {
     const a = std.testing.allocator;
-    const u = try redactUrl(a, "https://graph.facebook.com/debug_token?input_token=ABC");
+    const u = try redactUrl(a, "https://graph.threads.com/debug_token?input_token=ABC");
     defer a.free(u);
-    try std.testing.expectEqualStrings("https://graph.facebook.com/debug_token?...", u);
+    try std.testing.expectEqualStrings("https://graph.threads.com/debug_token?...", u);
     const t = try redactText(a, "x Authorization: OAuth SECRETVAL y");
     defer a.free(t);
     try std.testing.expect(std.mem.indexOf(u8, t, "SECRETVAL") == null);

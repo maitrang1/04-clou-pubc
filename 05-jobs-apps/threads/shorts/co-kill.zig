@@ -68,7 +68,6 @@ test "kill on/off round trip and lock is exclusive" {
     const home = try std.fmt.allocPrint(arena.allocator(), ".zig-cache/tmp/{s}", .{&tmp.sub_path});
     var cx = @import("co-ctx.zig").testCtx(arena.allocator(), &env, home);
     cx.cfg.data_dir = "~/d";
-    try std.testing.expect(!killOn(&cx) or true);
     try setKill(&cx, true);
     try std.testing.expect(killOn(&cx));
     try std.testing.expectError(Err.Killed, writeOk(&cx));

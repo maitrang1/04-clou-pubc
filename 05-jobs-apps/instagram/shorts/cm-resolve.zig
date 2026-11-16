@@ -42,14 +42,17 @@ fn decide(cx: *Ctx, a: std.mem.Allocator, row: send.Row, tok: []const u8, ig: []
                 return .{ .state = .posted, .note = if (mid.len > 0) "container shows PUBLISHED; media found in the recent list" else "container shows PUBLISHED (media id not identified: more or fewer than one new Reel since the send)", .code = exit.OK, .media_id = mid };
             },
             .finished => {
+                // never published by us, ever: staged. If a publish call went out and the container STILL reads FINISHED we cannot tell a slow publish from a lost one: stay unsure
                 if (row.pub_at == 0) return .{ .state = .staged, .note = "container FINISHED and no publish call was ever sent: staged, not published", .code = exit.OK };
-                // the call went out but the container still says FINISHED: not published (a published container reads PUBLISHED). Staged again, a person re-runs publish
-                return .{ .state = .staged, .note = "container still FINISHED after the publish call: not published. publish --video NAME --live tries again", .code = exit.OK };
+                return .{ .state = .unsure, .note = "a publish call was sent and the container still reads FINISHED: Instagram may still be publishing. Wait, resolve again, or check the account and use --as", .code = exit.UNSURE };
             },
             .failed => return .{ .state = .failed, .note = std.fmt.allocPrint(a, "Instagram says the container failed (subcode {s})", .{s.sub}) catch "Instagram says it failed", .code = exit.OK },
-            .expired => return .{ .state = .expired, .note = "the container expired (24 h): nothing was published", .code = exit.OK },
+            .expired => {
+                if (row.pub_at > 0) return .{ .state = .unsure, .note = "container reads EXPIRED after a publish call: cannot prove it was not published. Check the account, then resolve --as posted|failed", .code = exit.UNSURE };
+                return .{ .state = .expired, .note = "the container expired (24 h): nothing was published", .code = exit.OK };
+            },
             .in_progress, .unknown => {
-                if (row.pub_at == 0) return .{ .state = .failed, .note = "publish was never sent: nothing is published, safe to send again with --again", .code = exit.OK };
+                if (row.pub_at == 0 and row.state != .unsure) return .{ .state = .failed, .note = "publish was never sent: nothing is published, safe to send again with --again", .code = exit.OK };
                 return keep;
             },
         },

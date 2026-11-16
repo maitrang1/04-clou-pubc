@@ -3,7 +3,7 @@ const std = @import("std");
 pub const c = @cImport(@cInclude("sqlite3.h"));
 
 pub const Err = error{ Open, Sql, Busy, OutOfMemory };
-const TRANSIENT = c.SQLITE_TRANSIENT;
+const TRANSIENT: c.sqlite3_destructor_type = null; // SQLITE_STATIC: every bound slice outlives its step (SQLITE_TRANSIENT does not compile on arm: alignment cast)
 
 pub const Stmt = struct {
     s: *c.sqlite3_stmt,

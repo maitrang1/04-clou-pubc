@@ -686,7 +686,7 @@ test "resolve works on an approved review video too (title and start time are in
     r.fake.put_mode = .expire_after_complete;
     try std.testing.expectEqual(exit.unsure, r.pub_(&live));
     const row = (try r.row("car9:t1:yout-short")).?;
-    try std.testing.expectEqualStrings("Xe dep gia tot", row.title);
+    try std.testing.expectEqualStrings("Xe Dep Gia Tot", row.title);
     try std.testing.expect(row.started > 0);
     try std.testing.expectEqual(exit.ok, resolve.run(&r.cx, &.{ "--video", "rev", "--live" }));
     try std.testing.expect((try r.row("car9:t1:yout-short")).?.state == .posted);
