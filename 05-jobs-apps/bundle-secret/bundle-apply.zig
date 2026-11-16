@@ -66,6 +66,12 @@ pub fn writeOwner(io: std.Io, path: []const u8, data: []const u8, mode: u32, a: 
 pub fn setMtime(io: std.Io, path: []const u8, secs: i64) void {
     if (secs <= 0) return;
     const ts = std.Io.Timestamp.fromNanoseconds(@as(i96, secs) * std.time.ns_per_s);
+    if (comptime builtin.os.tag == .windows) { // 0.16.0 std: Dir.setTimestamps panics on Windows, use the file handle
+        const f = std.Io.Dir.cwd().openFile(io, path, .{ .mode = .read_write }) catch return;
+        defer f.close(io);
+        f.setTimestamps(io, .{ .modify_timestamp = .{ .new = ts } }) catch {};
+        return;
+    }
     std.Io.Dir.cwd().setTimestamps(io, path, .{ .follow_symlinks = false, .modify_timestamp = .{ .new = ts } }) catch {};
 }
 

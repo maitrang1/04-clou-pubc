@@ -75,7 +75,7 @@ pub const Ctx = struct {
     // what both sides last agreed on for item `id`, file `rel` (null: nothing agreed yet) ----
     pub fn baseOf(self: *const Ctx, id: []const u8, rel: []const u8) ?[]const u8 {
         const b = self.base orelse return null;
-        const key = std.fs.path.join(self.a, &.{ id, rel }) catch return null;
+        const key = std.fmt.allocPrint(self.a, "{s}/{s}", .{ id, rel }) catch return null; // "/" on every OS
         return cb.content(b, self.io, self.a, key);
     }
 

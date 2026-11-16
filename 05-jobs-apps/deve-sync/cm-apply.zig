@@ -77,7 +77,7 @@ fn loserRel(ctx: *const pl.Ctx, it: conf.Item, rel: []const u8) ![]const u8 {
 
 // base key: <item id>/<file>, the same on every device ----
 fn keyOf(a: std.mem.Allocator, id: []const u8, rel: []const u8) ![]u8 {
-    return std.fs.path.join(a, &.{ id, rel });
+    return std.fmt.allocPrint(a, "{s}/{s}", .{ id, rel }); // base key is always "/" (relSafe rejects "\\")
 }
 
 fn devFile(ctx: *const pl.Ctx, it: conf.Item, rel: []const u8) ![]const u8 {
