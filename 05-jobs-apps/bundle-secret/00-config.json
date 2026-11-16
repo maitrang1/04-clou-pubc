@@ -3,7 +3,7 @@
   "pick": {
     "dirs": [".secrets"],
     "files": ["*token.json", "*client_secret.json", "*credentials.json"],
-    "skip_dirs": [".git", "zig-out", ".zig-cache", "node_modules", "zzzz-delete-force-items"],
+    "skip_dirs": [".git", "zig-out", ".zig-cache", "node_modules", "zzzz-delete-90d", "zzzz-delete-force-items"],
     "skip_markers": ["Local State", "Preferences"],
     "skip": ["*session*"],
     "seed_only": ["*token.json"],
@@ -22,7 +22,7 @@
   "fetch": { "on_differ": "keep" },
   "ship": { "message": "update bundle" },
   "state": { "file": "{home}/.04-clou-secr/bundle-secret-state.json" },
-  "sync": { "merge_globs": [], "tie_secs": 120, "trash_dir": "zzzz-delete-force-items", "big_files": 50, "base_dir": "{home}/.04-clou-secr/bundle-secret-base" },
+  "sync": { "merge_globs": [], "tie_secs": 120, "trash_dir": "zzzz-delete-90d", "big_files": 50, "base_dir": "{home}/.04-clou-secr/bundle-secret-base" },
   "argon": { "time": 3, "memo_kbyt": 65536, "para": 1 },
   "unpack": {
     "file_mode": "600",

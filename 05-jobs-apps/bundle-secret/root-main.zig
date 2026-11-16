@@ -253,6 +253,7 @@ pub fn main(init: std.process.Init) void {
         const r = sf.run(sy, pw, .{ .mode = mode, .go = parsed.go, .big = parsed.big, .no_merge = parsed.no_merge, .only = parsed.only, .base_dir = base_dir }) catch |er| syncFail(io, er);
         out.say(io, "{s}: {d} same · {d} to this device · {d} to the vault · {d} merged · {d} settled by newest edit · {d} skipped (vault newer) · {d} skipped (device newer)\n", .{ parsed.cmd, r.same, r.to_near, r.to_far, r.merged, r.newest, r.behind, r.ahead });
         if (!parsed.go) out.say(io, "dry-run: nothing written. Pass --go to apply.\n", .{}) else if (r.to_far + r.merged > 0) out.say(io, "{s}\n", .{if (r.shipped) "the vault is updated and pushed" else "the vault file is up to date"});
+        if (parsed.go and r.moved > 0) out.say(io, "{d} renamed file(s) followed: the old path is gone from the vault and, on this device, its old copy is in the trash.\n", .{r.moved});
         if (r.raced > 0) out.say(io, "{d} file(s) changed on this device while the sync ran and were left alone; the next run looks at them again.\n", .{r.raced});
         if (parsed.go and r.newest > 0) out.say(io, "{d} conflict(s) settled by the newest edit; the losing copies are in {s}/ in the repo.\n", .{ r.newest, c.sync.trash_dir });
         die(CF.exit_ok);
@@ -333,6 +334,7 @@ test {
     _ = @import("sync-plan.zig");
     _ = @import("sync-base.zig");
     _ = @import("sync-merge.zig");
+    _ = @import("sync-moves.zig");
     _ = @import("sync-flow.zig");
 }
 // ========================___THIS_IS_THE_END___========================

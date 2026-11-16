@@ -29,7 +29,7 @@ Every setting is required unless marked optional. A wrong or unknown setting is 
 | `scan.names` | file name patterns that stop a push (`*` = any text) | key, token, secret, password-like names | any list |
 | `scan.text` | text markers that stop a push | common key prefixes | any list |
 | `sync.tie_secs` | two edits this close (seconds) count as the same moment: the repo copy wins | `120` | 0 to 86400 |
-| `sync.trash_dir` | folder in the repo that receives the losing copy of a conflict (same relative path) | `zzzz-delete-force-items` | one folder name |
+| `sync.trash_dir` | folder in the repo that receives the losing copy of a conflict (same relative path) | `zzzz-delete-90d` | one folder name |
 | `sync.big_files` | most files one run may change on one side without `--big` | `50` | 1 to 1000000 |
 | `sync.base_dir` | where this device remembers what it and the repo last agreed on | `{home}/.04-clou-secr/deve-base` | starts with `{home}` or `{appdata}`, or absolute |
 | `sync.merge_globs` | files that may be merged into one version when both sides changed them | code and text types | any list |

@@ -1,5 +1,5 @@
 // =====================================================================
-// Des: The base store - what this device and the vault last agreed on for every file (a copy of each file plus a list of hashes), so a sync can tell which side changed; it only ever grows
+// Des: The base store - what this device and the vault last agreed on for every file (a copy of each file plus a list of hashes), so a sync can tell which side changed; it only grows (`forget` is for a moved path only)
 // Flo: load manifest (missing = nothing agreed yet) > read a base copy only when its hash still matches > set = write copy + remember hash > save manifest .part then rename
 // Cre: 2026-11-15                          - | Mod: 2026-11-15
 // Who: zzOWN.com - Own Fast. Work Faster.  - | Ema: zzown.com@gmail.com
@@ -80,6 +80,11 @@ pub fn set(b: *Base, io: std.Io, a: std.mem.Allocator, rel: []const u8, data: []
     apply.writeOwner(io, path, data, CF.mode, a) catch return error.WriteFail;
     b.files.put(a, a.dupe(u8, rel) catch return error.OutOfMemory, a.dupe(u8, &sha) catch return error.OutOfMemory) catch return error.OutOfMemory;
     b.dirty = true;
+}
+
+// a moved path is no longer agreed: its hash goes, the copy file stays harmlessly ----
+pub fn forget(b: *Base, rel: []const u8) void {
+    if (b.files.remove(rel)) b.dirty = true;
 }
 
 fn lessStr(_: void, x: []const u8, y: []const u8) bool {

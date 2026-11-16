@@ -1,5 +1,5 @@
 // =====================================================================
-// Des: `sync`, `pull` and `push` between this device (near) and the vault bundle (far): never deletes, a missing file comes back, a change on one side goes to the other, a conflict is auto-merged (code, text) or the newest edit wins and the other copy goes to the trash folder
+// Des: `sync`, `pull` and `push` between this device (near) and the vault bundle (far): never deletes, a missing file comes back, a change on one side goes to the other, a conflict is auto-merged (code, text) or the newest edit wins and the other copy goes to the trash folder; a renamed file (same content, new path) is detected and every device follows the move (old copy to the trash)
 // Flo: vault clean + fetch > read far (bundle) and near (disk) and base > decide per file (a conflict: merge, else the newest edit wins) > refuse a big change > losing copies to the trash folder > far first (seal, commit, push) > then near (old copy to trash first) > update base
 // Cre: 2026-11-15                          - | Mod: 2026-11-15
 // Who: zzOWN.com - Own Fast. Work Faster.  - | Ema: zzown.com@gmail.com
@@ -19,6 +19,7 @@ const box = @import("vault-box.zig");
 const plan = @import("sync-plan.zig");
 const sbase = @import("sync-base.zig");
 const smerge = @import("sync-merge.zig");
+const smoves = @import("sync-moves.zig");
 const gm = @import("glob-match.zig");
 const state = @import("sync-state.zig");
 const git_run = @import("git-run.zig");
@@ -27,13 +28,15 @@ pub const SyncErro = ship.SyncErro || sbase.BaseErro || error{TooManyChanges};
 
 pub const Opts = struct { mode: plan.Mode, go: bool, big: bool, no_merge: bool, only: ?[]const u8, base_dir: []const u8 };
 
-pub const Res = struct { same: u32 = 0, to_near: u32 = 0, to_far: u32 = 0, merged: u32 = 0, newest: u32 = 0, behind: u32 = 0, ahead: u32 = 0, raced: u32 = 0, shipped: bool = false };
+pub const Res = struct { same: u32 = 0, to_near: u32 = 0, to_far: u32 = 0, merged: u32 = 0, newest: u32 = 0, behind: u32 = 0, ahead: u32 = 0, raced: u32 = 0, moved: u32 = 0, shipped: bool = false };
 
 const Map = std.StringHashMapUnmanaged([]const u8);
 const TimeMap = std.StringHashMapUnmanaged(i64);
 
 // loser: the copy a conflict overwrites (kept in the trash folder) ----
-const RowRec = struct { rel: []const u8, act: plan.Act, td: plan.Todo, merged: ?[]const u8 = null, loser: ?[]const u8 = null, seed: bool = false, raced: bool = false };
+// mv: a renamed file's old path: the vault drops it and/or this device's old copy goes to the trash ----
+const Mv = enum { none, far_drop, near_trash, both };
+const RowRec = struct { rel: []const u8, act: plan.Act, td: plan.Todo, merged: ?[]const u8 = null, loser: ?[]const u8 = null, seed: bool = false, raced: bool = false, mv: Mv = .none };
 
 fn line(e: flow.Env, comptime fmt: []const u8, args: anytype) void {
     e.say(e.io, std.fmt.allocPrint(e.a, fmt, args) catch return);
@@ -97,6 +100,27 @@ fn putNear(e: flow.Env, rel: []const u8, data: []const u8, mode: u32, batch: []c
     return done;
 }
 
+// the old copy of a moved file: saved to the trash batch, then taken off this device (a move, never a loss); false = it changed meanwhile and was left alone ----
+fn trashNear(e: flow.Env, rel: []const u8, mode: u32, batch: []const u8, expect: []const u8) SyncErro!bool {
+    if (!arc.safePath(rel)) return error.UnsafePath;
+    const cwd = std.Io.Dir.cwd();
+    const path = std.fs.path.join(e.a, &.{ e.repo, rel }) catch return error.OutOfMemory;
+    const st = cwd.statFile(e.io, path, .{ .follow_symlinks = false }) catch return false;
+    if (st.kind != .file) return false;
+    const now = cwd.readFileAlloc(e.io, path, e.a, .limited(256 * 1024 * 1024)) catch return error.WriteFail;
+    if (!std.mem.eql(u8, now, expect)) return false;
+    const kept = std.fs.path.join(e.a, &.{ batch, rel }) catch return error.OutOfMemory;
+    try apply.writeOwner(e.io, kept, now, mode, e.a);
+    cwd.deleteFile(e.io, path) catch return error.WriteFail;
+    // a folder left empty goes too (only an empty one can) ----
+    var dir = std.fs.path.dirname(rel);
+    while (dir) |d| : (dir = std.fs.path.dirname(d)) {
+        const dp = std.fs.path.join(e.a, &.{ e.repo, d }) catch return error.OutOfMemory;
+        cwd.deleteDir(e.io, dp) catch break;
+    }
+    return true;
+}
+
 fn say(e: flow.Env, r: RowRec, n_has: bool, f_has: bool) void {
     const rel = r.rel;
     switch (r.td) {
@@ -126,9 +150,14 @@ pub fn run(s: ship.Sync, pass: []const u8, o: Opts) SyncErro!Res {
     var far: Map = .empty;
     var far_mt: TimeMap = .empty;
     var far_old: std.ArrayList([]const u8) = .empty;
+    var moves_raw: ?[]const u8 = null;
     if (try ship.remoteBlob(s, pos)) |blob| {
         const plain = try box.unseal(a, e.io, pass, blob);
         for (try arc.decode(a, plain)) |it| {
+            if (smoves.isKey(it.rel)) {
+                moves_raw = it.data;
+                continue;
+            }
             try far.put(a, it.rel, it.data);
             try far_mt.put(a, it.rel, it.mtime);
             try far_old.append(a, it.rel);
@@ -150,6 +179,16 @@ pub fn run(s: ship.Sync, pass: []const u8, o: Opts) SyncErro!Res {
     std.mem.sort([]const u8, rels.items, {}, lessStr);
 
     var base = try sbase.load(e.io, a, o.base_dir);
+    // renamed files: the vault's tombstones, plus any rename this device just made (same content, new path) ----
+    var moves: std.ArrayList(smoves.Move) = .empty;
+    if (moves_raw) |raw| try moves.appendSlice(a, try smoves.parse(a, raw));
+    var moves_dirty = false;
+    if (o.mode != .pull and o.only == null) {
+        for (try smoves.detect(a, &base.files, near, far, e.conf.sync.retired, e.conf.sync.move_min_bytes)) |m| {
+            try smoves.add(a, &moves, m);
+            moves_dirty = true;
+        }
+    }
     var gitm: ?git_run.Git = null;
     if (o.mode == .sync and !o.no_merge and e.conf.sync.merge_globs.len > 0) {
         const tmpd = std.fs.path.join(a, &.{ o.base_dir, "tmp" }) catch return error.OutOfMemory;
@@ -169,6 +208,26 @@ pub fn run(s: ship.Sync, pass: []const u8, o: Opts) SyncErro!Res {
         if (gm.hitAny(e.conf.sync.retired, rel)) continue;
         const n = near.get(rel);
         const f = far.get(rel);
+        if (smoves.find(moves.items, rel)) |m| {
+            const n_is = if (n) |x| std.mem.eql(u8, &sbase.hexOf(x), m.sha) else false;
+            const f_is = if (f) |x| std.mem.eql(u8, &sbase.hexOf(x), m.sha) else false;
+            const base_ok = if (base.files.get(rel)) |bs| std.mem.eql(u8, bs, m.sha) else false;
+            const drop = o.mode != .pull and f_is and (n == null or n_is);
+            const trash = o.mode != .push and n_is and base_ok and (f == null or f_is);
+            if (drop or trash) {
+                const mv: Mv = if (drop and trash) .both else if (drop) .far_drop else .near_trash;
+                if (drop) far_w += 1;
+                if (trash) near_w += 1;
+                res.moved += 1;
+                line(e, "rename {s} -> {s} ({s})\n", .{ rel, m.new, if (drop and trash) "the old path goes from the vault and from this device (copy to the trash)" else if (drop) "the old path goes from the vault" else "this device's old copy goes to the trash" });
+                try recs.append(a, .{ .rel = rel, .act = .same, .td = .none, .mv = mv });
+                continue;
+            }
+            if (o.mode == .push and n_is and f == null) {
+                line(e, "skip (moved to {s} in the vault; this old copy is not pushed back) {s}\n", .{ m.new, rel });
+                continue;
+            }
+        }
         const seed = gm.hitAny(e.conf.pick.seed_only, rel);
         var act: plan.Act = undefined;
         if (seed) {
@@ -232,8 +291,14 @@ pub fn run(s: ship.Sync, pass: []const u8, o: Opts) SyncErro!Res {
     for (recs.items) |r| if (r.loser) |lb| try trashCopy(e, r.rel, lb, mode, stamp);
 
     // far first: if the vault push fails nothing on this device has changed ----
-    if (far_w > 0 or far_dirty) {
+    if (far_w > 0 or far_dirty or moves_dirty) {
+        var dropped: std.StringHashMapUnmanaged(void) = .empty;
         for (recs.items) |r| {
+            if (r.mv == .far_drop or r.mv == .both) {
+                _ = far.remove(r.rel);
+                _ = far_mt.remove(r.rel);
+                try dropped.put(a, r.rel, {});
+            }
             const n = near.get(r.rel);
             switch (r.td) {
                 .write_far => {
@@ -248,10 +313,11 @@ pub fn run(s: ship.Sync, pass: []const u8, o: Opts) SyncErro!Res {
             }
         }
         // the rail: the new bundle holds every file the old one held ----
-        for (far_old.items) |k| if (!far.contains(k)) return error.GitFail;
+        for (far_old.items) |k| if (!far.contains(k) and !dropped.contains(k)) return error.GitFail;
         var out: std.ArrayList(arc.Item) = .empty;
         var kit = far.iterator();
         while (kit.next()) |kv| try out.append(a, .{ .rel = kv.key_ptr.*, .data = kv.value_ptr.*, .mtime = far_mt.get(kv.key_ptr.*) orelse 0 });
+        if (moves.items.len > 0) try out.append(a, .{ .rel = smoves.KEY, .data = try smoves.render(a, moves.items), .mtime = e.now_secs });
         std.mem.sort(arc.Item, out.items, {}, struct {
             fn lt(_: void, x: arc.Item, y: arc.Item) bool {
                 return std.mem.lessThan(u8, x.rel, y.rel);
@@ -287,6 +353,7 @@ pub fn run(s: ship.Sync, pass: []const u8, o: Opts) SyncErro!Res {
             },
             else => {},
         }
+        if (r.mv == .near_trash or r.mv == .both) r.raced = !(try trashNear(e, r.rel, mode, batch, near.get(r.rel).?));
         if (r.raced) {
             res.raced += 1;
             line(e, "left alone (changed while the sync ran) {s}\n", .{r.rel});
@@ -296,6 +363,10 @@ pub fn run(s: ship.Sync, pass: []const u8, o: Opts) SyncErro!Res {
     // base: what both sides now agree on ----
     for (recs.items) |r| {
         if (r.seed or r.raced) continue;
+        if (r.mv != .none) {
+            sbase.forget(&base, r.rel);
+            continue;
+        }
         const n = near.get(r.rel);
         switch (r.td) {
             .none => if (r.act == .same and n != null) try sbase.set(&base, e.io, a, r.rel, n.?),

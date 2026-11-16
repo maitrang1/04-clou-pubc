@@ -108,7 +108,23 @@ pub fn pack(e: Env, pass: ?[]const u8, go: bool, rekey: bool, reseed: bool) Flow
             if (!rekey) return error.PassDiffers;
         }
     } else |_| {}
-    const plain = try arc.encode(e.a, got.items);
+    // the rename tombstones live only in the bundle: carry them over, or this pack would erase them ----
+    var out_items: []const arc.Item = got.items;
+    if (was_plain) |w| {
+        const olds = arc.decode(e.a, w) catch &[_]arc.Item{};
+        for (olds) |o| if (std.mem.eql(u8, o.rel, pick.MOVES_KEY)) {
+            var l: std.ArrayList(arc.Item) = .empty;
+            try l.appendSlice(e.a, got.items);
+            try l.append(e.a, o);
+            std.mem.sort(arc.Item, l.items, {}, struct {
+                fn lt(_: void, x: arc.Item, y: arc.Item) bool {
+                    return std.mem.lessThan(u8, x.rel, y.rel);
+                }
+            }.lt);
+            out_items = l.items;
+        };
+    }
+    const plain = try arc.encode(e.a, out_items);
     defer std.crypto.secureZero(u8, @constCast(plain));
     // same content as the bundle already in the repo: leave the file alone so git history does not grow for nothing ----
     if (was_plain) |w| if (std.mem.eql(u8, w, plain)) {
@@ -163,7 +179,7 @@ fn openBlob(e: Env, pass: []const u8, blob: []const u8, reseed: bool) FlowErro!O
     const plain = try box.unseal(e.a, e.io, pass, blob);
     // a retired path (moved or renamed on purpose) is ignored: not compared, not restored ----
     var kept: std.ArrayList(arc.Item) = .empty;
-    for (try arc.decode(e.a, plain)) |it| if (!gm.hitAny(e.conf.sync.retired, it.rel)) try kept.append(e.a, it);
+    for (try arc.decode(e.a, plain)) |it| if (!gm.hitAny(e.conf.sync.retired, it.rel) and !std.mem.eql(u8, it.rel, pick.MOVES_KEY)) try kept.append(e.a, it);
     const items = kept.items;
     const rows = try apply.plan(e.io, e.a, e.repo, items, e.conf.pick.seed_only, reseed);
     return .{ .items = items, .rows = rows };

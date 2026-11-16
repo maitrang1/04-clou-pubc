@@ -427,10 +427,10 @@ test "sync: both ways; non-overlapping edits merge into one version; overlapping
     // one version everywhere; the losing copy is in the trash folder under the same path
     try std.testing.expectEqualStrings("n1\nn2\nN3-near\nn4\nn5\n", t.get("home/.claude/agents/o.md").?);
     try std.testing.expectEqualStrings("n1\nn2\nN3-near\nn4\nn5\n", t.get("repo/.deve-user/claude/agents/o.md").?);
-    try std.testing.expectEqualStrings("n1\nn2\nN3-far\nn4\nn5\n", t.get("repo/zzzz-delete-force-items/.deve-user/claude/agents/o.md").?);
+    try std.testing.expectEqualStrings("n1\nn2\nN3-far\nn4\nn5\n", t.get("repo/zzzz-delete-90d/.deve-user/claude/agents/o.md").?);
     try std.testing.expectEqualStrings("q1\nQ2-far\nq3\n", t.get("home/.claude/agents/q.md").?);
     try std.testing.expectEqualStrings("q1\nQ2-far\nq3\n", t.get("repo/.deve-user/claude/agents/q.md").?);
-    try std.testing.expectEqualStrings("q1\nQ2-near\nq3\n", t.get("repo/zzzz-delete-force-items/.deve-user/claude/agents/q.md").?);
+    try std.testing.expectEqualStrings("q1\nQ2-near\nq3\n", t.get("repo/zzzz-delete-90d/.deve-user/claude/agents/q.md").?);
     // the winner keeps the time of its edit on the other side too
     try std.testing.expectEqual(@as(i64, 1_700_001_000), fio.mtimeOf(std.testing.io, try std.fs.path.join(t.arena.allocator(), &.{ t.root, "repo/.deve-user/claude/agents/o.md" })));
     // a rerun finds nothing left to decide

@@ -15,7 +15,7 @@
   "vscode": { "bin": "code", "tmos_secs": 120 },
   "sync": {
     "tie_secs": 120,
-    "trash_dir": "zzzz-delete-force-items",
+    "trash_dir": "zzzz-delete-90d",
     "big_files": 50,
     "base_dir": "{home}/.04-clou-secr/deve-base",
     "merge_globs": ["*.zig", "*.zon", "*.js", "*.mjs", "*.ts", "*.py", "*.sh", "*.ps1", "*.c", "*.h", "*.cpp", "*.hpp", "*.css", "*.html", "*.json", "*.yml", "*.yaml", "*.md", "*.txt"],

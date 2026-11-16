@@ -113,9 +113,9 @@ Without `--rekey` the program refuses to replace a bundle your passphrase cannot
 1. **sync** (also runs by itself on a schedule): a change on one side goes to the other, a missing file comes back, nothing is ever deleted. `EXE sync --repo REPO --config CFG2 --go`. Without `--go` it only shows the plan.
 2. **pull**: the vault wins. Files you changed only on this device are kept; a file changed on both takes the vault's version and your old copy goes to the trash.
 3. **push**: this device wins. Files that exist only in the vault are kept.
-4. If a file was changed on both sides, code and text are merged into one version when the changes do not overlap. Otherwise the newest edit wins on both sides and the older copy is moved to the `zzzz-delete-force-items` folder in the repo (nothing is lost, nothing to resolve by hand; two edits less than 2 minutes apart: the vault wins). To force one side instead, run `EXE push --only FILE --repo REPO --config CFG2 --go` (this device wins) or the same with `pull` (the vault wins).
+4. If a file was changed on both sides, code and text are merged into one version when the changes do not overlap. Otherwise the newest edit wins on both sides and the older copy is moved to the `zzzz-delete-90d` folder in the repo (nothing is lost, nothing to resolve by hand; two edits less than 2 minutes apart: the vault wins). To force one side instead, run `EXE push --only FILE --repo REPO --config CFG2 --go` (this device wins) or the same with `pull` (the vault wins).
 5. A change of more than 50 files at once is refused; check the list, then add `--big`.
-On a new device with no history yet, run one `pull` first. If you move or rename a file on purpose, add its old path to `sync.retired` in the settings file, or the old file comes back (nothing is ever deleted).
+On a new device with no history yet, run one `pull` first. A file you rename or move is noticed by `sync` (same content, new path): the old name goes away on every device (the old copy lands in the trash folder) and the new name arrives. If a rename is not noticed (you edited the file at the same time, or two identical files moved), the old name comes back; add it to `sync.retired` in the settings file to stop that.
 
 ---
 

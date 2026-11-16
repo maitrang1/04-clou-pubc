@@ -20,7 +20,7 @@ Plain facts. All settings live in `00-config.json` next to the program (pass `--
 |---|---|---|
 | `pick.dirs` | folder names whose files are picked | `[".secrets"]` |
 | `pick.files` | file patterns picked anywhere (`*` = any run) | `*token.json`, `*client_secret.json`, `*credentials.json` |
-| `pick.skip_dirs` | folder names never entered | `.git`, `zig-out`, `.zig-cache`, `node_modules`, `zzzz-delete-force-items` |
+| `pick.skip_dirs` | folder names never entered | `.git`, `zig-out`, `.zig-cache`, `node_modules`, `zzzz-delete-90d`, `zzzz-delete-force-items` |
 | `pick.skip_markers` | a folder holding one of these files is a browser profile and is skipped | `Local State`, `Preferences` |
 | `pick.skip` | path patterns to leave out. Sessions (saved logins) are per device, so they are not shared | `*session*` |
 | `pick.seed_only` | files a program rewrites by itself (refreshed tokens). A new device gets them once; after that they are never compared or replaced, and a refreshed copy never makes a new bundle. `--reseed` overrides this on purpose | `*token.json` |
@@ -71,7 +71,8 @@ Same settings as above, tuned for dot-items. Different values:
 |---|---|---|---|
 | `sync.merge_globs` | files that may be merged into one version when both sides changed them (empty = never merge, the secrets default) | none; the dot-items file lists code and text types | any list of patterns |
 | `sync.retired` | paths you moved or renamed on purpose: ignored on both sides, never brought back, never deleted | none | any list of paths or patterns |
+| `sync.move_min_bytes` | a file smaller than this (bytes) is never taken for a rename | `16` | 1 to 1048576 |
 | `sync.tie_secs` | two edits this close (seconds) count as the same moment: the vault copy wins | `120` | 0 to 86400 |
-| `sync.trash_dir` | folder in the repo that receives the losing copy of a conflict (same relative path) | `zzzz-delete-force-items` | one folder name |
+| `sync.trash_dir` | folder in the repo that receives the losing copy of a conflict (same relative path) | `zzzz-delete-90d` | one folder name |
 | `sync.big_files` | most files one run may change on one side without `--big` | `50` | 1 to 1000000 |
 | `sync.base_dir` | where this device remembers what it and the vault last agreed on | `{home}/.04-clou-secr/bundle-secret-base` | starts with `{home}`, or absolute |

@@ -18,7 +18,7 @@ pub const ConfErro = error{ Missing, Unreadable, BadJson, BadValue, OutOfMemory 
 pub const Pick = struct {
     dirs: []const []const u8 = &.{".secrets"},
     files: []const []const u8 = &.{ "*token.json", "*client_secret.json", "*credentials.json" },
-    skip_dirs: []const []const u8 = &.{ ".git", "zig-out", ".zig-cache", "node_modules", "zzzz-delete-force-items" },
+    skip_dirs: []const []const u8 = &.{ ".git", "zig-out", ".zig-cache", "node_modules", "zzzz-delete-90d", "zzzz-delete-force-items" },
     skip_markers: []const []const u8 = &.{ "Local State", "Preferences" },
     skip: []const []const u8 = &.{"*session*"},
     seed_only: []const []const u8 = &.{"*token.json"},
@@ -33,8 +33,8 @@ pub const FetchCf = struct { on_differ: []const u8 = "keep" };
 pub const ShipCf = struct { message: []const u8 = "update bundle" };
 pub const StateCf = struct { file: []const u8 = "{home}/.04-clou-secr/bundle-secret-state.json" };
 // merge_globs: files that may be auto-merged when both sides changed them (empty = never merge, the secrets default); tie_secs: two edits this close count as the same moment (the vault wins); trash_dir: the folder in the repo where the losing copy of a conflict goes; big_files: most files a sync may change on one side without --big; base_dir: what this device and the vault last agreed on ----
-// retired: paths you moved or renamed on purpose: ignored on both sides (not restored here, never deleted there) ----
-pub const SyncCf = struct { merge_globs: []const []const u8 = &.{}, retired: []const []const u8 = &.{}, tie_secs: u32 = 120, trash_dir: []const u8 = "zzzz-delete-force-items", big_files: u32 = 50, base_dir: []const u8 = "{home}/.04-clou-secr/bundle-secret-base" };
+// retired: paths you moved or renamed on purpose: ignored on both sides (not restored here, never deleted there); move_min_bytes: a file smaller than this is never auto-detected as a rename ----
+pub const SyncCf = struct { merge_globs: []const []const u8 = &.{}, retired: []const []const u8 = &.{}, move_min_bytes: u32 = 16, tie_secs: u32 = 120, trash_dir: []const u8 = "zzzz-delete-90d", big_files: u32 = 50, base_dir: []const u8 = "{home}/.04-clou-secr/bundle-secret-base" };
 pub const Conf = struct { vers: u32 = CF.vers, pick: Pick = .{}, bundle: Bundle = .{}, argon: Argon = .{}, unpack: Unpack = .{}, git: GitCf = .{}, fetch: FetchCf = .{}, ship: ShipCf = .{}, state: StateCf = .{}, sync: SyncCf = .{} };
 
 var why_buf: [512]u8 = undefined;
@@ -129,6 +129,7 @@ pub fn check(c: *const Conf) ConfErro!void {
     if (c.state.file.len == 0 or !homeOrAbs(c.state.file)) return bad("state.file must start with {{home}} or be an absolute path", .{});
     try nameList("sync.merge_globs", c.sync.merge_globs, true);
     try nameList("sync.retired", c.sync.retired, true);
+    if (c.sync.move_min_bytes < 1 or c.sync.move_min_bytes > 1048576) return bad("sync.move_min_bytes must be 1..1048576", .{});
     if (c.sync.tie_secs > 86400) return bad("sync.tie_secs must be 0..86400", .{});
     if (c.sync.trash_dir.len == 0 or std.mem.indexOfAny(u8, c.sync.trash_dir, "/\\:.") != null) return bad("sync.trash_dir must be one folder name, without / \\ : or dots", .{});
     if (c.sync.big_files < 1 or c.sync.big_files > 1000000) return bad("sync.big_files must be 1..1000000", .{});
@@ -173,6 +174,7 @@ test "shipped config parses and equals the defaults" {
     try std.testing.expectEqual(d.sync.merge_globs.len, c.sync.merge_globs.len);
     try std.testing.expectEqual(d.sync.retired.len, c.sync.retired.len);
     try std.testing.expectEqual(d.sync.big_files, c.sync.big_files);
+    try std.testing.expectEqual(d.sync.move_min_bytes, c.sync.move_min_bytes);
     try std.testing.expectEqualStrings(d.sync.base_dir, c.sync.base_dir);
 }
 

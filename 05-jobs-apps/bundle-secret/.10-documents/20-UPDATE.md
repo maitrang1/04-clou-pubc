@@ -4,6 +4,9 @@ What changed, newest first.
 
 ---
 
+## 2026-11-16
+**Added:** renames follow by themselves. `sync` notices a file with the same content under a new name, drops the old name from the vault and moves the old copy on your other devices to the trash folder. Two identical files, or a rename plus an edit, are not treated as a rename (the old name just comes back). New setting `sync.move_min_bytes`.
+
 ## 2026-11-15
 **Added:** `sync`, `pull` and `push`. `sync` is two-way and never deletes anything: a change goes to the other side, a missing file comes back; a file changed on both sides is merged into one version (code, text) or the newest edit wins and the older copy goes to the `zzzz-delete-force-items` folder. `pull` makes the vault win, `push` makes this device win. A change of more than 50 files needs `--big`.
 **Added:** a second locked file for your dot-folders and dot-files (`bundle-ditems.enc`, settings in `00-config-ditems.json`), next to the secrets bundle in the same vault repo with the same passphrase. A changed file is replaced on fetch and the old copy goes to the trash.

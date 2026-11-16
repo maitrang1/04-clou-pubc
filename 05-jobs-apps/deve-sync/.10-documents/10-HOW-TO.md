@@ -42,7 +42,7 @@ Only keys named in the config are shared from your Claude settings. Paths and pe
 ---
 
 ## Keep devices in step (sync)
-`EXE sync --repo REPO --go` is the safe everyday command (it also runs by itself on a schedule). A change on one side goes to the other, a missing file comes back, nothing is ever deleted. If you changed the same file on two devices, code and text are merged into one version when the edits do not overlap; otherwise the newest edit wins on both sides and the older copy is moved to the `zzzz-delete-force-items` folder in the repo (nothing is lost, nothing to resolve by hand). If you prefer the other version, take it from that folder, or run `EXE push --repo REPO --only claude-agents --go` (this device wins) or the same with `pull` (the repo wins). More than 50 changed files at once are refused; check the list and add `--big`. On a new device with no history, run one `pull` first.
+`EXE sync --repo REPO --go` is the safe everyday command (it also runs by itself on a schedule). A change on one side goes to the other, a missing file comes back, nothing is ever deleted. If you changed the same file on two devices, code and text are merged into one version when the edits do not overlap; otherwise the newest edit wins on both sides and the older copy is moved to the `zzzz-delete-90d` folder in the repo (nothing is lost, nothing to resolve by hand). If you prefer the other version, take it from that folder, or run `EXE push --repo REPO --only claude-agents --go` (this device wins) or the same with `pull` (the repo wins). More than 50 changed files at once are refused; check the list and add `--big`. On a new device with no history, run one `pull` first.
 
 ---
 
