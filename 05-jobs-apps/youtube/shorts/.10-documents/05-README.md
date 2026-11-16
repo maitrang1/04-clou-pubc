@@ -41,6 +41,9 @@ It never sends without `--live`. It never makes a video public unless you switch
 
 ---
 
+## Privacy
+This tool is a personal program that runs on your own computer. It asks Google for one permission only: to upload videos to your own YouTube channel. It does not read your channel, your videos, your comments or any other account data. The sign-in token stays in a file on your computer and is sent only to Google. Nothing is sent to the author or to any other service, and no data is collected or shared. To remove its access, delete the token file and revoke the app in your Google Account under Security > Third-party access.
+
 ## License
 PolyForm Noncommercial 1.0.0 (plain-English copy in `25-LICENSE`). Free for personal and noncommercial use; commercial use needs a paid license from the owner.
 

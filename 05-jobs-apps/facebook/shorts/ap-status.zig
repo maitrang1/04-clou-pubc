@@ -30,7 +30,7 @@ pub fn parse(a: std.mem.Allocator, body: []const u8) ?Status {
     return .{
         .video_status = js.str(st, "video_status"),
         .up_status = js.str(up, "status"),
-        .bytes = @intCast(@max(0, js.int(up, "bytes_transfered"))),
+        .bytes = @intCast(@max(js.int(up, "bytes_transfered"), @max(0, js.int(up, "bytes_transferred")))), // docs say transfered, Facebook sends transferred: read both
         .src_size = @intCast(@max(0, js.int(up, "source_file_size"))),
         .proc_status = js.str(pr, "status"),
         .proc_err = js.str(js.obj(pr, "error"), "message"),
@@ -87,6 +87,8 @@ test "both spellings parse, verdicts" {
     try std.testing.expectEqual(Verdict.expired, verdict(parse(a, "{\"status\":{\"video_status\":\"expired\"}}").?));
     // ready but not yet published: still processing, never "published"
     try std.testing.expectEqual(Verdict.processing, verdict(parse(a, "{\"status\":{\"video_status\":\"ready\",\"publishing_phase\":{\"status\":\"not_started\"}}}").?));
+    // the real spelling seen live on 2026-11-16
+    try std.testing.expectEqual(@as(u64, 71830147), parse(a, "{\"status\":{\"video_status\":\"uploading\",\"uploading_phase\":{\"status\":\"in_progress\",\"bytes_transferred\":71830147}}}").?.bytes);
     try std.testing.expect(parse(a, "not json") == null);
     try std.testing.expectEqual(Verdict.unknown, verdict(parse(a, "{\"status\":{}}").?));
 }

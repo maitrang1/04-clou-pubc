@@ -4,6 +4,11 @@ What changed, newest first.
 
 ---
 
+## 2026-11-16
+**Fixed:** Resuming a cut upload now works with the spelling Facebook really uses for the byte counter.
+
+---
+
 ## 2026-11-15 · First release
 **Added:** Publish finished short videos to one Facebook Page as Reels, once each, as a draft unless you allow public posts.
 **Added:** A record of every send, a daily limit, a wait between sends, and a stop after repeated failures or Facebook's own limits.

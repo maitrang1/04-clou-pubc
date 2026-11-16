@@ -142,7 +142,7 @@ pub fn build(a: std.mem.Allocator, f: Fields, p: cfg_mod.Post) Err!Text {
 
     // description: [body] [hashtags] [url] then the notice, which is never cut
     const body = try cleanBlock(a, f.description);
-    const url = try cleanLine(a, f.listing_url);
+    const url = if (p.include_listing_url) try cleanLine(a, f.listing_url) else "";
     var tail: std.ArrayList(u8) = .empty;
     if (notice.len > 0) try tail.print(a, "\n\n{s}", .{notice});
     if (tail.items.len > p.desc_max_bytes) return Err.NoticeTooLong;
@@ -187,6 +187,16 @@ test "title: first hook, angle brackets gone, cut at a word within 100 chars" {
     const t3 = try build(a, .{ .hooks = &.{vn}, .ai_notice = "AI" }, .{});
     try std.testing.expectEqual(@as(usize, 100), std.unicode.utf8CountCodepoints(t3.title) catch 0);
     try std.testing.expectError(Err.NoTitle, build(a, .{ .ai_notice = "AI" }, .{}));
+}
+
+test "include_listing_url=false leaves the link out" {
+    var ar = arenaT();
+    defer ar.deinit();
+    const a = ar.allocator();
+    const t = try build(a, .{ .hooks = &.{"h"}, .description = "Body", .listing_url = "https://a.b/c", .ai_notice = "N" }, .{ .include_listing_url = false });
+    try std.testing.expect(std.mem.indexOf(u8, t.description, "https://") == null);
+    const t2 = try build(a, .{ .hooks = &.{"h"}, .description = "Body", .listing_url = "https://a.b/c", .ai_notice = "N" }, .{});
+    try std.testing.expect(std.mem.indexOf(u8, t2.description, "https://a.b/c") != null);
 }
 
 test "shorts_tag reserves room inside the title limit" {

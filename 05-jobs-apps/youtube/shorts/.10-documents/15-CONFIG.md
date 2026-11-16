@@ -70,6 +70,7 @@ A relative path is read from the folder that holds `00-config.json`.
 | `post.ai_notice_required` | Locked on: every video carries the AI label | `true` | only `true` |
 | `post.notify_subscribers` | Tell subscribers about a new video | `false` | true or false |
 | `post.shorts_tag` | Add `#Shorts` to the title | `false` | true or false |
+| `post.include_listing_url` | Put the listing address from the json into the description | `true` | true or false |
 | `post.category_id` | YouTube category number | `2` | digits. `doctor` checks it |
 | `post.title_max` | Title length in characters | `100` | 1 to 100 |
 | `post.desc_max_bytes` | Description length in bytes (not characters) | `5000` | 1 to 5000 |
@@ -88,7 +89,7 @@ A relative path is read from the folder that holds `00-config.json`.
 | `breaker.cool_h` | Hours the breaker stays open | `6` | 1 or more |
 | `approval.require_for_review` | Locked on: a video marked for review needs your approval | `true` | only `true` |
 | `google.auth_url` `token_url` `api_base` `upload_base` | Google's addresses | Google's own | https addresses |
-| `google.scope` | The one permission asked for: upload only | `youtube.upload` | only that value |
+| `google.scope` | The permissions asked for: upload, plus read-only to check your own uploads | `youtube.upload youtube.readonly` | those two only; upload is required |
 | `google.client_id_env` `client_secret_env` | Names of the variables | `YOUT_CLIENT_ID` `YOUT_CLIENT_SECRET` | text |
 | `google.client_id_file` `client_secret_file` `refresh_token_file` | Names of the secret files | see above | file names |
 | `google.loopback_port` | Port for the sign-in page on this computer. 0 = any free port | `0` | 0 to 65535 |

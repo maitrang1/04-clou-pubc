@@ -172,7 +172,11 @@ pub fn afterPosted(j: *Job, id: []const u8) Outcome {
                 }
                 note = "still processing";
             },
-            .api, .net, .bad_reply => note = "processing check failed",
+            .api => |v| {
+                note = if (v.class == .blocked) "processing not checked (the sign-in lacks the read-only permission)" else "processing check failed";
+                if (v.class == .blocked) break;
+            },
+            .net, .bad_reply => note = "processing check failed",
         }
         if (i + 1 < polls) cx.sleepMs(@as(i64, n.status_poll_s) * 1000);
     }

@@ -226,7 +226,7 @@ fn statusJson(self: *Fake, a: std.mem.Allocator, mode: Mode) ![]const u8 {
     };
     const ps: []const u8 = if (mode == .draft_ready) "draft" else "published";
     const perr: []const u8 = if (mode == .proc_error) ",\"error\":{\"message\":\"transcode failed\"}" else "";
-    return std.fmt.allocPrint(a, "{{\"id\":\"{s}\",\"status\":{{\"video_status\":\"{s}\",\"uploading_phase\":{{\"status\":\"{s}\",\"bytes_transfered\":{d},\"source_file_size\":{d}}},\"processing_phase\":{{\"status\":\"{s}\"{s}}},\"publishing_phase\":{{\"status\":\"{s}\",\"publish_status\":\"{s}\"}}}}}}", .{ self.video_id, vs, up, have, total, pr, perr, pu, ps });
+    return std.fmt.allocPrint(a, "{{\"id\":\"{s}\",\"status\":{{\"video_status\":\"{s}\",\"uploading_phase\":{{\"status\":\"{s}\",\"bytes_transferred\":{d},\"source_file_size\":{d}}},\"processing_phase\":{{\"status\":\"{s}\"{s}}},\"publishing_phase\":{{\"status\":\"{s}\",\"publish_status\":\"{s}\"}}}}}}", .{ self.video_id, vs, up, have, total, pr, perr, pu, ps });
 }
 
 fn upload(self: *Fake, a: std.mem.Allocator, r: *Io.Reader, w: *Io.Writer, head: []const u8, clen: u64) !void {

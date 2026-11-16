@@ -76,7 +76,7 @@ pub fn run(cx: *const ctx_mod.Ctx, _: []const []const u8) u8 {
         switch (list.channel(&tok)) {
             .ok => r.ok("channel", "found (id not printed)"),
             .none => r.fail("channel", "this Google account has no YouTube channel", "create a channel in YouTube first"),
-            .api => |v| r.fail("channel", v.why, "run: shorts login --live --force if the scope is wrong"),
+            .api => |v| r.fail("channel", v.why, "the token lacks the read-only permission: add youtube.readonly under Data Access, then shorts login --live --force"),
             .net, .bad_reply => r.fail("channel", "no usable answer", "check the network and try again"),
         }
         switch (cats.check(&tok, cx.cfg.post.category_id)) {

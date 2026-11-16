@@ -11,7 +11,7 @@ Steps marked **(not run against real Google yet)** were tested against a copy of
 Google forces these four steps by hand. After them you never do them again.
 1. Open `console.cloud.google.com`, make a new project, and name it anything.
 2. In that project open **APIs & Services > Library**, search **YouTube Data API v3**, press **Enable**.
-3. Open **OAuth consent screen**. Choose **External**, fill the app name and your email. Add the permission `.../auth/youtube.upload`. Then press **Publish app** so the status says **In production**. If you skip this, your sign-in stops working after 7 days. You will see a "Google has not verified this app" warning later; that is your own app, so you may continue.
+3. Open **OAuth consent screen**. Choose **External**, fill the app name and your email. Add the two permissions `.../auth/youtube.upload` and `.../auth/youtube.readonly`. Then press **Publish app** so the status says **In production**. If you skip this, your sign-in stops working after 7 days. You will see a "Google has not verified this app" warning later; that is your own app, so you may continue.
 4. Open **Credentials > Create credentials > OAuth client ID**, type **Desktop app**. Copy the client id and the client secret.
 
 Save them on your computer. Replace the two values, keep the quotes:

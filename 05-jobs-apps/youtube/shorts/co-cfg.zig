@@ -19,6 +19,7 @@ pub const Post = struct {
     ai_notice_required: bool = true,
     notify_subscribers: bool = false,
     shorts_tag: bool = false,
+    include_listing_url: bool = true,
     category_id: []const u8 = "2",
     title_max: u32 = 100,
     desc_max_bytes: u32 = 5000,
@@ -44,7 +45,7 @@ pub const Google = struct {
     token_url: []const u8 = "https://oauth2.googleapis.com/token",
     api_base: []const u8 = "https://www.googleapis.com/youtube/v3",
     upload_base: []const u8 = "https://www.googleapis.com/upload/youtube/v3",
-    scope: []const u8 = scope_upload,
+    scope: []const u8 = scope_upload ++ " " ++ scope_read,
     client_id_env: []const u8 = "YOUT_CLIENT_ID",
     client_secret_env: []const u8 = "YOUT_CLIENT_SECRET",
     client_id_file: []const u8 = "yout-client-id.txt",
@@ -57,6 +58,8 @@ pub const Google = struct {
 };
 
 pub const scope_upload = "https://www.googleapis.com/auth/youtube.upload";
+// read-only: lets the app check its own uploads (processing, resolve); it cannot change anything
+pub const scope_read = "https://www.googleapis.com/auth/youtube.readonly";
 
 pub const Config = struct {
     data_dir: []const u8 = "",
@@ -117,7 +120,12 @@ pub fn validate(c: Config, why: *[160]u8, why_len: *usize) LoadErr!void {
     if (c.token_warn_days == 0) return bad(why, why_len, "config: token_warn_days must be > 0", .{});
     if (c.tz_offset_hours < -12 or c.tz_offset_hours > 14) return bad(why, why_len, "config: tz_offset_hours must be -12..14", .{});
     if (c.db_file.len == 0 or c.kill_file.len == 0) return bad(why, why_len, "config: db_file and kill_file must not be empty", .{});
-    if (!std.mem.eql(u8, c.google.scope, scope_upload)) return bad(why, why_len, "config: google.scope must be exactly {s} (least privilege)", .{scope_upload});
+    var has_upload = false;
+    var sc = std.mem.tokenizeScalar(u8, c.google.scope, ' ');
+    while (sc.next()) |one| {
+        if (std.mem.eql(u8, one, scope_upload)) has_upload = true else if (!std.mem.eql(u8, one, scope_read)) return bad(why, why_len, "config: google.scope may hold only youtube.upload and youtube.readonly (least privilege)", .{});
+    }
+    if (!has_upload) return bad(why, why_len, "config: google.scope must include {s}", .{scope_upload});
     if (c.google.login_wait_s == 0 or c.google.loopback_port > 65535) return bad(why, why_len, "config: google.login_wait_s must be > 0 and loopback_port 0..65535", .{});
     if (c.google.token_url.len == 0 or c.google.api_base.len == 0 or c.google.upload_base.len == 0 or c.google.auth_url.len == 0) return bad(why, why_len, "config: google urls must not be empty", .{});
 }
@@ -183,6 +191,8 @@ test "locked safety switches and ranges are refused" {
     try expectBad("{\"limits\":{\"gap_min_s\":9,\"gap_max_s\":3}}", "gap_min_s");
     try expectBad("{\"video\":{\"max_s\":181}}", "video.min_s");
     try expectBad("{\"google\":{\"scope\":\"https://www.googleapis.com/auth/youtube\"}}", "google.scope");
+    try expectBad("{\"google\":{\"scope\":\"https://www.googleapis.com/auth/youtube.readonly\"}}", "must include");
+    try expectBad("{\"google\":{\"scope\":\"https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.force-ssl\"}}", "only youtube.upload");
     try expectBad("{\"net\":{\"allow_hosts\":[]}}", "allow_hosts");
     try expectBad("{\"net\":{\"chunk_kb\":1}}", "chunk_kb");
 }
@@ -198,6 +208,7 @@ test "shipped 00-config.json parses and equals the defaults" {
     try std.testing.expectEqual(d.limits.gap_min_s, c.limits.gap_min_s);
     try std.testing.expectEqual(d.video.max_s, c.video.max_s);
     try std.testing.expectEqual(d.post.public, c.post.public);
+    try std.testing.expectEqual(d.post.include_listing_url, c.post.include_listing_url);
     try std.testing.expectEqualStrings(d.post.visibility, c.post.visibility);
     try std.testing.expectEqualStrings(d.post.category_id, c.post.category_id);
     try std.testing.expectEqual(d.net.chunk_kb, c.net.chunk_kb);
