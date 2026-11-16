@@ -62,10 +62,10 @@ fn homeOf(env: *std.process.Environ.Map) ?[]const u8 {
 }
 
 pub const home_env = "YOUT_HOME";
-const data_leaf = ".youtube-shorts";
+const data_leaf = ".04-clou-data/youtube-shorts";
 const secr_leaf = ".04-clou-secr";
 
-// data folder: config > YOUT_HOME > ~/.youtube-shorts
+// data folder: config > YOUT_HOME > ~/.04-clou-data/youtube-shorts
 pub fn resolveData(arena: std.mem.Allocator, env: *std.process.Environ.Map, cfg_dir: []const u8, v: []const u8) ![]const u8 {
     if (v.len > 0) return joinRel(arena, cfg_dir, v);
     if (env.get(home_env)) |h| if (h.len > 0) return arena.dupe(u8, h);
@@ -92,7 +92,7 @@ test "folders resolve: config wins, then env, then home" {
     const a = arena.allocator();
     var env = std.process.Environ.Map.init(a);
     try env.put("HOME", "/h");
-    try std.testing.expectEqualStrings("/h/.youtube-shorts", try resolveData(a, &env, "/cfg", ""));
+    try std.testing.expectEqualStrings("/h/.04-clou-data/youtube-shorts", try resolveData(a, &env, "/cfg", ""));
     try std.testing.expectEqualStrings("/h/.04-clou-secr", try resolveSecrets(a, &env, "/cfg", ""));
     try env.put("YOUT_HOME", "/data");
     try std.testing.expectEqualStrings("/data", try resolveData(a, &env, "/cfg", ""));

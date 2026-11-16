@@ -157,4 +157,4 @@ The copy goes to the `backup` folder inside the data folder. It never overwrites
 | `YouTube refused (forbidden)` | A person must look at your channel and the video |
 | `nothing to do: no ready video` | Nothing passes the checks; run `shorts scan` for the reason |
 
-The log is `log/run.log` in the data folder (`~/.youtube-shorts` unless you changed it). It never holds a password or token.
+The log is `log/run.log` in the data folder (`~/.04-clou-data/youtube-shorts` unless you changed it). It never holds a password or token.

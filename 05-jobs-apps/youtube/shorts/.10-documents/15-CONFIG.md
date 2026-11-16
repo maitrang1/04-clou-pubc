@@ -29,7 +29,7 @@ Every command that writes something (`publish`, `approve`, `hold`, `resolve`, `l
 | What | Where |
 |---|---|
 | Videos to send | the folder in `source.dir` (read only, never changed) |
-| Data (ledger, log, backups, lock, kill file) | `data_dir`, or the variable `YOUT_HOME`, or `~/.youtube-shorts` |
+| Data (ledger, log, backups, lock, kill file) | `data_dir`, or the variable `YOUT_HOME`, or `~/.04-clou-data/youtube-shorts` |
 | Secrets (client id, client secret, sign-in token) | `secrets_dir`, or `~/.04-clou-secr`. Files are made with mode 600, folders with mode 700 |
 | Ledger | `ledger.db` in the data folder (one row per video) |
 | Log | `log/run.log` in the data folder. Tokens are never written to it |
@@ -48,7 +48,7 @@ A relative path is read from the folder that holds `00-config.json`.
 
 | Setting | What it does | Default | Allowed |
 |---|---|---|---|
-| `data_dir` | Where the ledger and log live. Empty = `YOUT_HOME` or `~/.youtube-shorts` | empty | a folder path |
+| `data_dir` | Where the ledger and log live. Empty = `YOUT_HOME` or `~/.04-clou-data/youtube-shorts` | empty | a folder path |
 | `secrets_dir` | Where the secret files live. Empty = `~/.04-clou-secr` | empty | a folder path |
 | `tz_offset_hours` | Time zone for the log's time stamps only | `7` | -12 to 14 |
 | `db_file` | Ledger file name | `ledger.db` | a file name |

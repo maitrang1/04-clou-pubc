@@ -4,6 +4,12 @@ What changed, newest first.
 
 ---
 
+## 2026-11-16 · First real upload
+**Added:** The tool now asks for two permissions: upload, and read-only (to check your own uploads: processing status, `doctor`, `resolve`). Add both under Data Access in your Google project, then run `login --force` once.
+**Added:** `post.include_listing_url`: leave the listing address out of the description.
+**Changed:** The default data folder is now `~/.04-clou-data/youtube-shorts`.
+**Tested live:** one video uploaded privately to a real channel and processed; its link, privacy, Short status and AI label were checked in YouTube Studio.
+
 ## 2026-11-15 · First release
 **Added:** Upload finished short videos from a folder to your YouTube channel as Shorts, once each, with `publish`.
 **Added:** Safe defaults: videos stay private, carry the AI label and the "made for kids" answer, no subscriber notice, 3 sends a day, a random wait between sends.

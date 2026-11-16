@@ -34,7 +34,7 @@ You see `dry run: would upload xe-001` with the title and `privacy: private`.
 ---
 
 ## Where Output Goes
-Your video appears on your channel as **private**. Open YouTube Studio, check it, and when you are happy set `post.public` to `true` in `00-config.json`. The tool also keeps a ledger and a log in its data folder (`~/.youtube-shorts` unless you change it).
+Your video appears on your channel as **private**. Open YouTube Studio, check it, and when you are happy set `post.public` to `true` in `00-config.json`. The tool also keeps a ledger and a log in its data folder (`~/.04-clou-data/youtube-shorts` unless you change it).
 
 ## What it never does
 It never sends without `--live`. It never makes a video public unless you switch `post.public` on. It never hides the AI label. It never deletes anything.
