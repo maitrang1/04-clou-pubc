@@ -4,7 +4,7 @@
   "tz_offset_hours": 7,
   "db_file": "ledger.db",
   "kill_file": "KILL",
-  "source": { "dir": "", "max_age_days": 14 },
+  "source": { "dir": "", "slot_hours": "8,14,20", "max_age_h": 48 },
   "limits": { "daily_cap": 3, "daily_cap_max": 100, "gap_min_s": 600, "gap_max_s": 1800, "disk_min_mb": 500, "run_budget_s": 2400 },
   "video": { "min_s": 3, "max_s": 60, "min_w": 540, "min_h": 960, "max_mb": 512, "want_faststart": true },
   "post": { "public": false, "visibility": "private", "made_for_kids": false, "ai_notice_required": true, "notify_subscribers": false, "shorts_tag": false, "include_listing_url": true, "category_id": "2", "title_max": 100, "desc_max_bytes": 5000, "tags_max_chars": 500, "hashtags_max": 15 },

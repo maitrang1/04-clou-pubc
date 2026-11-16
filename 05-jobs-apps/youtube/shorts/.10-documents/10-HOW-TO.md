@@ -29,7 +29,7 @@ Use this Google project for this tool only.
 ## Point it at your videos
 Open `00-config.json` and set `source.dir` to the folder the video maker fills, for example:
 ```
-"source": { "dir": "/home/you/videos-out", "max_age_days": 14 },
+"source": { "dir": "/home/you/videos-out", "slot_hours": "8,14,20", "max_age_h": 48 },
 ```
 Each video is two files with the same name: `xe-001.mp4` and `xe-001.json`.
 

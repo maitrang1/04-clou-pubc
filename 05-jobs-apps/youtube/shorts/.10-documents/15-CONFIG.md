@@ -54,7 +54,8 @@ A relative path is read from the folder that holds `00-config.json`.
 | `db_file` | Ledger file name | `ledger.db` | a file name |
 | `kill_file` | Name of the stop file | `KILL` | a file name |
 | `source.dir` | The folder the video maker fills. **You must set this** | empty | a folder path |
-| `source.max_age_days` | Videos older than this are skipped | `14` | 1 or more |
+| `source.slot_hours` | Start hours of the day parts a video is made in. The newest day part goes first; inside it the oldest video goes first. An empty day part = the pick steps back to the one before (yesterday too) | `"8,14,20"` | ascending hours 0..23, up to 8 |
+| `source.max_age_h` | A video made longer ago than this is skipped, never deleted (0 = no limit) | `48` | 0 or more |
 | `limits.daily_cap` | Most sends per Pacific-time day | `3` | 1 to `daily_cap_max` |
 | `limits.daily_cap_max` | Highest cap you may set (YouTube allows 100 uploads a day per project) | `100` | 1 to 100000 |
 | `limits.gap_min_s` / `gap_max_s` | A random wait between two sends, in seconds | `600` / `1800` | min up to max |

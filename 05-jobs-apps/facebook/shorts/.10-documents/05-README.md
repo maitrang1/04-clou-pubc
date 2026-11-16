@@ -6,7 +6,7 @@ No cloud service of its own, no extra install. It only talks to Facebook.
 ---
 
 ## What it does
-You point it at a folder where finished videos wait (each video comes with a small details file). It picks the oldest ready one, sends it to your Page, and writes down what happened, so the same video is never sent twice. By default it saves a **draft** on your Page and publishes nothing for everyone to see until you allow it. Every post is labelled as AI-made.
+You point it at a folder where finished videos wait (each video comes with a small details file). It picks the freshest ready one (the newest day part, then the oldest video inside it; see `source.slot_hours`), sends it to your Page, and writes down what happened, so the same video is never sent twice. By default it saves a **draft** on your Page and publishes nothing for everyone to see until you allow it. Every post is labelled as AI-made.
 
 ---
 

@@ -26,7 +26,8 @@ An unknown or misspelled setting is refused with its line and column, so a typo 
 | `tz_offset_hours` | Your time zone, shown in `status` | `7` | -12 to 14 |
 | `source` | Where the finished videos wait | | |
 | `source.dir` | The hand-off folder (`<name>.json` + `<name>.mp4`) | empty: you must set it | any folder |
-| `source.max_age_days` | Pairs older than this are skipped (0 = no limit) | `14` | 0 or more |
+| `source.slot_hours` | Start hours of the day parts a video is made in. The newest day part goes first; inside it the oldest video goes first. An empty day part = the pick steps back to the one before (yesterday too) | `"8,14,20"` | ascending hours 0..23, up to 8 |
+| `source.max_age_h` | A video made longer ago than this is skipped, never deleted (0 = no limit) | `48` | 0 or more |
 | `limits` | How much it may send | | |
 | `limits.daily_cap` | Most sends in any 24 hours | `3` | 1 to 30 |
 | `limits.gap_min_s` | Shortest wait between two sends (seconds) | `600` | 0 or more |

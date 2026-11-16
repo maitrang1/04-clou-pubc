@@ -5,6 +5,7 @@ const Ctx = @import("co-ctx.zig").Ctx;
 const cfgm = @import("co-cfg.zig");
 const probe = @import("rw-probe.zig");
 const send = @import("rw-send.zig");
+const slot = @import("rw-slot.zig");
 const sq = @import("rw-sqlite.zig");
 
 const CF = .{ .plat = "face-shor", .day_ms = 24 * 3600 * 1000, .json_cap = 256 * 1024, .aspect_w = 9, .aspect_h = 16 };
@@ -111,10 +112,6 @@ fn entryFor(cx: *const Ctx, a: std.mem.Allocator, dir: Io.Dir, dir_path: []const
         e.reason = "being re-rendered (stale)";
         return e;
     } else |_| {}
-    if (cx.cfg.source.max_age_days > 0 and cx.nowMs() - mtime > @as(i64, cx.cfg.source.max_age_days) * CF.day_ms) {
-        e.reason = try std.fmt.allocPrint(a, "older than {d} days", .{cx.cfg.source.max_age_days});
-        return e;
-    }
     const text = dir.readFileAlloc(cx.io, jname, a, .limited(CF.json_cap)) catch {
         e.reason = "json unreadable";
         return e;
@@ -157,6 +154,11 @@ fn entryFor(cx: *const Ctx, a: std.mem.Allocator, dir: Io.Dir, dir_path: []const
         e.reason = send.stateName(row.state);
         return e;
     };
+    if (slot.tooOld(cx.nowMs(), e.mp4_mtime_ms, cx.cfg.source.max_age_h)) { // made too long ago: left alone, never deleted
+        e.kind = .skipped;
+        e.reason = try std.fmt.allocPrint(a, "older than {d} h (source.max_age_h)", .{cx.cfg.source.max_age_h});
+        return e;
+    }
     const facts = probe.probe(a, cx.io, cx.cfg.video.probe_tool, e.mp4_path) catch |er| blk: {
         if (cx.cfg.video.probe_tool.len == 0 or er != error.ToolMissing) {
             e.reason = try std.fmt.allocPrint(a, "mp4 not readable ({s})", .{@errorName(er)});
@@ -183,12 +185,17 @@ fn entryFor(cx: *const Ctx, a: std.mem.Allocator, dir: Io.Dir, dir_path: []const
     return e;
 }
 
-fn older(_: void, x: Entry, y: Entry) bool {
-    if (x.mtime_ms != y.mtime_ms) return x.mtime_ms < y.mtime_ms;
-    return std.mem.lessThan(u8, x.name, y.name);
+fn madeMs(e: Entry) i64 {
+    return if (e.mp4_mtime_ms != 0) e.mp4_mtime_ms else e.mtime_ms;
 }
 
-// read-only walk of source.dir; oldest first
+const Ord = struct { tz: i32, hours: []const u8 };
+
+fn slotOrder(o: Ord, x: Entry, y: Entry) bool {
+    return slot.before(o.tz, o.hours, .{ .made_ms = madeMs(x), .name = x.name }, .{ .made_ms = madeMs(y), .name = y.name });
+}
+
+// read-only walk of source.dir; best first = newest slot, oldest video inside it (rw-slot)
 pub fn scan(cx: *const Ctx, a: std.mem.Allocator, db: ?*sq.Db) ![]Entry {
     if (cx.cfg.source.dir.len == 0) return error.NoSourceDir;
     const dp = try cx.path(a, cx.cfg.source.dir);
@@ -201,7 +208,7 @@ pub fn scan(cx: *const Ctx, a: std.mem.Allocator, db: ?*sq.Db) ![]Entry {
         const st = dir.statFile(cx.io, e.name, .{}) catch continue;
         try out.append(a, try entryFor(cx, a, dir, dp, e.name, st.mtime.toMilliseconds(), db));
     }
-    std.mem.sort(Entry, out.items, {}, older);
+    std.mem.sort(Entry, out.items, Ord{ .tz = cx.cfg.tz_offset_hours, .hours = cx.cfg.source.slot_hours }, slotOrder);
     return out.items;
 }
 
@@ -278,6 +285,39 @@ test "every verdict: ready held invalid skipped done, source folder untouched" {
     var itr = dir.iterate();
     while (try itr.next(io)) |_| n += 1;
     try std.testing.expectEqual(@as(usize, 17), n);
+}
+
+test "scan order: newest slot first, oldest inside it; too old is skipped" {
+    var tmp = std.testing.tmpDir(.{});
+    defer tmp.cleanup();
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+    const a = arena.allocator();
+    var env = std.process.Environ.Map.init(std.testing.allocator);
+    defer env.deinit();
+    var t = try send.testDb(a, &env, &tmp.sub_path);
+    defer t.db.close();
+    var cx = t.cx;
+    const src = try std.fmt.allocPrint(a, ".zig-cache/tmp/{s}/src", .{&tmp.sub_path});
+    try Io.Dir.cwd().createDirPath(cx.io, src);
+    cx.cfg.source.dir = src;
+    const io = cx.io;
+    for ([_][]const u8{ "a", "b", "c" }) |n| {
+        try mp4.write(a, io, try std.fmt.allocPrint(a, "{s}/{s}.mp4", .{ src, n }), .{});
+        try put(io, src, a, try std.fmt.allocPrint(a, "{s}.json", .{n}), try std.fmt.allocPrint(a, "{{\"car\":\"{s}\",\"template\":\"t\",\"mp4\":\"{s}.mp4\"}}", .{ n, n }));
+    }
+    cx.fake_now_ms = 0;
+    cx.cfg.source.max_age_h = 0;
+    const es = try scan(&cx, a, &t.db);
+    try std.testing.expectEqual(@as(usize, 3), es.len);
+    for (es) |e| try std.testing.expectEqual(Kind.ready, e.kind);
+    cx.cfg.source.max_age_h = 48;
+    cx.fake_now_ms = std.Io.Timestamp.now(io, .real).toMilliseconds() + 3 * 24 * 3600 * 1000;
+    const es2 = try scan(&cx, a, &t.db);
+    for (es2) |e| {
+        try std.testing.expectEqual(Kind.skipped, e.kind);
+        try std.testing.expect(std.mem.indexOf(u8, e.reason, "max_age_h") != null);
+    }
 }
 
 test "spec checks: length, shape, fps, codecs, audio" {

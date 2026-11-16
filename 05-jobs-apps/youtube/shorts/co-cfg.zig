@@ -8,8 +8,9 @@
 // Run: not run directly - imported by main and the context
 // =====================================================================
 const std = @import("std");
+const slot = @import("rw-slot.zig");
 
-pub const Source = struct { dir: []const u8 = "", max_age_days: u32 = 14 };
+pub const Source = struct { dir: []const u8 = "", slot_hours: []const u8 = "8,14,20", max_age_h: u32 = 48 };
 pub const Limits = struct { daily_cap: u32 = 3, daily_cap_max: u32 = 100, gap_min_s: u32 = 600, gap_max_s: u32 = 1800, disk_min_mb: u32 = 500, run_budget_s: u32 = 2400 };
 pub const Video = struct { min_s: u32 = 3, max_s: u32 = 60, min_w: u32 = 540, min_h: u32 = 960, max_mb: u32 = 512, want_faststart: bool = true };
 pub const Post = struct {
@@ -118,6 +119,8 @@ pub fn validate(c: Config, why: *[160]u8, why_len: *usize) LoadErr!void {
     if (c.breaker.fails == 0 or c.breaker.cool_h == 0) return bad(why, why_len, "config: breaker.fails and cool_h must be > 0", .{});
     if (c.retry_pre_send > 5) return bad(why, why_len, "config: retry_pre_send must be 0..5", .{});
     if (c.token_warn_days == 0) return bad(why, why_len, "config: token_warn_days must be > 0", .{});
+    var sb: [8]u8 = undefined;
+    if (slot.parse(&sb, c.source.slot_hours) == null) return bad(why, why_len, "config: source.slot_hours must be ascending hours 0..23, like \"8,14,20\"", .{});
     if (c.tz_offset_hours < -12 or c.tz_offset_hours > 14) return bad(why, why_len, "config: tz_offset_hours must be -12..14", .{});
     if (c.db_file.len == 0 or c.kill_file.len == 0) return bad(why, why_len, "config: db_file and kill_file must not be empty", .{});
     var has_upload = false;

@@ -1,7 +1,8 @@
 // Config loader: strict (unknown key -> refuse with line/col). Every tunable lives in 00-config.json; defaults here must equal the shipped file (parity test).
 const std = @import("std");
+const slot = @import("rw-slot.zig");
 
-pub const Source = struct { dir: []const u8 = "", max_age_days: u32 = 14 };
+pub const Source = struct { dir: []const u8 = "", slot_hours: []const u8 = "8,14,20", max_age_h: u32 = 48 };
 pub const Limits = struct { daily_cap: u32 = 3, gap_min_s: u32 = 600, gap_max_s: u32 = 1800, disk_min_mb: u32 = 500, run_budget_s: u32 = 1800, usage_stop_pct: u32 = 80, quota_block_h: u32 = 24 };
 pub const Video = struct {
     min_s: u32 = 3,
@@ -98,6 +99,8 @@ pub fn validate(c: Config, why: *[160]u8, why_len: *usize) LoadErr!void {
     if (c.breaker.fails == 0 or c.breaker.cool_h == 0) return bad(why, why_len, "config: breaker.fails and cool_h must be > 0", .{});
     if (!std.mem.startsWith(u8, c.graph.base, "https://") and !std.mem.startsWith(u8, c.graph.base, "http://127.0.0.1")) return bad(why, why_len, "config: graph.base must start with https://", .{});
     if (!versionOk(c.graph.version)) return bad(why, why_len, "config: graph.version must look like v27.0", .{});
+    var sb: [8]u8 = undefined;
+    if (slot.parse(&sb, c.source.slot_hours) == null) return bad(why, why_len, "config: source.slot_hours must be ascending hours 0..23, like \"8,14,20\"", .{});
     if (c.db_file.len == 0 or c.data_dir.len == 0) return bad(why, why_len, "config: data_dir and db_file must not be empty", .{});
 }
 

@@ -6,7 +6,7 @@ No cloud service, no extra account. It talks only to Google, and keeps its own s
 ---
 
 ## What it does
-A video maker puts finished videos in a folder. This tool picks the oldest one that passes its checks and uploads it to your channel. It writes down every send, so a video is never uploaded twice, even if the internet drops at the wrong moment. Out of the box it is careful: videos stay **private**, carry an AI label, and at most 3 go out a day.
+A video maker puts finished videos in a folder. This tool picks the freshest one that passes its checks (the newest day part first, then the oldest video inside it) and uploads it to your channel. It writes down every send, so a video is never uploaded twice, even if the internet drops at the wrong moment. Out of the box it is careful: videos stay **private**, carry an AI label, and at most 3 go out a day.
 
 ---
 

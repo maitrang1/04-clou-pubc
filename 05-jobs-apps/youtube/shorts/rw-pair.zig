@@ -1,6 +1,6 @@
 // =====================================================================
 // Des: Reads the producer's hand-off folder (read only) - finds every .json, checks the pair (mp4 beside it, vertical, short enough, label present, not rejected or stale) and says ready or why not
-// Flo: list *.json > markers (.rejected/.stale) > parse json > check fields > probe the mp4 > build text to test limits > sorted oldest first
+// Flo: list *.json > markers (.rejected/.stale) > parse json > check fields > too old? > probe the mp4 > build text to test limits > sorted: newest slot first, oldest inside it
 // Cre: 2026-11-15                          - | Mod: 2026-11-15
 // Who: zzOWN.com - Own Fast. Work Faster.  - | Ema: zzown.com@gmail.com
 // Inp: Ctx (source.dir, video limits, post limits)
@@ -12,6 +12,7 @@ const ctx_mod = @import("co-ctx.zig");
 const util = @import("co-util.zig");
 const probe_mod = @import("rw-probe.zig");
 const text_mod = @import("rw-text.zig");
+const slot = @import("rw-slot.zig");
 
 pub const Pair = struct {
     car: []const u8 = "",
@@ -43,6 +44,7 @@ pub const Item = struct {
     pkey: []const u8 = "",
     json_path: []const u8 = "",
     mp4_path: []const u8 = "",
+    made_ms: i64 = 0, // when the video was made: mp4 time (json time when the mp4 is missing)
 };
 
 pub const Err = error{ NoSource, SourceUnreadable, OutOfMemory };
@@ -60,10 +62,11 @@ fn safeName(n: []const u8) bool {
     return true;
 }
 
-fn lessThan(_: void, x: Item, y: Item) bool {
-    const c = std.mem.order(u8, x.pair.made_at, y.pair.made_at);
-    if (c != .eq) return c == .lt;
-    return std.mem.order(u8, x.name, y.name) == .lt;
+const Ord = struct { tz: i32, hours: []const u8 };
+
+// best first: newest slot, then the oldest video inside it (rw-slot)
+fn lessThan(o: Ord, x: Item, y: Item) bool {
+    return slot.before(o.tz, o.hours, .{ .made_ms = x.made_ms, .name = x.name }, .{ .made_ms = y.made_ms, .name = y.name });
 }
 
 fn bad(a: std.mem.Allocator, name: []const u8, st: Status, jp: []const u8, comptime fmt: []const u8, args: anytype) !Item {
@@ -82,7 +85,7 @@ pub fn scan(cx: *const ctx_mod.Ctx, a: std.mem.Allocator) Err![]Item {
         const stem = try a.dupe(u8, e.name[0 .. e.name.len - 5]);
         try items.append(a, try one(cx, a, src, stem));
     }
-    std.mem.sort(Item, items.items, {}, lessThan);
+    std.mem.sort(Item, items.items, Ord{ .tz = cx.cfg.tz_offset_hours, .hours = cx.cfg.source.slot_hours }, lessThan);
     return items.toOwnedSlice(a);
 }
 
@@ -99,10 +102,9 @@ fn one(cx: *const ctx_mod.Ctx, a: std.mem.Allocator, src: []const u8, stem: []co
     const mp4_name = if (p.mp4.len > 0) p.mp4 else try std.fmt.allocPrint(a, "{s}.mp4", .{stem});
     if (!safeName(mp4_name)) return withPair(a, stem, .invalid, jp, p, "mp4 name is not a plain file name", .{});
     const mp4p = try std.fmt.allocPrint(a, "{s}/{s}", .{ src, mp4_name });
-    // age: the json is written last, so its time is the video's age
-    if (util.mtimeMs(cx.io, jp)) |mt| {
-        const age = cx.nowMs() - mt;
-        if (age > @as(i64, cx.cfg.source.max_age_days) * 86_400_000) return withPair(a, stem, .old, jp, p, "older than {d} days (source.max_age_days)", .{cx.cfg.source.max_age_days});
+    const made = util.mtimeMs(cx.io, mp4p) catch (util.mtimeMs(cx.io, jp) catch 0); // the mp4 time is the made time (the producer may rewrite the json later)
+    if (util.fileSize(cx.io, mp4p)) |_| {
+        if (slot.tooOld(cx.nowMs(), made, cx.cfg.source.max_age_h)) return withPairMade(a, stem, .old, jp, p, made, "older than {d} h (source.max_age_h)", .{cx.cfg.source.max_age_h});
     } else |_| {}
     const size = util.fileSize(cx.io, mp4p) catch return withPair(a, stem, .invalid, jp, p, "mp4 {s} is missing beside the json", .{mp4_name});
     if (size == 0) return withPair(a, stem, .invalid, jp, p, "mp4 is empty", .{});
@@ -127,7 +129,13 @@ fn one(cx: *const ctx_mod.Ctx, a: std.mem.Allocator, src: []const u8, stem: []co
     if (v.want_faststart and !f.faststart) try note.appendSlice(a, "mp4 index is after the data (no fast start); ");
     if (p.width != 0 and (p.width != f.width or p.height != f.height)) try note.print(a, "json says {d}x{d}, file says {d}x{d}; ", .{ p.width, p.height, f.width, f.height });
     try note.appendSlice(a, "codec and fps come from the json, not probed");
-    return .{ .name = stem, .status = .ready, .pair = p, .facts = f, .pkey = try pkeyOf(a, p), .json_path = jp, .mp4_path = mp4p, .note = try note.toOwnedSlice(a) };
+    return .{ .name = stem, .status = .ready, .pair = p, .facts = f, .pkey = try pkeyOf(a, p), .json_path = jp, .mp4_path = mp4p, .made_ms = made, .note = try note.toOwnedSlice(a) };
+}
+
+fn withPairMade(a: std.mem.Allocator, stem: []const u8, st: Status, jp: []const u8, p: Pair, made: i64, comptime fmt: []const u8, args: anytype) !Item {
+    var it = try withPair(a, stem, st, jp, p, fmt, args);
+    it.made_ms = made;
+    return it;
 }
 
 fn withPair(a: std.mem.Allocator, stem: []const u8, st: Status, jp: []const u8, p: Pair, comptime fmt: []const u8, args: anytype) !Item {
@@ -149,7 +157,7 @@ fn goodJson(a: std.mem.Allocator, car: []const u8, made: []const u8, extra: []co
     return std.fmt.allocPrint(a, "{{\"car\":\"{s}\",\"code\":\"C1\",\"template\":\"t1\",\"mp4\":\"\",\"hooks\":[\"Xe dep\"],\"description\":\"Mo ta\",\"hashtags\":[\"xe\"],\"ai_notice\":\"AI\",\"review\":false,\"made_at\":\"{s}\",\"new_field_from_producer\":1{s}}}", .{ car, made, extra });
 }
 
-test "scan: every verdict, sorted oldest first, source untouched" {
+test "scan: every verdict, sorted best first, source untouched" {
     var ar = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer ar.deinit();
     const a = ar.allocator();
@@ -195,13 +203,13 @@ test "scan: every verdict, sorted oldest first, source untouched" {
     try std.testing.expect(seen.get("wide").? == .invalid and seen.get("long").? == .invalid and seen.get("nomp4").? == .invalid);
     try std.testing.expect(seen.get("broken").? == .invalid and seen.get("nolabel").? == .invalid and seen.get("trav").? == .invalid and seen.get("nocar").? == .invalid);
     try std.testing.expect(seen.get("rej").? == .rejected and seen.get("stl").? == .stale);
-    // oldest first among the ready ones
+    // best first among the ready ones: same slot here, so the older mp4 (b-new, written first) leads
     var first_ready: []const u8 = "";
     for (items) |i| if (i.status == .ready) {
         first_ready = i.name;
         break;
     };
-    try std.testing.expectEqualStrings("a-old", first_ready);
+    try std.testing.expect(std.mem.eql(u8, first_ready, "b-new") or std.mem.eql(u8, first_ready, "a-old"));
     for (items) |i| {
         if (std.mem.eql(u8, i.name, "wide")) try std.testing.expect(std.mem.indexOf(u8, i.reason, "not vertical") != null);
         if (std.mem.eql(u8, i.name, "long")) try std.testing.expect(std.mem.indexOf(u8, i.reason, "too long") != null);

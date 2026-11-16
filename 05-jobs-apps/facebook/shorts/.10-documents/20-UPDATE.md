@@ -5,6 +5,7 @@ What changed, newest first.
 ---
 
 ## 2026-11-16
+**Changed:** The pick now follows the day parts of `source.slot_hours` (8, 14, 20 h): the newest day part goes first, the oldest video inside it first, and an empty day part steps back to the one before. Videos made more than `source.max_age_h` (48) hours ago are skipped. This replaces `source.max_age_days`.
 **Fixed:** Resuming a cut upload now works with the spelling Facebook really uses for the byte counter.
 
 ---

@@ -3,7 +3,7 @@
   "db_file": "ledger.db",
   "secrets_dir": "~/.04-clou-secr",
   "tz_offset_hours": 7,
-  "source": { "dir": "", "max_age_days": 14 },
+  "source": { "dir": "", "slot_hours": "8,14,20", "max_age_h": 48 },
   "limits": { "daily_cap": 3, "gap_min_s": 600, "gap_max_s": 1800, "disk_min_mb": 500, "run_budget_s": 1800, "usage_stop_pct": 80, "quota_block_h": 24 },
   "video": { "min_s": 3, "max_s": 90, "min_w": 540, "min_h": 960, "rec_w": 1080, "rec_h": 1920, "fps_min": 24, "fps_max": 60, "max_mb": 1024, "vcodec": "avc1", "acodec": "mp4a", "audio_channels": 2, "audio_rate": 48000, "probe_tool": "" },
   "post": { "public": false, "ai_notice_required": true, "desc_max": 2000, "title_max": 100, "tags_max": 10, "reel_url_base": "https://www.facebook.com/reel" },

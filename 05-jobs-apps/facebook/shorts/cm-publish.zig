@@ -1,4 +1,4 @@
-// publish: oldest ready pair -> start -> upload (stream, resume) -> poll -> finish -> poll -> ledger. Dry-run unless --live.
+// publish: best ready pair (newest slot, oldest inside it, not older than source.max_age_h) -> start -> upload (stream, resume) -> poll -> finish -> poll -> ledger. Dry-run unless --live.
 // Order is the safety: the ledger row (with the video_id) exists before the first byte; finish is the point of no return (a lost answer after it = unsure).
 const std = @import("std");
 const Ctx = @import("co-ctx.zig").Ctx;
