@@ -5,7 +5,7 @@ on:
   push:
     branches: [main]
     paths:
-      - '05-jobs-apps/instagram/shorts/**'
+      - '04-task-apps/instagram/shorts/**'
       - '.github/workflows/instagram-shorts.yml'
     tags: ['instagram-shorts-v*']
   workflow_dispatch:
@@ -44,7 +44,7 @@ jobs:
           echo "$HOME/zig" >> "$GITHUB_PATH"
 
       - id: EXEZ-TEST
-        working-directory: 05-jobs-apps/instagram/shorts
+        working-directory: 04-task-apps/instagram/shorts
         run: zig build test
   # a tag like instagram-shorts-v0.1.0 builds this app only and publishes its own release
   release:
@@ -73,9 +73,9 @@ jobs:
           name="instagram-shorts"
           mkdir -p dist
           for t in x86_64-linux x86_64-windows; do
-            (cd "05-jobs-apps/instagram/shorts" && rm -rf zig-out && zig build -Dtarget="$t" -Doptimize=ReleaseSafe)
+            (cd "04-task-apps/instagram/shorts" && rm -rf zig-out && zig build -Dtarget="$t" -Doptimize=ReleaseSafe)
             mkdir -p "dist/${name}-${t}"
-            find "05-jobs-apps/instagram/shorts/zig-out" -type f -path '*/bin/*' ! -name '*.pdb' -exec cp {} "dist/${name}-${t}/" \;
+            find "04-task-apps/instagram/shorts/zig-out" -type f -path '*/bin/*' ! -name '*.pdb' -exec cp {} "dist/${name}-${t}/" \;
             [ -f LICENSE ] && cp LICENSE "dist/${name}-${t}/"
             case "$t" in
               *windows*) (cd dist && zip -qr "${name}-${t}.zip" "${name}-${t}") ;;

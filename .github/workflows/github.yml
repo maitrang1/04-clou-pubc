@@ -5,7 +5,7 @@ on:
   push:
     branches: [main]
     paths:
-      - '10-vend-apps/github/**'
+      - '08-vend-apps/github/**'
       - '.github/workflows/github.yml'
     tags: ['github-v*']
   workflow_dispatch:
@@ -44,7 +44,7 @@ jobs:
           echo "$HOME/zig" >> "$GITHUB_PATH"
 
       - id: EXEZ-TEST
-        working-directory: 10-vend-apps/github
+        working-directory: 08-vend-apps/github
         run: zig build test
   # a tag like github-v0.1.0 builds this app only and publishes its own release
   release:
@@ -73,9 +73,9 @@ jobs:
           name="github"
           mkdir -p dist
           for t in x86_64-linux x86_64-windows; do
-            (cd "10-vend-apps/github" && rm -rf zig-out && zig build -Dtarget="$t" -Doptimize=ReleaseSafe)
+            (cd "08-vend-apps/github" && rm -rf zig-out && zig build -Dtarget="$t" -Doptimize=ReleaseSafe)
             mkdir -p "dist/${name}-${t}"
-            find "10-vend-apps/github/zig-out" -type f -path '*/bin/*' ! -name '*.pdb' -exec cp {} "dist/${name}-${t}/" \;
+            find "08-vend-apps/github/zig-out" -type f -path '*/bin/*' ! -name '*.pdb' -exec cp {} "dist/${name}-${t}/" \;
             [ -f LICENSE ] && cp LICENSE "dist/${name}-${t}/"
             case "$t" in
               *windows*) (cd dist && zip -qr "${name}-${t}.zip" "${name}-${t}") ;;

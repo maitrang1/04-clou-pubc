@@ -4,7 +4,7 @@ Small command-line tools that set up and run your cloud accounts for you: code o
 
 ## Build
 ```
-cd 10-vend-apps/<tool>
+cd 08-vend-apps/<tool>
 zig build
 zig build test
 ```

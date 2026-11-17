@@ -5,7 +5,7 @@ on:
   push:
     branches: [main]
     paths:
-      - '10-vend-apps/cron-job-org/**'
+      - '08-vend-apps/cron-job-org/**'
       - '.github/workflows/cron-job-org.yml'
     tags: ['cron-job-org-v*']
   workflow_dispatch:
@@ -44,7 +44,7 @@ jobs:
           echo "$HOME/zig" >> "$GITHUB_PATH"
 
       - id: EXEZ-TEST
-        working-directory: 10-vend-apps/cron-job-org
+        working-directory: 08-vend-apps/cron-job-org
         run: zig build test
   # a tag like cron-job-org-v0.1.0 builds this app only and publishes its own release
   release:
@@ -73,9 +73,9 @@ jobs:
           name="cron-job-org"
           mkdir -p dist
           for t in x86_64-linux x86_64-windows; do
-            (cd "10-vend-apps/cron-job-org" && rm -rf zig-out && zig build -Dtarget="$t" -Doptimize=ReleaseSafe)
+            (cd "08-vend-apps/cron-job-org" && rm -rf zig-out && zig build -Dtarget="$t" -Doptimize=ReleaseSafe)
             mkdir -p "dist/${name}-${t}"
-            find "10-vend-apps/cron-job-org/zig-out" -type f -path '*/bin/*' ! -name '*.pdb' -exec cp {} "dist/${name}-${t}/" \;
+            find "08-vend-apps/cron-job-org/zig-out" -type f -path '*/bin/*' ! -name '*.pdb' -exec cp {} "dist/${name}-${t}/" \;
             [ -f LICENSE ] && cp LICENSE "dist/${name}-${t}/"
             case "$t" in
               *windows*) (cd dist && zip -qr "${name}-${t}.zip" "${name}-${t}") ;;

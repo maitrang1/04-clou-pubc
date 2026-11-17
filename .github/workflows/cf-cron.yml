@@ -5,7 +5,7 @@ on:
   push:
     branches: [main]
     paths:
-      - '10-vend-apps/cf-cron/**'
+      - '08-vend-apps/cf-cron/**'
       - '.github/workflows/cf-cron.yml'
     tags: ['cf-cron-v*']
   workflow_dispatch:
@@ -44,7 +44,7 @@ jobs:
           echo "$HOME/zig" >> "$GITHUB_PATH"
 
       - id: EXEZ-TEST
-        working-directory: 10-vend-apps/cf-cron
+        working-directory: 08-vend-apps/cf-cron
         run: zig build test
   # a tag like cf-cron-v0.1.0 builds this app only and publishes its own release
   release:
@@ -73,9 +73,9 @@ jobs:
           name="cf-cron"
           mkdir -p dist
           for t in x86_64-linux x86_64-windows; do
-            (cd "10-vend-apps/cf-cron" && rm -rf zig-out && zig build -Dtarget="$t" -Doptimize=ReleaseSafe)
+            (cd "08-vend-apps/cf-cron" && rm -rf zig-out && zig build -Dtarget="$t" -Doptimize=ReleaseSafe)
             mkdir -p "dist/${name}-${t}"
-            find "10-vend-apps/cf-cron/zig-out" -type f -path '*/bin/*' ! -name '*.pdb' -exec cp {} "dist/${name}-${t}/" \;
+            find "08-vend-apps/cf-cron/zig-out" -type f -path '*/bin/*' ! -name '*.pdb' -exec cp {} "dist/${name}-${t}/" \;
             [ -f LICENSE ] && cp LICENSE "dist/${name}-${t}/"
             case "$t" in
               *windows*) (cd dist && zip -qr "${name}-${t}.zip" "${name}-${t}") ;;

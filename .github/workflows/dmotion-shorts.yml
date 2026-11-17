@@ -5,7 +5,7 @@ on:
   push:
     branches: [main]
     paths:
-      - '05-jobs-apps/dmotion/shorts/**'
+      - '04-task-apps/dmotion/shorts/**'
       - '.github/workflows/dmotion-shorts.yml'
     tags: ['dmotion-shorts-v*']
   workflow_dispatch:
@@ -44,7 +44,7 @@ jobs:
           echo "$HOME/zig" >> "$GITHUB_PATH"
 
       - id: EXEZ-TEST
-        working-directory: 05-jobs-apps/dmotion/shorts
+        working-directory: 04-task-apps/dmotion/shorts
         run: zig build test
   # a tag like dmotion-shorts-v0.1.0 builds this app only and publishes its own release
   release:
@@ -73,9 +73,9 @@ jobs:
           name="dmotion-shorts"
           mkdir -p dist
           for t in x86_64-linux x86_64-windows; do
-            (cd "05-jobs-apps/dmotion/shorts" && rm -rf zig-out && zig build -Dtarget="$t" -Doptimize=ReleaseSafe)
+            (cd "04-task-apps/dmotion/shorts" && rm -rf zig-out && zig build -Dtarget="$t" -Doptimize=ReleaseSafe)
             mkdir -p "dist/${name}-${t}"
-            find "05-jobs-apps/dmotion/shorts/zig-out" -type f -path '*/bin/*' ! -name '*.pdb' -exec cp {} "dist/${name}-${t}/" \;
+            find "04-task-apps/dmotion/shorts/zig-out" -type f -path '*/bin/*' ! -name '*.pdb' -exec cp {} "dist/${name}-${t}/" \;
             [ -f LICENSE ] && cp LICENSE "dist/${name}-${t}/"
             case "$t" in
               *windows*) (cd dist && zip -qr "${name}-${t}.zip" "${name}-${t}") ;;
