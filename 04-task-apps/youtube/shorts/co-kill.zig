@@ -5,7 +5,7 @@
 // Who: zzOWN.com - Own Fast. Work Faster.  - | Ema: zzown.com@gmail.com
 // Inp: Ctx
 // Out: bool (is killed) | file created/removed state
-// Run: not run directly - imported by publish, approve, resolve and the admin command
+// Run: not run directly - imported by publish, resolve
 // =====================================================================
 const std = @import("std");
 const ctx_mod = @import("co-ctx.zig");

@@ -53,7 +53,6 @@ pub const Account = struct {
     app_secret_env: []const u8 = "THRE_SHOR_APP_SECRET",
     app_secret_file: []const u8 = "thre-shor-app-secret",
 };
-pub const Approval = struct { require_for_review: bool = true };
 pub const Graph = struct {
     base: []const u8 = "https://graph.threads.com",
     version: []const u8 = "v1.0",
@@ -75,7 +74,6 @@ pub const Config = struct {
     breaker: Breaker = .{},
     safety: Safety = .{},
     account: Account = .{},
-    approval: Approval = .{},
     graph: Graph = .{},
     retry_pre_send: u32 = 2,
     token_warn_days: u32 = 14,

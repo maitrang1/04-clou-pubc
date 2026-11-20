@@ -1,4 +1,4 @@
-// publish against the fake Threads: happy path, dry-run, staged, replay, every failure class, crash, cap, kill, lock, review hold, lost-ledger probe, quota, host handling.
+// publish against the fake Threads: happy path, dry-run, staged, replay, every failure class, crash, cap, kill, lock, lost-ledger probe, quota, host handling.
 const std = @import("std");
 const Io = std.Io;
 const W = @import("te-world.zig").World;
@@ -124,15 +124,11 @@ test "device.publisher=false blocks --live, not the dry-run" {
     try std.testing.expectEqual(exit.OK, pub1(&w, &.{}));
 }
 
-test "review:true is held until approved, never auto-sent" {
+test "review:true is ignored: the pair is sent like any other" {
     var w: W = undefined;
     try w.init();
     defer w.deinit();
     try w.pair("h", "car9", true, .{});
-    try std.testing.expectEqual(exit.NOTHING, pub1(&w, &.{}));
-    try std.testing.expectEqual(exit.BLOCKED, pub1(&w, &.{ "--video", "h" }));
-    try std.testing.expectEqual(@as(u32, 0), w.f.create_n.load(.acquire));
-    try std.testing.expectEqual(exit.OK, @import("cm-approve.zig").run(&w.cx, &.{ "--video", "h" }, true));
     try std.testing.expectEqual(exit.OK, pub1(&w, &.{}));
     try std.testing.expectEqual(@as(u32, 1), w.f.publish_n.load(.acquire));
 }

@@ -10,10 +10,10 @@ Plain facts: where things go and what each setting does. For steps, see `10-HOW-
 | File | `shorts` (Linux, macOS) · `shorts.exe` (Windows), next to `00-config.json` |
 | Run | `shorts <command> [--config FILE] [--json] [--live]` |
 | Built with | Zig 0.16.0, standard library only, plus the public-domain SQLite library for the ledger |
-| Commands | `doctor` `status` `scan` `publish` `approve` `hold` `resolve` `login` `token` `kill` `backup` `config` `version` |
+| Commands | `doctor` `status` `scan` `publish` `resolve` `login` `token` `kill` `backup` `config` `version` |
 
 A wrong or unknown setting stops the program with the line and column. It never guesses.
-Every command that writes something (`publish`, `approve`, `hold`, `resolve`, `login`) only shows what it would do until you add `--live`. `kill`, `backup` and `status` act at once.
+Every command that writes something (`publish`, `resolve`, `login`) only shows what it would do until you add `--live`. `kill`, `backup` and `status` act at once.
 
 ## Exit codes
 | Code | Meaning |
@@ -56,10 +56,11 @@ A relative path is read from the folder that holds `00-config.json`.
 | `source.dir` | The folder the video maker fills. **You must set this** | empty | a folder path |
 | `source.slot_hours` | Start hours of the day parts a video is made in. The newest day part goes first; inside it the oldest video goes first. An empty day part = the pick steps back to the one before (yesterday too) | `"8,14,20"` | ascending hours 0..23, up to 8 |
 | `source.max_age_h` | A video made longer ago than this is skipped, never deleted (0 = no limit) | `48` | 0 or more |
-| `limits.daily_cap` | Most sends per Pacific-time day | `3` | 1 to `daily_cap_max` |
+| `limits.daily_cap` | Most sends per Pacific-time day | `8` | 1 to `daily_cap_max` |
 | `limits.daily_cap_max` | Highest cap you may set (YouTube allows 100 uploads a day per project) | `100` | 1 to 100000 |
 | `limits.gap_min_s` / `gap_max_s` | A random wait between two sends, in seconds | `600` / `1800` | min up to max |
 | `limits.disk_min_mb` | Stop when the data folder has less free space | `500` | 0 or more |
+| `limits.retry_max` | How many times a failed video (upload never started) is tried again on later runs | `2` | 0 to 5 |
 | `limits.run_budget_s` | A run that lasts longer than this stops itself (an unfinished upload resumes next run). Must be longer than `net.upload_timeout_s` | `2400` | more than `upload_timeout_s` |
 | `video.min_s` / `max_s` | Allowed length in seconds. A Short is up to 180 | `3` / `60` | 1 to 180 |
 | `video.min_w` / `min_h` | Smallest picture size in pixels | `540` / `960` | 1 or more |
@@ -90,7 +91,6 @@ A relative path is read from the folder that holds `00-config.json`.
 | `net.allow_hosts` | The only internet addresses the program may talk to | `*.googleapis.com`, `accounts.google.com` | a list |
 | `breaker.fails` | Failed sends in a row that open the breaker | `3` | 1 or more |
 | `breaker.cool_h` | Hours the breaker stays open | `6` | 1 or more |
-| `approval.require_for_review` | Locked on: a video marked for review needs your approval | `true` | only `true` |
 | `google.auth_url` `token_url` `api_base` `upload_base` | Google's addresses | Google's own | https addresses |
 | `google.scope` | The permissions asked for: upload, plus read-only to check your own uploads | `youtube.upload youtube.readonly` | those two only; upload is required |
 | `google.client_id_env` `client_secret_env` | Names of the variables | `YOUT_CLIENT_ID` `YOUT_CLIENT_SECRET` | text |

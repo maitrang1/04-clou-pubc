@@ -5,7 +5,7 @@
 // Who: zzOWN.com - Own Fast. Work Faster.  - | Ema: zzown.com@gmail.com
 // Inp: Ctx
 // Out: Lock handle | error.Busy when another run holds it
-// Run: not run directly - imported by publish, approve, resolve
+// Run: not run directly - imported by publish, resolve
 // =====================================================================
 const std = @import("std");
 const ctx_mod = @import("co-ctx.zig");

@@ -13,7 +13,6 @@
   "breaker": { "fails": 3, "cool_h": 6 },
   "safety": { "dup_probe": true, "dup_chars": 80 },
   "account": { "token_env": "THRE_SHOR_TOKEN", "token_file": "thre-shor-token", "token_meta_file": "thre-shor-token-meta", "user_id_env": "THRE_SHOR_USER_ID", "user_id_file": "thre-shor-user-id", "app_id_env": "THRE_SHOR_APP_ID", "app_id_file": "thre-shor-app-id", "app_secret_env": "THRE_SHOR_APP_SECRET", "app_secret_file": "thre-shor-app-secret" },
-  "approval": { "require_for_review": true },
   "graph": { "base": "https://graph.threads.com", "version": "v1.0", "need_scopes": ["threads_basic", "threads_content_publish"] },
   "retry_pre_send": 2,
   "token_warn_days": 14,

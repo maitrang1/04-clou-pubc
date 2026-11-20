@@ -1,4 +1,4 @@
-// The other commands against the fake: resolve, approve/hold, token, doctor, scan, status, kill, backup, config, dispatch.
+// The other commands against the fake: resolve, token, doctor, scan, status, kill, backup, config, dispatch.
 const std = @import("std");
 const Io = std.Io;
 const W = @import("te-world.zig").World;
@@ -116,26 +116,15 @@ test "resolve: a person can answer with --as; a settled row is left alone" {
     try std.testing.expectEqual(exit.FAILED, d(&w, &.{ "resolve", "--video", "nope" }));
 }
 
-test "approve and hold write only with --live" {
+test "approve and hold are gone; a review:true pair is sent like any other" {
     var w: W = undefined;
     try w.init();
     defer w.deinit();
     try w.pair("h", "car9", true, .{});
-    w.cx.live = false;
-    try std.testing.expectEqual(exit.OK, d(&w, &.{ "approve", "--video", "h" }));
-    try std.testing.expectEqual(exit.NOTHING, pub_cmd.run(&w.cx, &.{}));
-    w.cx.live = true;
-    try std.testing.expectEqual(exit.OK, d(&w, &.{ "approve", "--video", "h" }));
+    try std.testing.expectEqual(exit.USAGE, d(&w, &.{ "approve", "--video", "h" }));
+    try std.testing.expectEqual(exit.USAGE, d(&w, &.{ "hold", "--video", "h" }));
     w.f.script = &ready_soon;
     try std.testing.expectEqual(exit.OK, pub_cmd.run(&w.cx, &.{}));
-    var w2: W = undefined;
-    try w2.init();
-    defer w2.deinit();
-    try w2.pair("h", "car9", true, .{});
-    try std.testing.expectEqual(exit.OK, d(&w2, &.{ "approve", "--video", "h" }));
-    try std.testing.expectEqual(exit.OK, d(&w2, &.{ "hold", "--video", "h" }));
-    try std.testing.expectEqual(exit.NOTHING, pub_cmd.run(&w2.cx, &.{}));
-    try std.testing.expectEqual(exit.USAGE, d(&w2, &.{"approve"}));
 }
 
 test "token: works for the account; a different account, a dead token, a missing secret" {
@@ -221,20 +210,15 @@ test "resolve --live is blocked while a run holds the lock" {
     try std.testing.expectEqual(exit.OK, d(&w, &.{ "resolve", "--video", "a", "--as", "failed" }));
 }
 
-test "a new render under the same name loses its approval; json must name its own mp4" {
+test "a json must name its own mp4: a second json pointing at a taken mp4 is refused" {
     var w: W = undefined;
     try w.init();
     defer w.deinit();
     w.f.script = &ready_soon;
-    try w.pair("h", "car9", true, .{});
-    try std.testing.expectEqual(exit.OK, d(&w, &.{ "approve", "--video", "h" }));
-    // producer re-renders: different size
-    const mp = try std.fmt.allocPrint(w.arena.allocator(), "{s}/h.mp4", .{w.src});
-    try @import("te-mp4.zig").write(w.arena.allocator(), w.cx.io, mp, .{ .mdat_mb = 1 });
-    try std.testing.expectEqual(exit.NOTHING, pub_cmd.run(&w.cx, &.{}));
-    // a second json pointing at the held mp4 is refused
+    try w.pair("h", "car9", false, .{});
+    try std.testing.expectEqual(exit.OK, pub_cmd.run(&w.cx, &.{}));
     const jp = try std.fmt.allocPrint(w.arena.allocator(), "{s}/other.json", .{w.src});
     try Io.Dir.cwd().writeFile(w.cx.io, .{ .sub_path = jp, .data = "{\"car\":\"x\",\"template\":\"t\",\"mp4\":\"h.mp4\",\"ai_notice\":\"AI\"}" });
     try std.testing.expectEqual(exit.NOTHING, pub_cmd.run(&w.cx, &.{}));
-    try std.testing.expectEqual(@as(u32, 0), w.f.container_n.load(.acquire));
+    try std.testing.expectEqual(@as(u32, 1), w.f.container_n.load(.acquire));
 }

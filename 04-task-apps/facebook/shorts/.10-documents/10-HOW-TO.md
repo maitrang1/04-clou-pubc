@@ -50,7 +50,7 @@ EXE scan
 You see:
 ```
 ready    demo
-1 ready · 0 held · 0 invalid · 0 skipped · 0 already sent
+1 ready · 0 invalid · 0 skipped · 0 already sent
 ```
 A video that cannot be sent shows the plain reason (too short, wrong shape, no audio, and so on).
 
@@ -74,12 +74,9 @@ Open your Page and look in its drafts. Run the same command again: it says `noth
 ## 8 · Make posts public
 Only when you are happy with the draft: in `00-config.json` set `post.public` to `true`. The next send is published for everyone.
 
-## 9 · Approve a video that needs review
-Videos marked `review:true` wait for you.
-```
-EXE approve --video clip --live
-```
-To take it back: `EXE hold --video clip --live`. Without `--live` you only see what would happen.
+## 9 · No approval step
+Every good video is sent on its own. A `review` field in the json is ignored. To stop sending: `EXE kill on`.
+A video that failed before Facebook gave it an id is tried again on later runs, at most `limits.retry_max` times (default 2). To send a failed one yourself: `EXE publish --video clip --again --live`.
 
 ## 10 · When the answer is unclear
 If Facebook's answer is lost, the video is marked unsure and nothing is resent. `status` shows it and the exit code is 5.
@@ -114,7 +111,7 @@ The tool does not schedule itself. Your automation hub runs `EXE publish --live`
 ## When something goes wrong
 | Message | What to do |
 |---|---|
-| `blocked: daily cap reached: 3 of 3 in the last 24 h` | Wait, or raise `limits.daily_cap` (at most 30) |
+| `blocked: daily cap reached: 8 of 8 in the last 24 h` | Wait, or raise `limits.daily_cap` (at most 30) |
 | `blocked: min gap between sends: wait N s` | Wait; the pause is `limits.gap_min_s` to `limits.gap_max_s` |
 | `blocked: breaker open …` | Several failures in a row. Wait, or look at `run.jsonl`, then `EXE config --reset-breaker --live` |
 | `breaker open: Facebook flagged the action (error 368)` | Stop. Look at your Page for warnings first, then `EXE config --reset-breaker --live` |

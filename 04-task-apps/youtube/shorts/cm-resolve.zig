@@ -104,7 +104,7 @@ pub fn run(cx: *const ctx_mod.Ctx, av: []const []const u8) u8 {
         else => {},
     };
     if (found_id.len == 0) {
-        util.print(cx.io, "still unsure: {s} was not found on the channel\nwhy: the send may not have reached YouTube, or it is not visible yet\nfix: check YouTube Studio by hand; to send again on purpose: shorts approve --video {s} --resend --live\n", .{ name, name });
+        util.print(cx.io, "still unsure: {s} was not found on the channel\nwhy: the send may not have reached YouTube, or it is not visible yet\nfix: check YouTube Studio by hand\n", .{name});
         return exit.unsure;
     }
     const url = std.fmt.allocPrint(a, "{s}{s}", .{ cx.cfg.google.watch_url, found_id }) catch "";

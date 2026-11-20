@@ -5,7 +5,7 @@
 // Who: zzOWN.com - Own Fast. Work Faster.  - | Ema: zzown.com@gmail.com
 // Inp: Ctx (source.dir, video limits, post limits)
 // Out: list of Item {name, status, reason, pair, facts, pkey, paths}
-// Run: not run directly - imported by cm-scan, cm-publish, cm-approve
+// Run: not run directly - imported by cm-scan, cm-publish
 // =====================================================================
 const std = @import("std");
 const ctx_mod = @import("co-ctx.zig");
@@ -26,7 +26,6 @@ pub const Pair = struct {
     description: []const u8 = "",
     hashtags: []const []const u8 = &.{},
     ai_notice: []const u8 = "",
-    review: bool = false,
     plates: []const u8 = "",
     made_at: []const u8 = "",
     listing_url: []const u8 = "",
@@ -39,7 +38,7 @@ pub const Pair = struct {
 pub const Status = enum { ready, invalid, rejected, stale, old };
 
 pub const Item = struct {
-    name: []const u8, // file stem: the handle for approve / hold / resolve
+    name: []const u8, // file stem: the handle for publish --video / resolve
     status: Status,
     reason: []const u8 = "",
     note: []const u8 = "", // warnings that do not block

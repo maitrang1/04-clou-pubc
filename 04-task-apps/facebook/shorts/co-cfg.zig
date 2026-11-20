@@ -3,7 +3,7 @@ const std = @import("std");
 const slot = @import("rw-slot.zig");
 
 pub const Source = struct { dir: []const u8 = "", slot_hours: []const u8 = "8,14,20", max_age_h: u32 = 48 };
-pub const Limits = struct { daily_cap: u32 = 3, gap_min_s: u32 = 600, gap_max_s: u32 = 1800, disk_min_mb: u32 = 500, run_budget_s: u32 = 1800, usage_stop_pct: u32 = 80, quota_block_h: u32 = 24 };
+pub const Limits = struct { daily_cap: u32 = 8, gap_min_s: u32 = 600, gap_max_s: u32 = 1800, disk_min_mb: u32 = 500, run_budget_s: u32 = 1800, usage_stop_pct: u32 = 80, quota_block_h: u32 = 24, retry_max: u32 = 2 };
 pub const Video = struct {
     min_s: u32 = 3,
     max_s: u32 = 90,
@@ -35,7 +35,6 @@ pub const Net = struct {
 };
 pub const Breaker = struct { fails: u32 = 3, cool_h: u32 = 6 };
 pub const Account = struct { page_id_env: []const u8 = "FACE_SHOR_PAGE_ID", page_id_file: []const u8 = "face-shor-page-id" };
-pub const Approval = struct { require_for_review: bool = true };
 pub const Graph = struct {
     base: []const u8 = "https://graph.facebook.com",
     version: []const u8 = "v27.0",
@@ -60,7 +59,6 @@ pub const Config = struct {
     net: Net = .{},
     breaker: Breaker = .{},
     account: Account = .{},
-    approval: Approval = .{},
     graph: Graph = .{},
     retry_pre_send: u32 = 2,
     token_warn_days: u32 = 14,
@@ -103,6 +101,7 @@ fn patternOk(p: []const u8) bool {
 // Plain-language range checks. Returns the first problem.
 pub fn validate(c: Config, why: *[160]u8, why_len: *usize) LoadErr!void {
     if (c.limits.daily_cap < 1 or c.limits.daily_cap > 30) return bad(why, why_len, "config: limits.daily_cap must be 1..30 (Facebook allows 30 per 24 h)", .{});
+    if (c.limits.retry_max > 5) return bad(why, why_len, "config: limits.retry_max must be 0..5", .{});
     if (c.limits.gap_min_s > c.limits.gap_max_s) return bad(why, why_len, "config: limits.gap_min_s must be <= gap_max_s", .{});
     if (c.limits.usage_stop_pct < 1 or c.limits.usage_stop_pct > 100) return bad(why, why_len, "config: limits.usage_stop_pct must be 1..100", .{});
     if (c.limits.run_budget_s == 0 or c.limits.quota_block_h == 0) return bad(why, why_len, "config: limits.run_budget_s and quota_block_h must be > 0", .{});

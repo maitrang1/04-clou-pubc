@@ -1,4 +1,4 @@
-// status: counts by state, rolling-24h sends vs cap, breaker, token expiry, held list. Reads the ledger only; no call to Facebook.
+// status: counts by state, rolling-24h sends vs cap, breaker, token expiry. Reads the ledger only; no call to Facebook.
 const std = @import("std");
 const Ctx = @import("co-ctx.zig").Ctx;
 const exit = @import("co-exit.zig");
@@ -42,10 +42,6 @@ pub fn run(cx: *Ctx, av: []const []const u8) u8 {
     const blk = (caps.blocked(cx, &db, a) catch null);
     const exp = (send.metaInt(&db, "tok_exp") catch 0);
     const chk = (send.metaInt(&db, "tok_chk") catch 0);
-    var held: std.ArrayList([]const u8) = .empty;
-    if (pair.scan(cx, a, &db)) |es| {
-        for (es) |e| if (e.kind == .held) held.append(a, e.name) catch {};
-    } else |_| {}
     out.say(cx, "posted {d} · failed {d} · unsure {d} · sending {d}", .{ posted, failed, unsure, sending });
     out.say(cx, "last 24 h: {d} of {d} (cap)", .{ last24, cx.cfg.limits.daily_cap });
     out.say(cx, "kill file: {s} · run: {s}", .{ if (killed) "ON" else "off", if (blk) |b| b.why else "free to send" });
@@ -59,7 +55,6 @@ pub fn run(cx: *Ctx, av: []const []const u8) u8 {
         out.say(cx, "last send: {s} (UTC offset {d} h)", .{ localTime(&tb, lastf, cx.cfg.tz_offset_hours), cx.cfg.tz_offset_hours });
     }
     if (unsure > 0) out.say(cx, "{d} unsure: run resolve --video <name>", .{unsure});
-    for (held.items) |h| out.say(cx, "held: {s} (approve --video {s} --live)", .{ h, h });
-    out.json(cx, a, .{ .posted = posted, .failed = failed, .unsure = unsure, .sending = sending, .last_24h = last24, .daily_cap = cx.cfg.limits.daily_cap, .kill = killed, .blocked = if (blk) |b| b.why else "", .token_expires = exp, .held = held.items });
+    out.json(cx, a, .{ .posted = posted, .failed = failed, .unsure = unsure, .sending = sending, .last_24h = last24, .daily_cap = cx.cfg.limits.daily_cap, .kill = killed, .blocked = if (blk) |b| b.why else "", .token_expires = exp });
     return if (unsure > 0) exit.UNSURE else exit.OK;
 }

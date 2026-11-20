@@ -76,8 +76,6 @@ An unknown or misspelled setting is refused with its line and column, so a typo 
 | `account` | Which Instagram account | | |
 | `account.ig_user_id_env` | Name of the variable that holds your Instagram user id | `INST_SHOR_USER_ID` | a name |
 | `account.ig_user_id_file` | Name of the file (in `secrets_dir`) that holds it | `inst-shor-user-id` | a file name |
-| `approval` | People in the loop | | |
-| `approval.require_for_review` | Hold videos marked `review:true` until you approve | `true` | `true`, `false` |
 | `graph` | Instagram connection | | |
 | `graph.base` | Meta's address | `https://graph.facebook.com` | a web address |
 | `graph.version` | Interface version | `v27.0` | like `v27.0` |
@@ -124,7 +122,7 @@ The program only reads this folder. It never changes, moves or removes anything 
 | 0 | Done |
 | 1 | Failed |
 | 2 | Settings or usage problem |
-| 3 | Blocked: kill file, cap, wait time, breaker, Instagram limit, bad token, or a video waiting for approval |
+| 3 | Blocked: kill file, cap, wait time, breaker, Instagram limit, bad token |
 | 4 | Nothing to send |
 | 5 | Unsure: Instagram did not confirm; run `resolve` |
 

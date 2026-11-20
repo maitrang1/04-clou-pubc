@@ -39,7 +39,6 @@ pub const Net = struct {
 };
 pub const Breaker = struct { fails: u32 = 3, cool_h: u32 = 6 };
 pub const Account = struct { ig_user_id_env: []const u8 = "INST_SHOR_USER_ID", ig_user_id_file: []const u8 = "inst-shor-user-id" };
-pub const Approval = struct { require_for_review: bool = true };
 pub const Graph = struct {
     base: []const u8 = "https://graph.facebook.com",
     version: []const u8 = "v27.0",
@@ -60,7 +59,6 @@ pub const Config = struct {
     net: Net = .{},
     breaker: Breaker = .{},
     account: Account = .{},
-    approval: Approval = .{},
     graph: Graph = .{},
     retry_pre_send: u32 = 2,
     retry_publish: u32 = 2,

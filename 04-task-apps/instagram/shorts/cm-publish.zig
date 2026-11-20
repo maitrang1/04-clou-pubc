@@ -89,15 +89,13 @@ fn runInner(cx: *Ctx, a: std.mem.Allocator, av: []const []const u8) !Result {
         const e = pair.find(entries, name) orelse return res(exit.FAILED, "failed", "no such pair in the source folder");
         switch (e.kind) {
             .ready => pick = e,
-            .held => return .{ .code = exit.BLOCKED, .state = "held", .name = e.name, .note = e.reason },
             .invalid, .skipped => return .{ .code = exit.FAILED, .state = "invalid", .name = e.name, .note = e.reason },
             .done => {
                 if (std.mem.eql(u8, e.reason, "staged") and can_publish_staged) staged = e else if ((std.mem.eql(u8, e.reason, "failed") or std.mem.eql(u8, e.reason, "expired")) and again) {
-                    // a retry sends the file as it is NOW: judge it again, fully (spec check + review approval)
+                    // a retry sends the file as it is NOW: judge it again, fully (spec check)
                     const fresh = pair.scanOne(cx, a, &db, e.name) catch return res(exit.FAILED, "failed", "cannot re-read the pair");
                     switch (fresh.kind) {
                         .ready => pick = fresh,
-                        .held => return .{ .code = exit.BLOCKED, .state = "held", .name = e.name, .note = fresh.reason },
                         else => return .{ .code = exit.FAILED, .state = "invalid", .name = e.name, .note = fresh.reason },
                     }
                 } else return replay(a, &db, e);
@@ -125,13 +123,11 @@ fn runInner(cx: *Ctx, a: std.mem.Allocator, av: []const []const u8) !Result {
         return publishStaged(cx, a, &db, e, tok, ig);
     }
     const e = pick orelse {
-        var held: usize = 0;
         var bad: usize = 0;
-        for (entries) |x| {
-            if (x.kind == .held) held += 1;
-            if (x.kind == .invalid) bad += 1;
-        }
-        return res(exit.NOTHING, "nothing", try std.fmt.allocPrint(a, "no ready pair ({d} held, {d} invalid)", .{ held, bad }));
+        for (entries) |x| if (x.kind == .invalid) {
+            bad += 1;
+        };
+        return res(exit.NOTHING, "nothing", try std.fmt.allocPrint(a, "no ready pair ({d} invalid)", .{bad}));
     };
     const cap = text.build(a, .{ .hooks = e.j.hooks, .description = e.j.description, .hashtags = e.j.hashtags, .ai_notice = e.j.ai_notice }, .{ .desc_max = cx.cfg.post.caption_max, .tags_max = cx.cfg.post.tags_max, .notice_required = cx.cfg.post.ai_notice_required }) catch |er| return .{ .code = exit.FAILED, .state = "refused", .name = e.name, .note = if (er == error.NoNotice) "no ai_notice in the json: every post must carry it" else "caption cannot be built" };
     const vis: []const u8 = if (cx.cfg.post.public) "PUBLIC (media_publish)" else "STAGED (container only, no media_publish)";

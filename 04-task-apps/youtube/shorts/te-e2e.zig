@@ -19,7 +19,6 @@ const probe = @import("rw-probe.zig");
 const ms = @import("te-mini-srv.zig");
 const yt = @import("te-fake-yt.zig");
 const publish = @import("cm-publish.zig");
-const approve = @import("cm-approve.zig");
 const resolve = @import("cm-resolve.zig");
 const scan = @import("cm-scan.zig");
 const status = @import("cm-status.zig");
@@ -180,36 +179,31 @@ test "replay: the same video again is a no-op (named or picked), nothing new rea
     try std.testing.expectEqual(@as(u32, 1), r.fake.counts.put);
 }
 
-test "a review video is held: never sent until a person approves" {
+test "a sidecar with review:true is sent like any other (the flag is ignored)" {
     const r = try Rig.create(std.testing.allocator);
     defer r.destroy();
     _ = try r.addPair("rev", "car9", .{ .review = true });
-    try std.testing.expectEqual(exit.nothing, r.pub_(&live));
-    try std.testing.expectEqual(exit.nothing, r.pub_(&.{ "--live", "--video", "rev" }));
-    try std.testing.expectEqual(@as(u32, 0), r.fake.counts.start);
-    // approve as a dry run changes nothing
-    try std.testing.expectEqual(exit.ok, approve.run(&r.cx, &.{ "--video", "rev" }, true));
-    try std.testing.expect((try r.row("car9:t1:yout-short")) == null);
-    try std.testing.expectEqual(exit.nothing, r.pub_(&live));
-    // approve for real
-    try std.testing.expectEqual(exit.ok, approve.run(&r.cx, &.{ "--video", "rev", "--live" }, true));
-    try std.testing.expect((try r.row("car9:t1:yout-short")).?.state == .ready);
-    try std.testing.expectEqual(exit.nothing, approve.run(&r.cx, &.{ "--video", "rev", "--live" }, true)); // already approved
     try std.testing.expectEqual(exit.ok, r.pub_(&live));
     try std.testing.expect((try r.row("car9:t1:yout-short")).?.state == .posted);
-    // hold and approve no longer apply to a posted video
-    try std.testing.expectEqual(exit.blocked, approve.run(&r.cx, &.{ "--video", "rev", "--live" }, false));
 }
 
-test "hold parks a ready video until approved again" {
+test "a failed video that never started an upload goes again on its own, a few times only" {
     const r = try Rig.create(std.testing.allocator);
     defer r.destroy();
     _ = try r.addPair("a", "car1", .{});
-    try std.testing.expectEqual(exit.ok, approve.run(&r.cx, &.{ "--video", "a", "--live" }, false));
-    try std.testing.expect((try r.row("car1:t1:yout-short")).?.state == .held);
-    try std.testing.expectEqual(exit.nothing, r.pub_(&live));
-    try std.testing.expectEqual(exit.ok, approve.run(&r.cx, &.{ "--video", "a", "--live" }, true));
+    {
+        const l = try r.led();
+        defer l.close();
+        _ = try l.insertNew("a", "car1:t1:yout-short", .failed, "Xe dep gia tot", 1000);
+    }
+    r.cx.cfg.limits.retry_max = 0;
+    try std.testing.expectEqual(exit.nothing, r.pub_(&live)); // no retries allowed
+    r.cx.cfg.limits.retry_max = 1;
     try std.testing.expectEqual(exit.ok, r.pub_(&live));
+    try std.testing.expect((try r.row("car1:t1:yout-short")).?.state == .posted);
+    const l = try r.led();
+    defer l.close();
+    try std.testing.expectEqual(@as(i64, 1), try l.kvInt("retry:car1:t1:yout-short"));
 }
 
 test "lost answer after the last byte: the session is asked, the video is NOT uploaded twice" {
@@ -236,8 +230,6 @@ test "lost answer and the session expired: unsure (exit 5), never retried; resol
     r.fake.put_mode = .ok;
     try std.testing.expectEqual(exit.nothing, r.pub_(&live));
     try std.testing.expectEqual(@as(u32, 1), r.fake.counts.start);
-    // approve refuses without --resend, because a duplicate is possible
-    try std.testing.expectEqual(exit.blocked, approve.run(&r.cx, &.{ "--video", "a", "--live" }, true));
     // resolve: dry run reports, does not write
     try std.testing.expectEqual(exit.ok, resolve.run(&r.cx, &.{ "--video", "a" }));
     try std.testing.expect((try r.row("car1:t1:yout-short")).?.state == .unsure);
@@ -248,7 +240,7 @@ test "lost answer and the session expired: unsure (exit 5), never retried; resol
     try std.testing.expectEqual(@as(u32, 1), r.fake.counts.start); // still one upload
 }
 
-test "resolve: not on the channel stays unsure (exit 5); the person may then re-send on purpose" {
+test "resolve: not on the channel stays unsure (exit 5) and is never sent again by itself" {
     const r = try Rig.create(std.testing.allocator);
     defer r.destroy();
     _ = try r.addPair("a", "car1", .{});
@@ -257,12 +249,10 @@ test "resolve: not on the channel stays unsure (exit 5); the person may then re-
     try std.testing.expectEqual(exit.unsure, r.pub_(&live));
     try std.testing.expectEqual(exit.unsure, resolve.run(&r.cx, &.{ "--video", "a", "--live" }));
     try std.testing.expect((try r.row("car1:t1:yout-short")).?.state == .unsure);
-    try std.testing.expectEqual(exit.ok, approve.run(&r.cx, &.{ "--video", "a", "--live", "--resend" }, true));
-    try std.testing.expect((try r.row("car1:t1:yout-short")).?.state == .ready);
     r.fake.put_mode = .ok;
     r.fake.listing_on = true;
-    try std.testing.expectEqual(exit.ok, r.pub_(&live));
-    try std.testing.expectEqual(@as(u32, 2), r.fake.counts.start); // a second, deliberate upload
+    try std.testing.expectEqual(exit.nothing, r.pub_(&live));
+    try std.testing.expectEqual(@as(u32, 1), r.fake.counts.start); // still one upload
 }
 
 test "connection cut mid-body: resume from the byte the session names, both parts hash to the file" {
@@ -393,7 +383,6 @@ test "kill file and run lock stop a live run before any call" {
     _ = try r.addPair("a", "car1", .{});
     try std.testing.expectEqual(exit.ok, admin.killCmd(&r.cx, &.{"on"}));
     try std.testing.expectEqual(exit.blocked, r.pub_(&live));
-    try std.testing.expectEqual(exit.blocked, approve.run(&r.cx, &.{ "--video", "a", "--live" }, true));
     try std.testing.expectEqual(@as(u32, 0), r.fake.counts.token);
     try std.testing.expectEqual(exit.ok, admin.killCmd(&r.cx, &.{"off"}));
     const lk = try lock.take(&r.cx, r.al_());
@@ -678,11 +667,10 @@ test "a send that never started does not burn the day's cap or the gap" {
     try std.testing.expectEqual(exit.ok, r.pub_(&live)); // the single slot of the day was still free
 }
 
-test "resolve works on an approved review video too (title and start time are in the ledger)" {
+test "resolve works on a review-flagged video too (title and start time are in the ledger)" {
     const r = try Rig.create(std.testing.allocator);
     defer r.destroy();
     _ = try r.addPair("rev", "car9", .{ .review = true });
-    try std.testing.expectEqual(exit.ok, approve.run(&r.cx, &.{ "--video", "rev", "--live" }, true));
     r.fake.put_mode = .expire_after_complete;
     try std.testing.expectEqual(exit.unsure, r.pub_(&live));
     const row = (try r.row("car9:t1:yout-short")).?;
@@ -721,7 +709,7 @@ test "recovery refuses a source file that changed after the crash" {
     try std.testing.expect(row.state == .unsure and std.mem.indexOf(u8, row.note, "changed") != null);
 }
 
-test "approve of a failed video that had started uploading needs --resend; resolve can settle it" {
+test "a failed video that had started uploading is never retried by itself; resolve settles it" {
     const r = try Rig.create(std.testing.allocator);
     defer r.destroy();
     _ = try r.addPair("a", "car1", .{});
@@ -731,8 +719,8 @@ test "approve of a failed video that had started uploading needs --resend; resol
         _ = try l.insertNew("a", "car1:t1:yout-short", .failed, "Xe dep gia tot", 1000);
         try l.setSession("car1:t1:yout-short", "http://127.0.0.1:1/x", 1000);
     }
-    try std.testing.expectEqual(exit.blocked, approve.run(&r.cx, &.{ "--video", "a", "--live" }, true));
-    try std.testing.expectEqual(exit.ok, approve.run(&r.cx, &.{ "--video", "a", "--live", "--resend" }, true));
+    try std.testing.expectEqual(exit.nothing, r.pub_(&live));
+    try std.testing.expectEqual(@as(u32, 0), r.fake.counts.start);
 }
 
 fn hwmKb() u64 {

@@ -1,4 +1,4 @@
-// publish against the fake Facebook: happy path, dry-run, replay, resume, every failure class, crash, cap, kill, lock, review hold.
+// publish against the fake Facebook: happy path, dry-run, replay, resume, every failure class, crash, cap, kill, lock.
 const std = @import("std");
 const Io = std.Io;
 const W = @import("te-world.zig").World;
@@ -89,18 +89,35 @@ test "oldest pair first, then the next" {
     try std.testing.expect((try w.row("c2:t1:face-shor")) != null);
 }
 
-test "review:true is held until approved, never auto-sent" {
+test "review:true is ignored: the pair is sent like any other" {
     var w: W = undefined;
     try w.init();
     defer w.deinit();
     w.f.script = &happy;
     try w.pair("h", "car9", true, .{});
-    try std.testing.expectEqual(exit.NOTHING, pub1(&w, &.{}));
-    try std.testing.expectEqual(exit.BLOCKED, pub1(&w, &.{ "--video", "h" }));
-    try std.testing.expectEqual(@as(u32, 0), w.f.start_n.load(.acquire));
-    try std.testing.expectEqual(exit.OK, @import("cm-approve.zig").run(&w.cx, &.{ "--video", "h" }, true));
     try std.testing.expectEqual(exit.OK, pub1(&w, &.{}));
     try std.testing.expectEqual(@as(u32, 1), w.f.finish_n.load(.acquire));
+}
+
+test "a failed send that never got a video id goes again by itself, a few times only, after fresh pairs" {
+    var w: W = undefined;
+    try w.init();
+    defer w.deinit();
+    w.f.script = &happy;
+    try w.pair("h", "car9", false, .{});
+    {
+        var db = try send.open(&w.cx);
+        defer db.close();
+        const id = try send.begin(&w.cx, &db, w.arena.allocator(), "h", "car9:t1:face-shor", "", false);
+        try send.setState(&w.cx, &db, id, .failed, "start refused", "", "");
+    }
+    w.cx.cfg.limits.retry_max = 0;
+    try std.testing.expectEqual(exit.NOTHING, pub1(&w, &.{}));
+    w.cx.cfg.limits.retry_max = 1;
+    try std.testing.expectEqual(exit.OK, pub1(&w, &.{}));
+    const r = (try w.row("car9:t1:face-shor")).?;
+    try std.testing.expectEqual(send.State.posted, r.state);
+    try std.testing.expectEqual(@as(i64, 2), r.attempts);
 }
 
 test "missing ai_notice: refused, nothing sent" {

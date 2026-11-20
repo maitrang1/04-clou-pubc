@@ -1,4 +1,4 @@
-// The other commands against the fake: resolve, approve/hold, token (+refresh), doctor, scan, status, kill, backup, config, dispatch.
+// The other commands against the fake: resolve, token (+refresh), doctor, scan, status, kill, backup, config, dispatch.
 const std = @import("std");
 const Io = std.Io;
 const W = @import("te-world.zig").World;
@@ -92,37 +92,14 @@ test "resolve --live is blocked while a run holds the lock" {
     try std.testing.expectEqual(exit.OK, d(&w, &.{ "resolve", "--video", "a", "--as", "failed" }));
 }
 
-test "approve and hold write only with --live" {
+test "approve and hold are gone; a review:true pair is sent like any other" {
     var w: W = undefined;
     try w.init();
     defer w.deinit();
     try w.pair("h", "car9", true, .{});
-    w.cx.live = false;
-    try std.testing.expectEqual(exit.OK, d(&w, &.{ "approve", "--video", "h" }));
-    try std.testing.expectEqual(exit.NOTHING, pub_cmd.run(&w.cx, &.{}));
-    w.cx.live = true;
-    try std.testing.expectEqual(exit.OK, d(&w, &.{ "approve", "--video", "h" }));
+    try std.testing.expectEqual(exit.USAGE, d(&w, &.{ "approve", "--video", "h" }));
+    try std.testing.expectEqual(exit.USAGE, d(&w, &.{ "hold", "--video", "h" }));
     try std.testing.expectEqual(exit.OK, pub_cmd.run(&w.cx, &.{}));
-    var w2: W = undefined;
-    try w2.init();
-    defer w2.deinit();
-    try w2.pair("h", "car9", true, .{});
-    try std.testing.expectEqual(exit.OK, d(&w2, &.{ "approve", "--video", "h" }));
-    try std.testing.expectEqual(exit.OK, d(&w2, &.{ "hold", "--video", "h" }));
-    try std.testing.expectEqual(exit.NOTHING, pub_cmd.run(&w2.cx, &.{}));
-    try std.testing.expectEqual(exit.USAGE, d(&w2, &.{"approve"}));
-}
-
-test "a new render under the same name loses its approval" {
-    var w: W = undefined;
-    try w.init();
-    defer w.deinit();
-    try w.pair("h", "car9", true, .{});
-    try std.testing.expectEqual(exit.OK, d(&w, &.{ "approve", "--video", "h" }));
-    const mp = try std.fmt.allocPrint(w.arena.allocator(), "{s}/h.mp4", .{w.src});
-    try @import("te-mp4.zig").write(w.arena.allocator(), w.cx.io, mp, .{ .mdat_mb = 1 });
-    try std.testing.expectEqual(exit.NOTHING, pub_cmd.run(&w.cx, &.{}));
-    try std.testing.expectEqual(@as(u32, 0), w.f.create_n.load(.acquire));
 }
 
 test "token: valid, scopes checked with an app secret, missing scope, wrong stored id, no token" {

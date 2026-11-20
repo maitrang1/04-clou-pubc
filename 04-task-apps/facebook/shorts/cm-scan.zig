@@ -1,4 +1,4 @@
-// scan: list every pair in the hand-off folder: ready / held / invalid / skipped / done, with plain reasons. Read-only.
+// scan: list every pair in the hand-off folder: ready / invalid / skipped / done, with plain reasons. Read-only.
 const std = @import("std");
 const Ctx = @import("co-ctx.zig").Ctx;
 const exit = @import("co-exit.zig");
@@ -20,14 +20,14 @@ pub fn run(cx: *Ctx, av: []const []const u8) u8 {
         return exit.USAGE;
     };
     var rows: std.ArrayList(Row) = .empty;
-    var n = [_]usize{0} ** 5;
+    var n = [_]usize{0} ** 4;
     for (es) |e| {
         n[@intFromEnum(e.kind)] += 1;
         rows.append(a, .{ .name = e.name, .kind = @tagName(e.kind), .reason = e.reason, .note = e.note, .size = e.size }) catch return exit.FAILED;
         out.say(cx, "{s:<8} {s}{s}{s}{s}{s}", .{ @tagName(e.kind), e.name, if (e.reason.len > 0) "  - " else "", e.reason, if (e.note.len > 0) "  (" else "", e.note });
         if (e.note.len > 0) out.say(cx, "", .{});
     }
-    out.say(cx, "{d} ready · {d} held · {d} invalid · {d} skipped · {d} already sent", .{ n[0], n[1], n[2], n[3], n[4] });
-    out.json(cx, a, .{ .ready = n[0], .held = n[1], .invalid = n[2], .skipped = n[3], .done = n[4], .pairs = rows.items });
+    out.say(cx, "{d} ready · {d} invalid · {d} skipped · {d} already sent", .{ n[0], n[1], n[2], n[3] });
+    out.json(cx, a, .{ .ready = n[0], .invalid = n[1], .skipped = n[2], .done = n[3], .pairs = rows.items });
     return exit.OK;
 }

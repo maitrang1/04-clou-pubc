@@ -80,26 +80,27 @@ fn runInner(cx: *Ctx, a: std.mem.Allocator, av: []const []const u8) !Result {
         const e = pair.find(entries, name) orelse return res(exit.FAILED, "failed", "no such pair in the source folder");
         switch (e.kind) {
             .ready => pick = e,
-            .held => return .{ .code = exit.BLOCKED, .state = "held", .name = e.name, .note = e.reason },
             .invalid, .skipped => return .{ .code = exit.FAILED, .state = "invalid", .name = e.name, .note = e.reason },
             .done => {
                 if (std.mem.eql(u8, e.reason, "failed") and again) pick = e else return replay(a, &db, e);
             },
         }
     } else {
-        for (entries) |e| if (e.kind == .ready) {
+        for (entries) |e| if (e.kind == .ready and !e.retry) { // fresh pairs first
             pick = e;
+            break;
+        };
+        if (pick == null) for (entries) |e| if (e.kind == .ready) {
+            pick = e; // then a failed one that never started an upload, a few times
             break;
         };
     }
     const e = pick orelse {
-        var held: usize = 0;
         var bad: usize = 0;
-        for (entries) |x| {
-            if (x.kind == .held) held += 1;
-            if (x.kind == .invalid) bad += 1;
-        }
-        return res(exit.NOTHING, "nothing", try std.fmt.allocPrint(a, "no ready pair ({d} held, {d} invalid)", .{ held, bad }));
+        for (entries) |x| if (x.kind == .invalid) {
+            bad += 1;
+        };
+        return res(exit.NOTHING, "nothing", try std.fmt.allocPrint(a, "no ready pair ({d} invalid)", .{bad}));
     };
     const cap = text.build(a, .{ .hooks = e.j.hooks, .description = e.j.description, .hashtags = e.j.hashtags, .ai_notice = e.j.ai_notice, .brand = pair.brandOf(e.j), .model = pair.modelOf(e.j), .year = pair.valYear(e.j.year), .title = pair.titleOf(e.j) }, .{ .desc_max = cx.cfg.post.desc_max, .title_max = cx.cfg.post.title_max, .tags_max = cx.cfg.post.tags_max, .notice_required = cx.cfg.post.ai_notice_required, .title_pattern = cx.cfg.post.title_pattern, .title_case = cx.cfg.post.title_case }) catch |er| return .{ .code = exit.FAILED, .state = "refused", .name = e.name, .note = if (er == error.NoNotice) "no ai_notice in the json: every post must carry it" else "caption cannot be built" };
     const vstate: []const u8 = if (cx.cfg.post.public) "PUBLISHED" else "DRAFT";
@@ -112,7 +113,7 @@ fn runInner(cx: *Ctx, a: std.mem.Allocator, av: []const []const u8) !Result {
     }
     const tok = cx.pageToken() orelse return res(exit.USAGE, "config", "no Page token: set the env var or the file named in config graph.page_token_*");
     const page = cx.pageId() orelse return res(exit.USAGE, "config", "no Page id: set the env var or the file named in config account.page_id_*");
-    return sendOne(cx, a, &db, e, cap, tok, page, again);
+    return sendOne(cx, a, &db, e, cap, tok, page, again or e.retry);
 }
 
 // a pair already in the ledger: answer from it, never send again

@@ -1,4 +1,4 @@
-// status: counts by state, rolling-24h publishes and containers vs cap, breaker, held/staged lists. Ledger only; with --verify it also reads Meta's own allowance (one read-only call).
+// status: counts by state, rolling-24h publishes and containers vs cap, breaker, staged list. Ledger only; with --verify it also reads Meta's own allowance (one read-only call).
 const std = @import("std");
 const Ctx = @import("co-ctx.zig").Ctx;
 const exit = @import("co-exit.zig");
@@ -45,11 +45,9 @@ pub fn run(cx: *Ctx, av: []const []const u8) u8 {
     const last24 = send.countSince(&db, now - CF.day_ms) catch -1;
     const conts24 = send.contSince(&db, now - CF.day_ms) catch -1;
     const blk = (caps.blocked(cx, &db, a) catch null);
-    var held: std.ArrayList([]const u8) = .empty;
     var staged_names: std.ArrayList([]const u8) = .empty;
     if (pair.scan(cx, a, &db)) |es| {
         for (es) |e| {
-            if (e.kind == .held) held.append(a, e.name) catch {};
             if (e.kind == .done and std.mem.eql(u8, e.reason, "staged")) staged_names.append(a, e.name) catch {};
         }
     } else |_| {}
@@ -75,8 +73,7 @@ pub fn run(cx: *Ctx, av: []const []const u8) u8 {
         out.say(cx, "last publish: {s} (UTC offset {d} h)", .{ localTime(&tb, lastf, cx.cfg.tz_offset_hours), cx.cfg.tz_offset_hours });
     }
     if (unsure > 0) out.say(cx, "{d} unsure: run resolve --video <name>", .{unsure});
-    for (held.items) |h| out.say(cx, "held: {s} (approve --video {s} --live)", .{ h, h });
     for (staged_names.items) |h| out.say(cx, "staged: {s} (not public; set post.public then publish --video {s} --live)", .{ h, h });
-    out.json(cx, a, .{ .posted = posted, .staged = staged, .failed = failed, .expired = expired, .unsure = unsure, .sending = sending, .last_24h = last24, .containers_24h = conts24, .daily_cap = cx.cfg.limits.daily_cap, .container_cap = cx.cfg.limits.container_cap, .meta_usage = meta_usage, .meta_total = meta_total, .kill = killed, .blocked = if (blk) |b| b.why else "", .held = held.items, .staged_names = staged_names.items });
+    out.json(cx, a, .{ .posted = posted, .staged = staged, .failed = failed, .expired = expired, .unsure = unsure, .sending = sending, .last_24h = last24, .containers_24h = conts24, .daily_cap = cx.cfg.limits.daily_cap, .container_cap = cx.cfg.limits.container_cap, .meta_usage = meta_usage, .meta_total = meta_total, .kill = killed, .blocked = if (blk) |b| b.why else "", .staged_names = staged_names.items });
     return if (unsure > 0) exit.UNSURE else exit.OK;
 }

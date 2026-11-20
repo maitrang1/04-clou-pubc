@@ -91,8 +91,6 @@ An unknown or misspelled setting is refused with its line and column, so a typo 
 | `account.app_id_file` | File with the App ID | `thre-shor-app-id` | a file name |
 | `account.app_secret_env` | Variable with the Threads App Secret (optional) | `THRE_SHOR_APP_SECRET` | a name |
 | `account.app_secret_file` | File with the App Secret | `thre-shor-app-secret` | a file name |
-| `approval` | Review rules | | |
-| `approval.require_for_review` | Videos marked `review:true` wait until you approve them | `true` | `true` or `false` |
 | `graph` | Where Threads lives | | |
 | `graph.base` | Address of the Threads service | `https://graph.threads.com` | an `https://` address |
 | `graph.version` | Service version | `v1.0` | like `v1.0` |
@@ -118,6 +116,6 @@ An unknown or misspelled setting is refused with its line and column, so a typo 
 | 0 | Done |
 | 1 | Failed |
 | 2 | Wrong setting or missing secret |
-| 3 | Blocked (kill switch, stop, limit, dead token, not the posting computer, held for review) |
+| 3 | Blocked (kill switch, stop, limit, dead token, not the posting computer) |
 | 4 | Nothing to do (also: Threads is still working, the next run carries on) |
 | 5 | Unsure whether it posted: run `resolve` |

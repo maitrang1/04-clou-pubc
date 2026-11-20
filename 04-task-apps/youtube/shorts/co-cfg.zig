@@ -11,7 +11,7 @@ const std = @import("std");
 const slot = @import("rw-slot.zig");
 
 pub const Source = struct { dir: []const u8 = "", slot_hours: []const u8 = "8,14,20", max_age_h: u32 = 48 };
-pub const Limits = struct { daily_cap: u32 = 3, daily_cap_max: u32 = 100, gap_min_s: u32 = 600, gap_max_s: u32 = 1800, disk_min_mb: u32 = 500, run_budget_s: u32 = 2400 };
+pub const Limits = struct { daily_cap: u32 = 8, daily_cap_max: u32 = 100, gap_min_s: u32 = 600, gap_max_s: u32 = 1800, disk_min_mb: u32 = 500, run_budget_s: u32 = 2400, retry_max: u32 = 2 };
 pub const Video = struct { min_s: u32 = 3, max_s: u32 = 60, min_w: u32 = 540, min_h: u32 = 960, max_mb: u32 = 512, want_faststart: bool = true };
 pub const Post = struct {
     public: bool = false,
@@ -42,7 +42,6 @@ pub const Net = struct {
     allow_hosts: []const []const u8 = &.{ "*.googleapis.com", "accounts.google.com" },
 };
 pub const Breaker = struct { fails: u32 = 3, cool_h: u32 = 6 };
-pub const Approval = struct { require_for_review: bool = true };
 pub const Google = struct {
     auth_url: []const u8 = "https://accounts.google.com/o/oauth2/v2/auth",
     token_url: []const u8 = "https://oauth2.googleapis.com/token",
@@ -76,7 +75,6 @@ pub const Config = struct {
     post: Post = .{},
     net: Net = .{},
     breaker: Breaker = .{},
-    approval: Approval = .{},
     google: Google = .{},
     retry_pre_send: u32 = 2,
     token_warn_days: u32 = 30,
@@ -123,7 +121,6 @@ pub fn validate(c: Config, why: *[160]u8, why_len: *usize) LoadErr!void {
     if (!oneOf(c.post.visibility, &.{ "private", "unlisted", "public" })) return bad(why, why_len, "config: post.visibility must be private, unlisted or public", .{});
     if (std.mem.eql(u8, c.post.visibility, "public") and !c.post.public) return bad(why, why_len, "config: post.visibility public needs post.public true", .{});
     if (!c.post.ai_notice_required) return bad(why, why_len, "config: post.ai_notice_required is locked true (the AI label has no off switch)", .{});
-    if (!c.approval.require_for_review) return bad(why, why_len, "config: approval.require_for_review is locked true (a person must look at review videos)", .{});
     if (c.post.category_id.len == 0 or c.post.category_id.len > 4) return bad(why, why_len, "config: post.category_id must be a short number string", .{});
     for (c.post.category_id) |ch| if (!std.ascii.isDigit(ch)) return bad(why, why_len, "config: post.category_id must be digits", .{});
     if (c.post.title_max == 0 or c.post.title_max > 100) return bad(why, why_len, "config: post.title_max must be 1..100 (YouTube limit)", .{});
@@ -138,6 +135,7 @@ pub fn validate(c: Config, why: *[160]u8, why_len: *usize) LoadErr!void {
     if (c.net.allow_hosts.len == 0) return bad(why, why_len, "config: net.allow_hosts must not be empty", .{});
     if (c.breaker.fails == 0 or c.breaker.cool_h == 0) return bad(why, why_len, "config: breaker.fails and cool_h must be > 0", .{});
     if (c.retry_pre_send > 5) return bad(why, why_len, "config: retry_pre_send must be 0..5", .{});
+    if (c.limits.retry_max > 5) return bad(why, why_len, "config: limits.retry_max must be 0..5", .{});
     if (c.token_warn_days == 0) return bad(why, why_len, "config: token_warn_days must be > 0", .{});
     var sb: [8]u8 = undefined;
     if (slot.parse(&sb, c.source.slot_hours) == null) return bad(why, why_len, "config: source.slot_hours must be ascending hours 0..23, like \"8,14,20\"", .{});
@@ -198,13 +196,12 @@ test "safe defaults parse and are private" {
     const c = try parse(arena.allocator(), "{}", &w, &n);
     try std.testing.expect(!c.post.public);
     try std.testing.expectEqualStrings("private", c.post.visibility);
-    try std.testing.expect(c.post.ai_notice_required and c.approval.require_for_review);
+    try std.testing.expect(c.post.ai_notice_required);
     try std.testing.expect(!c.post.notify_subscribers);
 }
 
 test "locked safety switches and ranges are refused" {
     try expectBad("{\"post\":{\"ai_notice_required\":false}}", "ai_notice_required");
-    try expectBad("{\"approval\":{\"require_for_review\":false}}", "require_for_review");
     try expectBad("{\"post\":{\"visibility\":\"public\"}}", "post.public");
     try expectBad("{\"post\":{\"visibility\":\"secret\"}}", "visibility");
     try expectBad("{\"post\":{\"title_max\":101}}", "title_max");

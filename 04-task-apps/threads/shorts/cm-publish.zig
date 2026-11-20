@@ -94,7 +94,6 @@ fn runInner(cx: *Ctx, a: std.mem.Allocator, av: []const []const u8) !Result {
         const e = pair.find(entries, name) orelse return res(exit.FAILED, "failed", "no such pair in the source folder");
         switch (e.kind) {
             .ready => pick = e,
-            .held => return .{ .code = exit.BLOCKED, .state = "held", .name = e.name, .note = e.reason },
             .invalid, .skipped => return .{ .code = exit.FAILED, .state = "invalid", .name = e.name, .note = e.reason },
             .pending => {
                 if (try pickable(cx, a, &db, e)) pick = e else return replay(a, &db, e);
@@ -110,15 +109,13 @@ fn runInner(cx: *Ctx, a: std.mem.Allocator, av: []const []const u8) !Result {
         };
     }
     const e = pick orelse {
-        var held: usize = 0;
         var bad: usize = 0;
         var staged: usize = 0;
         for (entries) |x| {
-            if (x.kind == .held) held += 1;
             if (x.kind == .invalid) bad += 1;
             if (x.kind == .pending) staged += 1;
         }
-        return res(exit.NOTHING, "nothing", try std.fmt.allocPrint(a, "no ready pair ({d} held, {d} invalid, {d} staged or waiting)", .{ held, bad, staged }));
+        return res(exit.NOTHING, "nothing", try std.fmt.allocPrint(a, "no ready pair ({d} invalid, {d} staged or waiting)", .{ bad, staged }));
     };
     const post = text.build(a, .{ .hooks = e.j.hooks, .description = e.j.description, .hashtags = e.j.hashtags, .ai_notice = e.j.ai_notice, .listing_url = e.j.listing_url }, .{ .text_max = cx.cfg.post.text_max, .margin = cx.cfg.post.text_margin, .unit = text.unitOf(cx.cfg.post.text_unit), .url_in_text = cx.cfg.post.url_in_text, .notice_required = cx.cfg.post.ai_notice_required }) catch |er| return .{ .code = exit.FAILED, .state = "refused", .name = e.name, .note = switch (er) {
         error.NoNotice => "no ai_notice in the json: every post must carry it",

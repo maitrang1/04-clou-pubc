@@ -29,12 +29,13 @@ An unknown or misspelled setting is refused with its line and column, so a typo 
 | `source.slot_hours` | Start hours of the day parts a video is made in. The newest day part goes first; inside it the oldest video goes first. An empty day part = the pick steps back to the one before (yesterday too) | `"8,14,20"` | ascending hours 0..23, up to 8 |
 | `source.max_age_h` | A video made longer ago than this is skipped, never deleted (0 = no limit) | `48` | 0 or more |
 | `limits` | How much it may send | | |
-| `limits.daily_cap` | Most sends in any 24 hours | `3` | 1 to 30 |
+| `limits.daily_cap` | Most sends in any 24 hours | `8` | 1 to 30 |
 | `limits.gap_min_s` | Shortest wait between two sends (seconds) | `600` | 0 or more |
 | `limits.gap_max_s` | Longest random wait between two sends | `1800` | at least `gap_min_s` |
 | `limits.disk_min_mb` | Stop when less disk space is free (0 = off) | `500` | 0 or more |
 | `limits.run_budget_s` | A run longer than this stops uploading | `1800` | 1 or more |
 | `limits.usage_stop_pct` | Stop when Facebook says you used this % of your allowance | `80` | 1 to 100 |
+| `limits.retry_max` | How many times a failed send (no video id yet) is tried again on later runs | `2` | 0 to 5 |
 | `limits.quota_block_h` | Hours to stop after Facebook says "too many requests" | `24` | 1 or more |
 | `video` | What a video must look like | | |
 | `video.min_s` / `video.max_s` | Shortest and longest length (seconds) | `3` / `90` | min at most max |
@@ -73,8 +74,6 @@ An unknown or misspelled setting is refused with its line and column, so a typo 
 | `account` | Which Page | | |
 | `account.page_id_env` | Name of the variable that holds your Page id | `FACE_SHOR_PAGE_ID` | a name |
 | `account.page_id_file` | Name of the file (in `secrets_dir`) that holds it | `face-shor-page-id` | a file name |
-| `approval` | People in the loop | | |
-| `approval.require_for_review` | Hold videos marked `review:true` until you approve | `true` | `true`, `false` |
 | `graph` | Facebook connection | | |
 | `graph.base` | Facebook's address | `https://graph.facebook.com` | a web address |
 | `graph.version` | Facebook interface version | `v27.0` | like `v27.0` |
@@ -114,7 +113,7 @@ The program only reads this folder. It never changes, moves or removes anything 
 | 0 | Done |
 | 1 | Failed |
 | 2 | Settings or usage problem |
-| 3 | Blocked: kill file, cap, wait time, breaker, Facebook limit, bad token, or a video waiting for approval |
+| 3 | Blocked: kill file, cap, wait time, breaker, Facebook limit, bad token |
 | 4 | Nothing to send |
 | 5 | Unsure: Facebook did not confirm; run `resolve` |
 

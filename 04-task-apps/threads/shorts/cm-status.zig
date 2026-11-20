@@ -1,4 +1,4 @@
-// status: counts by state, rolling-24h publish requests vs cap, breaker, token days, held and staged lists. Reads the ledger and the secrets folder only; no call to Threads.
+// status: counts by state, rolling-24h publish requests vs cap, breaker, token days, staged list. Reads the ledger and the secrets folder only; no call to Threads.
 const std = @import("std");
 const Ctx = @import("co-ctx.zig").Ctx;
 const exit = @import("co-exit.zig");
@@ -43,10 +43,6 @@ pub fn run(cx: *Ctx, av: []const []const u8) u8 {
     const unsure = send.count(&db, .unsure) catch 0;
     const last24 = send.countSince(&db, now - CF.day_ms) catch -1;
     const blk = (caps.blocked(cx, &db, a) catch null);
-    var held: std.ArrayList([]const u8) = .empty;
-    if (pair.scan(cx, a, &db)) |es| {
-        for (es) |e| if (e.kind == .held) held.append(a, e.name) catch {};
-    } else |_| {}
     out.say(cx, "posted {d} · staged {d} · failed {d} · unsure {d} · sending {d}", .{ posted, staged, failed, unsure, sending });
     out.say(cx, "last 24 h: {d} of {d} (cap) · publisher device: {s}", .{ last24, cx.cfg.limits.daily_cap, if (cx.cfg.device.publisher) "yes" else "NO (publish --live is refused here)" });
     out.say(cx, "kill file: {s} · run: {s}", .{ if (killed) "ON" else "off", if (blk) |b| b.why else "free to send" });
@@ -58,7 +54,6 @@ pub fn run(cx: *Ctx, av: []const []const u8) u8 {
     }
     if (unsure > 0) out.say(cx, "{d} unsure: run resolve --video <name>", .{unsure});
     if (staged > 0) out.say(cx, "{d} staged: finished containers that expire in 24 h (set post.public to publish them)", .{staged});
-    for (held.items) |h| out.say(cx, "held: {s} (approve --video {s} --live)", .{ h, h });
-    out.json(cx, a, .{ .posted = posted, .staged = staged, .failed = failed, .unsure = unsure, .sending = sending, .last_24h = last24, .daily_cap = cx.cfg.limits.daily_cap, .kill = killed, .blocked = if (blk) |b| b.why else "", .token_days_left = left orelse -1, .publisher = cx.cfg.device.publisher, .held = held.items });
+    out.json(cx, a, .{ .posted = posted, .staged = staged, .failed = failed, .unsure = unsure, .sending = sending, .last_24h = last24, .daily_cap = cx.cfg.limits.daily_cap, .kill = killed, .blocked = if (blk) |b| b.why else "", .token_days_left = left orelse -1, .publisher = cx.cfg.device.publisher });
     return if (unsure > 0) exit.UNSURE else exit.OK;
 }

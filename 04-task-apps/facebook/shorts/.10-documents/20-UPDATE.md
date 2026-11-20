@@ -4,6 +4,13 @@ What changed, newest first.
 
 ---
 
+## 2026-11-20 · Fully automatic
+**Removed:** the review step. `approve`, `hold` and `approval.require_for_review` are gone; a `review` field in the video json is ignored, and every good video is sent on its own.
+**Added:** `limits.retry_max` (default 2): a send that failed before Facebook gave it an id is tried again on later runs. `publish --again` stays for a person.
+**Changed:** the daily cap default is now 8. `scan` and `status` no longer show a held list.
+
+---
+
 ## 2026-11-16
 **Changed:** The title body now comes from the video details file's own `title` when it has one. Without it, the first hook that is not spelled-out number text is used ("Ba mươi hai nghìn km" is skipped). Units after a number stay lowercase: `30.000 km`.
 **Changed:** The video title now starts with the car name, then the hook, in Title Case: `Ford Everest 2022. SUV Bảy Chỗ Máy Dầu Nhập Khẩu`. Set `post.title_pattern` and `post.title_case` to change it. The description and tags are unchanged.

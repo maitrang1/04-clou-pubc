@@ -14,7 +14,6 @@ const util = @import("co-util.zig");
 
 pub const State = enum {
     ready,
-    held,
     sending,
     posted,
     failed,
@@ -23,7 +22,6 @@ pub const State = enum {
     pub fn name(self: State) []const u8 {
         return switch (self) {
             .ready => "ready",
-            .held => "held",
             .sending => "sending",
             .posted => "posted",
             .failed => "failed",
@@ -31,6 +29,7 @@ pub const State = enum {
         };
     }
     pub fn parse(s: []const u8) ?State {
+        if (std.mem.eql(u8, s, "held")) return .ready; // old rows from before review was removed
         inline for (@typeInfo(State).@"enum".fields) |f| if (std.mem.eql(u8, s, f.name)) return @field(State, f.name);
         return null;
     }
@@ -209,8 +208,8 @@ pub const Ledger = struct {
         return out.toOwnedSlice(a);
     }
 
-    pub fn counts(self: Ledger) Err![6]u32 {
-        var out: [6]u32 = @splat(0);
+    pub fn counts(self: Ledger) Err![5]u32 {
+        var out: [5]u32 = @splat(0);
         var st = try self.db.prepare("SELECT state, COUNT(*) FROM send GROUP BY state;");
         defer st.finalize();
         while (try st.step()) {
@@ -311,12 +310,17 @@ test "same key twice is a replay; states move; counts and day cap counter" {
     try l.begin("car1:t1:yout-short", 1300, 20000, 555, "T");
     try l.setPosted("car1:t1:yout-short", "vid1", "https://y/watch?v=vid1", "", 1500);
     try std.testing.expect((try l.findName(a, "a")).?.state == .posted);
-    try std.testing.expect(try l.insertNew("b", "k2", .held, "", 1700));
+    try std.testing.expect(try l.insertNew("b", "k2", .ready, "", 1700));
     const c = try l.counts();
     try std.testing.expectEqual(@as(u32, 1), c[@intFromEnum(State.posted)]);
-    try std.testing.expectEqual(@as(u32, 1), c[@intFromEnum(State.held)]);
-    try std.testing.expectEqual(@as(usize, 1), (try l.listState(a, .held)).len);
+    try std.testing.expectEqual(@as(u32, 1), c[@intFromEnum(State.ready)]);
+    try std.testing.expectEqual(@as(usize, 1), (try l.listState(a, .ready)).len);
     try std.testing.expectError(Err.Ledger, l.setState("missing", .failed, "", 1));
+}
+
+test "an old held row reads as ready" {
+    try std.testing.expect(State.parse("held").? == .ready);
+    try std.testing.expect(State.parse("nonsense") == null);
 }
 
 test "kv, reopen keeps data, backup copies and never overwrites" {

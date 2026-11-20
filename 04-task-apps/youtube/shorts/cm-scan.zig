@@ -1,7 +1,7 @@
 // =====================================================================
-// Des: The scan command - lists every pair in the hand-off folder with one plain status (ready, held, approved, posted, failed, unsure, invalid, rejected, stale, old) and the reason; changes nothing
+// Des: The scan command - lists every pair in the hand-off folder with one plain status (ready, sending, posted, failed, unsure, invalid, rejected, stale, old) and the reason; changes nothing
 // Flo: scan folder > join with ledger rows > print one line per video + a count line
-// Cre: 2026-11-15                          - | Mod: 2026-11-15
+// Cre: 2026-11-15                          - | Mod: 2026-11-20
 // Who: zzOWN.com - Own Fast. Work Faster.  - | Ema: zzown.com@gmail.com
 // Inp: scan [--json] [--config FILE]
 // Out: lines or a JSON array; exit 0 · 2 when source.dir is not usable
@@ -39,7 +39,6 @@ pub fn run(cx: *const ctx_mod.Ctx, _: []const []const u8, json: bool) u8 {
         const h: u32 = if (it.facts) |f| f.height else 0;
         const s: u64 = if (it.facts) |f| (f.ms + 999) / 1000 else 0;
         var why: []const u8 = it.reason;
-        if (k == .held and row == null) why = "review video: needs shorts approve";
         if (row) |r| if (r.note.len > 0) {
             why = r.note;
         };

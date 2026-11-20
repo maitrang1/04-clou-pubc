@@ -89,6 +89,5 @@ You should see: `posted: … published` and a link. A staged video is used if it
 | `blocked … breaker` | several failures in a row | read `status`, fix, wait or `config --reset-breaker --live` |
 | `unsure` (exit 5) | Instagram did not confirm the publish | `instagram-shorts resolve --video <name>`; never publish it again by hand first |
 | `expired` | a staged video ran out after 24 h | `publish --video <name> --again --live` |
-| `held` | marked for review | `instagram-shorts approve --video <name> --live` |
 
 Stop everything at once: `instagram-shorts kill --on`. Allow again: `instagram-shorts kill --off --live`.

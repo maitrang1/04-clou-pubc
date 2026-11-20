@@ -10,7 +10,6 @@
   "net": { "timeout_s": 60, "upload_timeout_s": 1800, "chunk_kb": 256, "backoff_ms": 2000, "status_poll_s": 60, "status_poll_max_s": 300, "resume_max": 2, "notready_wait_s": 30, "body_cap_kb": 512, "user_agent": "instagram-shorts/0.1", "allow_hosts": ["graph.facebook.com", "rupload.facebook.com"] },
   "breaker": { "fails": 3, "cool_h": 6 },
   "account": { "ig_user_id_env": "INST_SHOR_USER_ID", "ig_user_id_file": "inst-shor-user-id" },
-  "approval": { "require_for_review": true },
   "graph": { "base": "https://graph.facebook.com", "version": "v27.0", "login": "facebook", "token_env": "INST_SHOR_TOKEN", "token_file": "inst-shor-token" },
   "retry_pre_send": 2,
   "retry_publish": 2

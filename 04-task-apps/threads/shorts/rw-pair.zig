@@ -1,4 +1,4 @@
-// Reads the producer's hand-off folder (read-only!) and judges every <name>.json + <name>.mp4 pair: ready / held / pending / invalid / skipped / done.
+// Reads the producer's hand-off folder (read-only!) and judges every <name>.json + <name>.mp4 pair: ready / pending / invalid / skipped / done.
 // A bad pair is skipped with a plain reason, never published. `pending` = a ledger row that is still before the publish request (sending) or finished-but-not-published (staged).
 const std = @import("std");
 const Io = std.Io;
@@ -22,12 +22,11 @@ pub const Json = struct {
     description: []const u8 = "",
     hashtags: []const []const u8 = &.{},
     ai_notice: []const u8 = "",
-    review: bool = false,
     plates: []const u8 = "",
     made_at: []const u8 = "",
     listing_url: []const u8 = "",
 };
-pub const Kind = enum { ready, held, pending, invalid, skipped, done };
+pub const Kind = enum { ready, pending, invalid, skipped, done };
 pub const Entry = struct {
     name: []const u8,
     kind: Kind,
@@ -40,11 +39,6 @@ pub const Entry = struct {
     mtime_ms: i64 = 0, // json mtime
     mp4_mtime_ms: i64 = 0,
 };
-
-// what a person approved: this exact file (size + mtime). A re-render under the same name needs a new approval.
-pub fn approvalSig(a: std.mem.Allocator, e: Entry) ![]u8 {
-    return std.fmt.allocPrint(a, "approved:{d}:{d}", .{ e.size, e.mp4_mtime_ms });
-}
 
 pub fn pkeyOf(a: std.mem.Allocator, j: Json) ![]u8 {
     return std.fmt.allocPrint(a, "{s}:{s}:{s}", .{ j.car, j.template, CF.plat });
@@ -194,14 +188,6 @@ fn entryFor(cx: *const Ctx, a: std.mem.Allocator, dir: Io.Dir, dir_path: []const
         return e;
     }
     e.kind = .ready;
-    if (j.review and cx.cfg.approval.require_for_review) {
-        var ok = false;
-        if (db) |d| ok = std.mem.eql(u8, try send.approval(d, a, e.name), try approvalSig(a, e));
-        if (!ok) {
-            e.kind = .held;
-            e.reason = "review:true, waiting for a person (approve)";
-        }
-    }
     return e;
 }
 
@@ -240,7 +226,7 @@ fn put(io: Io, dir: []const u8, a: std.mem.Allocator, name: []const u8, body: []
     try Io.Dir.cwd().writeFile(io, .{ .sub_path = p, .data = body });
 }
 
-test "every verdict: ready held pending invalid skipped done, source folder untouched" {
+test "every verdict: ready pending invalid skipped done, source folder untouched; review:true is ignored" {
     var tmp = std.testing.tmpDir(.{});
     defer tmp.cleanup();
     var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
@@ -281,7 +267,7 @@ test "every verdict: ready held pending invalid skipped done, source folder unto
     _ = try send.begin(&cx, &t.db, a, "pend", "c9:t:thre-shor", "h");
     const es = try scan(&cx, a, &t.db);
     try std.testing.expectEqual(Kind.ready, find(es, "good").?.kind);
-    try std.testing.expectEqual(Kind.held, find(es, "held").?.kind);
+    try std.testing.expectEqual(Kind.ready, find(es, "held").?.kind); // review:true changes nothing
     try std.testing.expectEqual(Kind.invalid, find(es, "tiny").?.kind);
     try std.testing.expect(std.mem.indexOf(u8, find(es, "tiny").?.reason, "too long") != null);
     try std.testing.expectEqual(Kind.invalid, find(es, "nomp4").?.kind);
@@ -292,10 +278,6 @@ test "every verdict: ready held pending invalid skipped done, source folder unto
     try std.testing.expectEqual(Kind.done, find(es, "sent").?.kind);
     try std.testing.expectEqualStrings("posted", find(es, "sent").?.reason);
     try std.testing.expectEqual(Kind.pending, find(es, "pend").?.kind);
-    // approving a held pair makes it ready
-    try send.setApproval(&cx, &t.db, "held", try approvalSig(a, find(es, "held").?));
-    const es2 = try scan(&cx, a, &t.db);
-    try std.testing.expectEqual(Kind.ready, find(es2, "held").?.kind);
     // read-only: no file in the source folder changed or appeared
     var dir = try Io.Dir.cwd().openDir(io, src, .{ .iterate = true });
     defer dir.close(io);

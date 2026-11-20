@@ -4,6 +4,13 @@ What changed, newest first.
 
 ---
 
+## 2026-11-20 · Fully automatic
+**Removed:** the review and approval step. `approve`, `hold` and `approval.require_for_review` are gone; a `review` field in the video json is ignored, and every good video is sent on its own.
+**Added:** `limits.retry_max` (default 2): a video that failed before its upload started is tried again on later runs. Old `held` rows are read as `ready`.
+**Changed:** the daily cap default is now 8. `status` and `scan` no longer show a held list.
+
+---
+
 ## 2026-11-16 · Better titles
 **Changed:** The video title now starts with the car name, then the hook, in Title Case: `Ford Everest 2022. SUV Bảy Chỗ Máy Dầu Nhập Khẩu`. Set `post.title_pattern` and `post.title_case` to change it. The description and tags are unchanged.
 **Changed:** The publish result is now two lines: `publish: <name>: posted and processed`, then the video link.

@@ -1,4 +1,4 @@
-// publish against the fake Instagram: staged default, public path, replay, every outcome of media_publish, failures, crash, caps, kill, lock, review hold.
+// publish against the fake Instagram: staged default, public path, replay, every outcome of media_publish, failures, crash, caps, kill, lock.
 const std = @import("std");
 const Io = std.Io;
 const W = @import("te-world.zig").World;
@@ -156,16 +156,12 @@ test "oldest pair first, then the next" {
     try std.testing.expect((try w.row("c2:t1:inst-shor")) != null);
 }
 
-test "review:true is held until approved, never auto-sent" {
+test "review:true is ignored: the pair is sent like any other" {
     var w: W = undefined;
     try w.init();
     defer w.deinit();
     w.f.script = &ready_soon;
     try w.pair("h", "car9", true, .{});
-    try std.testing.expectEqual(exit.NOTHING, pub1(&w, &.{}));
-    try std.testing.expectEqual(exit.BLOCKED, pub1(&w, &.{ "--video", "h" }));
-    try std.testing.expectEqual(@as(u32, 0), w.f.container_n.load(.acquire));
-    try std.testing.expectEqual(exit.OK, @import("cm-approve.zig").run(&w.cx, &.{ "--video", "h" }, true));
     try std.testing.expectEqual(exit.OK, pub1(&w, &.{}));
     try std.testing.expectEqual(@as(u32, 1), w.f.container_n.load(.acquire));
 }

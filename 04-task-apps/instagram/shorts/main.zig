@@ -10,7 +10,6 @@ const doctor_cmd = @import("cm-doctor.zig");
 const status_cmd = @import("cm-status.zig");
 const scan_cmd = @import("cm-scan.zig");
 const publish_cmd = @import("cm-publish.zig");
-const approve_cmd = @import("cm-approve.zig");
 const resolve_cmd = @import("cm-resolve.zig");
 const token_cmd = @import("cm-token.zig");
 const admin_cmd = @import("cm-admin.zig");
@@ -20,11 +19,9 @@ pub const Ctx = ctx_mod.Ctx;
 const Usage =
     \\instagram-shorts <command> [--config FILE] [--json] [--live]
     \\  doctor                      is everything ready? (reads only)
-    \\  status [--verify]           counts, 24 h caps, breaker, held/staged lists (--verify: Meta's allowance)
+    \\  status [--verify]           counts, 24 h caps, breaker, staged list (--verify: Meta's allowance)
     \\  scan                        list the pairs in the hand-off folder
     \\  publish [--video NAME] [--again]   send the oldest ready pair; staged unless post.public (dry-run unless --live)
-    \\  approve --video NAME        let a review:true pair go (needs --live to write)
-    \\  hold --video NAME           take the approval back
     \\  resolve --video NAME [--as posted|failed]   settle an unsure send; never re-sends
     \\  token                       check the token works (a read; no expiry date exists)
     \\  kill [--on|--off]           stop every write (--off needs --live)
@@ -95,8 +92,6 @@ pub fn dispatch(cx: *Ctx, av: []const []const u8) u8 {
     if (std.mem.eql(u8, cmd, "scan")) return scan_cmd.run(cx, rest);
     if (std.mem.eql(u8, cmd, "status")) return status_cmd.run(cx, rest);
     if (std.mem.eql(u8, cmd, "doctor")) return doctor_cmd.run(cx, rest);
-    if (std.mem.eql(u8, cmd, "approve")) return approve_cmd.run(cx, rest, true);
-    if (std.mem.eql(u8, cmd, "hold")) return approve_cmd.run(cx, rest, false);
     if (std.mem.eql(u8, cmd, "resolve")) return resolve_cmd.run(cx, rest);
     if (std.mem.eql(u8, cmd, "token")) return token_cmd.run(cx, rest);
     if (std.mem.eql(u8, cmd, "kill")) return admin_cmd.killCmd(cx, rest);

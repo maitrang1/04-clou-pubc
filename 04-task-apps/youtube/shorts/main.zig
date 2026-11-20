@@ -3,7 +3,7 @@
 // Flo: parse args > load 00-config.json > resolve data and secrets folders > dispatch command > exit code
 // Cre: 2026-11-15                          - | Mod: 2026-11-15
 // Who: zzOWN.com - Own Fast. Work Faster.  - | Ema: zzown.com@gmail.com
-// Inp: shorts <doctor|status|scan|publish|approve|hold|resolve|login|token|kill|backup|config|version|help> [--config FILE] [--json] [--live] ...
+// Inp: shorts <doctor|status|scan|publish|resolve|login|token|kill|backup|config|version|help> [--config FILE] [--json] [--live] ...
 // Out: lines on stdout (errors on stderr); exit code
 // Run: cd /home/mai_trang/04-clou-base/04-task-apps/youtube/shorts && zig build run -- scan
 // Exe: /home/mai_trang/04-clou-base/04-task-apps/youtube/shorts/zig-out/bin/shorts
@@ -18,7 +18,6 @@ const doctor_cmd = @import("cm-doctor.zig");
 const status_cmd = @import("cm-status.zig");
 const scan_cmd = @import("cm-scan.zig");
 const publish_cmd = @import("cm-publish.zig");
-const approve_cmd = @import("cm-approve.zig");
 const resolve_cmd = @import("cm-resolve.zig");
 const login_cmd = @import("cm-login.zig");
 const token_cmd = @import("cm-token.zig");
@@ -32,8 +31,6 @@ const Usage =
     \\  status                          counts, today's cap, breaker, stop, held videos
     \\  scan                            every video in source.dir with its status and reason
     \\  publish [--video NAME] [--live] send the oldest ready video (dry run without --live)
-    \\  approve --video NAME [--live] [--resend]   let a review/failed video go
-    \\  hold --video NAME [--live]      park a video
     \\  resolve --video NAME [--live]   settle an unsure send (never uploads again)
     \\  login [--live] [--paste] [--force]   one-time Google sign-in
     \\  token                           does the stored sign-in still work
@@ -104,8 +101,6 @@ pub fn dispatch(cx: *Ctx, av: []const []const u8, json: bool) u8 {
     if (std.mem.eql(u8, cmd, "status")) return status_cmd.run(cx, rest, json);
     if (std.mem.eql(u8, cmd, "scan")) return scan_cmd.run(cx, rest, json);
     if (std.mem.eql(u8, cmd, "publish")) return publish_cmd.run(cx, rest, json);
-    if (std.mem.eql(u8, cmd, "approve")) return approve_cmd.run(cx, rest, true);
-    if (std.mem.eql(u8, cmd, "hold")) return approve_cmd.run(cx, rest, false);
     if (std.mem.eql(u8, cmd, "resolve")) return resolve_cmd.run(cx, rest);
     if (std.mem.eql(u8, cmd, "login")) return login_cmd.run(cx, rest);
     if (std.mem.eql(u8, cmd, "token")) return token_cmd.run(cx, rest);
@@ -148,7 +143,6 @@ test {
     _ = @import("cm-publish.zig");
     _ = @import("cm-scan.zig");
     _ = @import("cm-status.zig");
-    _ = @import("cm-approve.zig");
     _ = @import("cm-resolve.zig");
     _ = @import("cm-login.zig");
     _ = @import("cm-token.zig");

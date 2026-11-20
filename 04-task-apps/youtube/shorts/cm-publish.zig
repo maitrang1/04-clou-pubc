@@ -171,13 +171,13 @@ pub fn run(cx: *const ctx_mod.Ctx, av: []const []const u8, json: bool) u8 {
             show(cx, a, json, "replay", it.name, "posted", "already posted, nothing sent", row.?.video_id, row.?.url);
             return exit.ok;
         }
-        if (k != .ready and k != .approved) {
-            util.eprint(cx.io, "nothing to do: {s} is {s}\nwhy: only ready or approved videos are sent{s}\nfix: shorts scan\n", .{ it.name, pick.label(k), if (k == .held) " (a review video needs: shorts approve)" else "" });
+        if (k != .ready and !(k == .failed and pick.canRetry(a, l, row.?, cx.cfg.limits.retry_max))) {
+            util.eprint(cx.io, "nothing to do: {s} is {s}\nwhy: only ready videos (or a failed one still allowed a retry) are sent\nfix: shorts scan\n", .{ it.name, pick.label(k) });
             return if (rec_code > exit.ok) rec_code else if (rec.acted) exit.ok else exit.nothing;
         }
         picked = .{ .item = it, .row = row };
     } else {
-        picked = pick.next(a, l, items) catch {
+        picked = pick.next(a, l, items, cx.cfg.limits.retry_max) catch {
             util.eprint(cx.io, "blocked: the ledger cannot be read\nwhy: a cap that fails open is no cap\nfix: shorts doctor\n", .{});
             return exit.blocked;
         };
@@ -231,8 +231,10 @@ pub fn run(cx: *const ctx_mod.Ctx, av: []const []const u8, json: bool) u8 {
     var tok = call.Tok.init(cx, a) catch |e| return authFail(cx, e);
     l.kvSetInt("token_ok", now) catch {};
 
-    // the row: new, or an approved one going to `sending`
-    if (pk.row == null) {
+    // the row: new, or a queued / retried one going to `sending`
+    if (pk.row) |r| {
+        if (r.state == .failed) pick.noteRetry(a, l, r);
+    } else {
         const fresh = l.insertNew(it.name, it.pkey, .sending, meta.title, now) catch {
             util.eprint(cx.io, "blocked: the ledger cannot be written\nwhy: nothing was sent\nfix: shorts doctor\n", .{});
             return exit.blocked;

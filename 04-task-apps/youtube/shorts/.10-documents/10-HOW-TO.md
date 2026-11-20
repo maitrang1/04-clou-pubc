@@ -40,12 +40,12 @@ shorts scan
 You see (real output from a sample folder):
 ```
 ready     xe-001  1080x1920 15s
-held      xe-002  1080x1920 15s  review video: needs shorts approve
+ready     xe-002  1080x1920 15s
 invalid   xe-003-wide  not vertical or square (1920x1080): YouTube would not make it a Short
 invalid   xe-004-long  too long (90s, video.max_s 60): it would not be a Short
 invalid   xe-005-nolabel  json has no ai_notice: every post must carry the AI label
 ---
-5 videos: 1 ready 1 held 3 invalid
+5 videos: 2 ready 3 invalid
 ```
 A video that is not vertical or square, is too long, or has no AI notice is never sent.
 
@@ -101,20 +101,18 @@ Exit code 4 means "nothing to do right now"; it is not an error.
 
 ---
 
-## Let a person look first (videos marked for review)
-A video with `"review": true` waits. See it, then decide:
-```
-shorts approve --video xe-002
-shorts approve --video xe-002 --live
-```
-The first line only shows what would change. `--live` writes it. To park a video instead: `shorts hold --video xe-002 --live`.
+## No approval step
+Every good video is sent on its own, oldest first. A `"review"` field in the json is ignored. To stop sending: `shorts kill on`.
+
+## When a send fails
+A video that failed before its upload started is tried again on a later run, at most `limits.retry_max` times (default 2); new videos go first. A video whose upload had started is never retried by itself: use `resolve`.
 
 ## When it says "unsure"
 This means the internet dropped after the video was sent and YouTube could not say if it arrived. The tool will never upload it again by itself. Ask YouTube:
 ```
 shorts resolve --video xe-001 --live
 ```
-If it finds the video it marks it sent. If not, check YouTube Studio by hand. To send it again on purpose (a double is possible): `shorts approve --video xe-001 --resend --live`.
+If it finds the video it marks it sent. If not, check YouTube Studio by hand.
 
 ## See the state
 ```
@@ -122,7 +120,7 @@ shorts status
 ```
 You see:
 ```
-ledger: 1 ready · 0 held · 0 sending · 0 posted · 0 failed · 0 unsure
+ledger: 1 ready · 0 sending · 0 posted · 0 failed · 0 unsure
 today (Pacific day): 0 of 3 sends
 breaker: closed · daily stop: no · kill file: off
 sign-in: never checked here (run: shorts token)
@@ -133,7 +131,7 @@ The cap counts per Pacific-time day because that is when Google resets its limit
 ```
 shorts kill on
 ```
-Every send, approve and resolve is refused until `shorts kill off`.
+Every send and resolve is refused until `shorts kill off`.
 
 ## Copy the ledger
 ```

@@ -5,7 +5,7 @@
 // Who: zzOWN.com - Own Fast. Work Faster.  - | Ema: zzown.com@gmail.com
 // Inp: Ctx, level, message
 // Out: appended log line (errors are swallowed: logging never stops a run)
-// Run: not run directly - imported by publish, resolve, approve, login
+// Run: not run directly - imported by publish, resolve, login
 // =====================================================================
 const std = @import("std");
 const ctx_mod = @import("co-ctx.zig");

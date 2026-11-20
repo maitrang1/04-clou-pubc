@@ -32,7 +32,6 @@ const schema =
     \\CREATE TABLE IF NOT EXISTS pubs(id INTEGER PRIMARY KEY AUTOINCREMENT, send_id INTEGER NOT NULL, at INTEGER NOT NULL);
     \\CREATE TABLE IF NOT EXISTS cont(id INTEGER PRIMARY KEY AUTOINCREMENT, send_id INTEGER NOT NULL, at INTEGER NOT NULL);
     \\CREATE TABLE IF NOT EXISTS meta(k TEXT PRIMARY KEY, v TEXT NOT NULL);
-    \\CREATE TABLE IF NOT EXISTS appr(name TEXT PRIMARY KEY, state TEXT NOT NULL, at INTEGER NOT NULL);
 ;
 
 pub fn stateName(s: State) []const u8 {
@@ -267,24 +266,6 @@ pub fn metaSetInt(db: *sq.Db, k: []const u8, v: i64) Err!void {
     try metaSet(db, k, std.fmt.bufPrint(&buf, "{d}", .{v}) catch "0");
 }
 
-// ---- approvals (review:true pairs) ----
-pub fn approval(db: *sq.Db, a: std.mem.Allocator, name: []const u8) Err![]u8 {
-    var st = try db.prepare("SELECT state FROM appr WHERE name=?1");
-    defer st.finalize();
-    try st.text(1, name);
-    if (!try st.step()) return a.dupe(u8, "") catch Err.OutOfMemory;
-    return try st.col(a, 0);
-}
-pub fn setApproval(cx: *const Ctx, db: *sq.Db, name: []const u8, state: []const u8) Err!void {
-    try kill.writeOk(cx);
-    var st = try db.prepare("INSERT INTO appr(name,state,at) VALUES(?1,?2,?3) ON CONFLICT(name) DO UPDATE SET state=?2, at=?3");
-    defer st.finalize();
-    try st.text(1, name);
-    try st.text(2, state);
-    try st.int(3, cx.nowMs());
-    _ = try st.step();
-}
-
 // ---- tests ----
 const ctxm = @import("co-ctx.zig");
 
@@ -327,7 +308,7 @@ test "begin once, replay refused, failed needs --again, crash -> unsure" {
     try std.testing.expectEqualStrings("222", row.cont_id);
 }
 
-test "rolling window count, meta, approval, kill blocks writes" {
+test "rolling window count, meta, kill blocks writes" {
     var tmp = std.testing.tmpDir(.{});
     defer tmp.cleanup();
     var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
@@ -345,11 +326,8 @@ test "rolling window count, meta, approval, kill blocks writes" {
     try metaSetInt(&t.db, "x", 42);
     try std.testing.expectEqual(@as(i64, 42), try metaInt(&t.db, "x"));
     try std.testing.expectEqual(@as(i64, 0), try metaInt(&t.db, "nope"));
-    try setApproval(&t.cx, &t.db, "v1", "approved");
-    try std.testing.expectEqualStrings("approved", try approval(&t.db, a, "v1"));
     try kill.setKill(&t.cx, true);
     try std.testing.expectError(kill.Err.Killed, begin(&t.cx, &t.db, a, "v2", "k2", "2", false));
-    try std.testing.expectError(kill.Err.Killed, setApproval(&t.cx, &t.db, "v2", "approved"));
 }
 
 test "staged older than 24 h expires; an expired row can be retried with --again" {
